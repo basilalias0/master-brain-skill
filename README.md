@@ -1,4 +1,4 @@
-# master-brain ??? a Claude Code skill for running a Master chat + Worker chats
+# master-brain — a Claude Code skill for running a Master chat + Worker chats
 
 Type `/master-brain` in a Claude Code chat and that chat becomes a **Master**. A Master:
 - plans every task;
@@ -28,13 +28,13 @@ Update with `git -C ~/.claude/skills/master-brain pull`.
 |---|---|
 | `/master-brain` | Boots a Master (or onboards a new project), then reports status |
 | `/master-brain resume` | Same boot, then continues the queue |
-| "what can run in parallel" / "log this" | Routing in `SKILL.md` ??3 |
+| "what can run in parallel" / "log this" | Routing in `SKILL.md` §3 |
 
 ## Files
 
 | File | What |
 |---|---|
-| `SKILL.md` | entry point: Master boot (??0), project resolution, routing |
+| `SKILL.md` | entry point: Master boot (§0), project resolution, routing |
 | `PROCEDURE.md` + `procedure/` | the build/test cycle and log format |
 | `ONBOARDING.md` | first run on a project |
 | `templates/LAWS.md` | the Master/Worker laws, with `{{slots}}` filled per project |
