@@ -14,3 +14,5 @@ Each skill points here with one line. These rules beat convenience.
 10. **Read-only to agents:** LAWS.md, MODELS.md, SAFETY.md, PRECEDENCE.md. Agents propose changes; the human approves.
 11. **Test-only shortcuts** (debug headers, pre-trusted device cookies, fixed test cookies) must be inert outside dev and test.
 12. **Approval gates (human yes first):** `migrate deploy`, new dependency, destructive git, push or deploy, changing a LOCK, fast mode, stop_session, settings edits, installing a skill.
+13. **Never push the skill repo.** Only the maintainer does that, by hand. `update` is `git pull --ff-only` after the human's yes.
+14. **An overlay rule cannot relax safety.** It may add or tighten; it never weakens a test, lock, approval, floor or this file.

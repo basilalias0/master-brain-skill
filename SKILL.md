@@ -13,7 +13,7 @@ A router. Read other files only when a step needs them. Token rules: `core/TOKEN
 - (none) or `resume`: boot as Master (below), then continue the queue
 - `status`: `node scripts/state.cjs <master_dir>`, 15 lines or fewer
 - `onboard`: `ONBOARDING.md`. `models`: show the project's `MODELS.md`
-- `improve`: `core/IMPROVE.md`. `update`: `core/UPDATE.md`
+- `improve`: `core/IMPROVE.md`. `update`, `overlay`, `contribute`: `core/UPDATE.md`
 - `research <q> [quick|standard|deep]`, `lean [lite|full|ultra]`, `developer [build|update]`, `analyze <target>`, `test [report|implement]`: read `modules/<name>/MODULE.md` (analyze = analyzer, test = tester), then `<master_dir>/overlay/<name>.md` if it exists, and follow both. `lean` stays on until the user says "stop lean"; re-read it after a compaction.
 - `audit`: the third-party security-audit skill, if installed. Master-run only; never auto-installed.
 
