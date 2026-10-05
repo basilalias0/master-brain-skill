@@ -1,0 +1,22 @@
+{
+  "note": "Token budget. Sizes are characters. Caps cannot rise above the baseline without a justification with a measured gain (see scripts/budget.cjs). Baseline = the last staged release before the bundle (router 3732; skills research 1977, lean 2505, developer 3014, analyzer 2017, tester 2729).",
+  "baseline": {
+    "router_chars": 3732,
+    "description_chars": 300,
+    "module_research": 1977,
+    "module_lean": 2505,
+    "module_developer": 3014,
+    "module_analyzer": 2017,
+    "module_tester": 2729
+  },
+  "caps": {
+    "router_chars": 3732,
+    "description_chars": 300,
+    "module_research": 1977,
+    "module_lean": 2505,
+    "module_developer": 3014,
+    "module_analyzer": 2017,
+    "module_tester": 2729
+  },
+  "justifications": []
+}
