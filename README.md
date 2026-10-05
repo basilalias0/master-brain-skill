@@ -2,7 +2,7 @@
 
 Type `/master-brain` and that chat becomes a **Master**: it plans every task, picks the cheapest way to do each piece, runs worker chats in their own git worktrees, keeps append-only history files so any chat can resume, and reports to you. It works in any project. On first run it onboards the project.
 
-It is built to spend few tokens: a 2k-token boot, scripts that do the mechanical work, tiered models and effort, short fixed-format briefs and results, and helper skills that are installed only when a task needs them.
+It is built to spend few tokens: a 2k-token boot, scripts that do the mechanical work, tiered models and effort, short fixed-format briefs and results, and five helper modules bundled inside the skill (read only when used).
 
 ## Install
 
@@ -11,7 +11,7 @@ git clone https://github.com/basilalias0/master-brain-skill.git ~/.claude/skills
 node ~/.claude/skills/master-brain/scripts/verify.cjs ~/.claude/skills/master-brain
 ```
 
-On Windows the folder is `%USERPROFILE%\.claude\skills\master-brain`. Update with `git -C ~/.claude/skills/master-brain pull`, then run `verify.cjs` again. Needs Node 18 or newer and git. No other dependencies, no network use except cloning a skill you approved.
+On Windows the folder is `%USERPROFILE%\.claude\skills\master-brain`. Update with `/master-brain update` (fast-forward only, asks first). Needs Node 18 or newer and git. No other dependencies, no network use except cloning a skill you approved.
 
 ## Use
 
@@ -43,9 +43,20 @@ The five helpers (research, lean, developer, analyzer, tester) ship inside this 
 | `core/` | PRECEDENCE, SAFETY, TOKENS, BRIEF, RESULT, LEGACY-INBOX |
 | `templates/` | LAWS, MODELS, CAPABILITIES |
 | `scripts/` | zero-token helpers (Node, no dependencies, each with a test) |
-| `registry.json` | the skills it may install |
+| `modules/` | research, lean, developer, analyzer, tester (each `MODULE.md` + `HELP.md`) |
+| `budget.json` | size caps; a cap may not rise without a measured gain |
+| `registry.json` | third-party skills it may install (none bundled) |
+| `VERSION`, `CHANGELOG.md`, `RELEASING.md` | versioning and the maintainer release gate |
 
 Per-project state lives in `<project>/master-brain/`, never in this repo. Keep that folder out of the project's git; master-brain treats a tracked one as untrusted.
+
+## Learning from your project
+
+Every finished task is logged in `<project>/master-brain/routing-log.jsonl`. `/master-brain improve` turns the log into proposals (routing, local-rule, generic) with evidence; nothing changes without your yes. Approved project rules go to `<project>/master-brain/overlay/` (capped, one file per module, never able to relax safety or tests). The installed skill is never edited. `/master-brain contribute` writes a sanitized export of rules you mark general; you send it yourself. Only maintainers with write access push this repo; master-brain never does.
+
+## Languages: verified and not
+
+Verified by running here: JS/TS (Node) and Python. Go, Java/Kotlin, Rust, C#, Ruby and PHP are covered by the test guard and `modules/tester/frameworks.md`, but only pattern-tested on snippets, never run. The skill says "not run" when a toolchain is missing.
 
 ## Tools it uses, and the fallback without them
 

@@ -127,9 +127,10 @@ autonomy rule) that won't automatically re-open to question it.
 5. For an existing project (2B): offer a full first-pass `FEATURE_INDEX.md` population —
    ask whether to do it now or incrementally as features come up; it scales with project
    size and shouldn't be assumed free.
-6. Write one `DL-001` entry in the new `ACTION_LOG.md` recording the onboarding itself —
+6. Create `overlay/` and run `node scripts/overlay.cjs rebase --dir <master_dir>` (writes `overlay/base.json` with the installed skill version). Also seed `routing-log.jsonl` (empty) and `improve/`. These are local to the project and stay out of git.
+7. Write one `DL-001` entry in the new `ACTION_LOG.md` recording the onboarding itself —
    what was found, what was confirmed vs. flagged, what's still `TBD`.
-7. `STATE.md` starts by reflecting reality: for a new project (2A), "not yet built — the
+8. `STATE.md` starts by reflecting reality: for a new project (2A), "not yet built — the
    first feature is the initial build itself"; for an existing one (2B), "connected — first
    feature starts the normal cycle."
 
