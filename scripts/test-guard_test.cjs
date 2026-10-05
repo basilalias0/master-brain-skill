@@ -35,3 +35,29 @@ test('removed file fails; added tests pass', () => {
   fs.rmSync(path.join(d, 'a.test.js'));
   assert.match(compare(d, snap)[0], /removed/);
 });
+
+const { scan } = require('./test-guard.cjs');
+const one = (name, text) => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'mb-tgl-'));
+  fs.writeFileSync(path.join(d, name), text);
+  return scan(path.join(d, name));
+};
+
+test('other languages: tests, skips and assertions are counted (pattern-tested)', () => {
+  assert.deepStrictEqual(one('a_test.go', 'func TestA(t *testing.T) {\n t.Skip("x")\n if 1 != 2 { t.Errorf("bad") }\n}\n'), { tests: 1, skips: 1, only: 0, asserts: 1 });
+  assert.deepStrictEqual(one('AThing.java'.replace('AThing', 'AuthTest'), '@Test\nvoid a(){ assertEquals(1,1); }\n@Disabled @Test void b(){}\n'), { tests: 2, skips: 1, only: 0, asserts: 1 });
+  assert.deepStrictEqual(one('AuthTests.cs', '[Fact]\npublic void A(){ Assert.Equal(1,1); }\n[Fact(Skip = "x")]\npublic void B(){}\n'), { tests: 2, skips: 1, only: 0, asserts: 1 });
+  assert.deepStrictEqual(one('a_spec.rb', "it 'a' do\n expect(1).to eq(1)\nend\nxit 'b' do\nend\nfit 'c' do\nend\n"), { tests: 3, skips: 1, only: 1, asserts: 1 });
+  assert.deepStrictEqual(one('AuthTest.php', '<?php\nfunction testA(){ $this->assertTrue(true); $this->markTestSkipped(); }\n'), { tests: 1, skips: 1, only: 0, asserts: 1 });
+  assert.deepStrictEqual(one('lib.rs', '#[test]\nfn a(){ assert_eq!(1,1); }\n#[test]\n#[ignore]\nfn b(){}\n'), { tests: 2, skips: 1, only: 0, asserts: 1 });
+});
+
+test('a Rust file without tests is not a test file; deleting a Go test is caught', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'mb-tgr-'));
+  fs.writeFileSync(path.join(d, 'main.rs'), 'fn main() {}\n');
+  fs.writeFileSync(path.join(d, 'a_test.go'), 'func TestA(t *testing.T) { t.Fatal("x") }\nfunc TestB(t *testing.T) { t.Fatal("y") }\n');
+  const snap = snapshot(d);
+  assert.deepStrictEqual(Object.keys(snap), ['a_test.go']);
+  fs.writeFileSync(path.join(d, 'a_test.go'), 'func TestA(t *testing.T) { t.Fatal("x") }\n');
+  assert.match(compare(d, snap).join('|'), /tests 2 -> 1/);
+});

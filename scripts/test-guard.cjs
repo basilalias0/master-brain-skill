@@ -6,21 +6,35 @@ const fs = require('fs');
 const path = require('path');
 
 const SKIP = new Set(['node_modules', '.git', '.next', 'dist', 'build', 'coverage', 'test-results', 'playwright-report']);
-const isTest = (n) => /\.(test|spec)\.[cm]?[jt]sx?$/.test(n) || /^test_.*\.py$/.test(n) || /_test\.py$/.test(n);
+const isTest = (n) => /\.(test|spec)\.[cm]?[jt]sx?$/.test(n) || /^test_.*\.py$/.test(n) || /_test\.py$/.test(n)
+  || /_test\.go$/.test(n) || /Tests?\.(?:java|kt|cs)$/.test(n) || /(?:_spec|_test)\.rb$/.test(n) || /Test\.php$/.test(n);
+const isRust = (f) => /\.rs$/.test(f) && /#\[(?:tokio::)?test\b/.test(fs.readFileSync(f, 'utf8'));
 const count = (s, re) => (s.match(re) || []).length;
+
+// Per-language markers. Verified by running only for JS/TS and Python; the rest are pattern-tested on snippets.
+const LANG = [
+  { ext: /_test\.go$/, tests: /^func\s+Test\w+\s*\(/gm, skips: /\bt\.Skip(?:Now|f)?\s*\(/g, asserts: /\bt\.(?:Error|Errorf|Fatal|Fatalf|Fail)\s*\(|\b(?:assert|require)\.\w+\s*\(/g },
+  { ext: /\.(?:java|kt)$/, tests: /@(?:Parameterized)?Test\b/g, skips: /@(?:Disabled|Ignore)\b/g, asserts: /\bassert\w*\s*\(|\bverify\s*\(/g },
+  { ext: /\.cs$/, tests: /\[(?:Fact|Theory|Test|TestMethod|TestCase)\b/g, skips: /Skip\s*=|\[Ignore\b/g, asserts: /\bAssert\.\w+\s*\(|\.Should\(\)/g },
+  { ext: /\.rb$/, tests: /^\s*(?:[xf]?it|[xf]?specify|test)\s*[('"]|^\s*def\s+test_\w+/gm, skips: /^\s*(?:xit|xspecify|skip|pending)\b/gm, only: /\bfit\b|\bfocus:\s*true/g, asserts: /\bexpect\s*[({]|\bassert\w*[\s(]|\.should\b/g },
+  { ext: /\.php$/, tests: /function\s+test\w+\s*\(|@test\b/g, skips: /markTestSkipped|markTestIncomplete/g, asserts: /\$this->assert\w+\s*\(|\bexpect\s*\(/g },
+  { ext: /\.rs$/, tests: /#\[(?:tokio::)?test\b/g, skips: /#\[ignore\b/g, asserts: /\bassert(?:_eq|_ne)?!\s*\(/g },
+];
 
 function walk(root, out = []) {
   for (const e of fs.readdirSync(root, { withFileTypes: true })) {
     if (SKIP.has(e.name)) continue;
     const p = path.join(root, e.name);
     if (e.isDirectory()) walk(p, out);
-    else if (isTest(e.name)) out.push(p);
+    else if (isTest(e.name) || isRust(p)) out.push(p);
   }
   return out;
 }
 
 function scan(file) {
   const s = fs.readFileSync(file, 'utf8');
+  const lang = LANG.find((l) => l.ext.test(file));
+  if (lang) return { tests: count(s, lang.tests), skips: count(s, lang.skips), only: lang.only ? count(s, lang.only) : 0, asserts: count(s, lang.asserts) };
   return {
     tests: count(s, /\b(?:it|test)(?:\.(?:only|skip|fixme))?\s*\(/g) + count(s, /^\s*(?:async\s+)?def\s+test_\w+/gm),
     skips: count(s, /\b(?:it|test|describe)\.(?:skip|fixme)\b|\bxit\s*\(|\bxdescribe\s*\(|@pytest\.mark\.skip|\bunittest\.skip/g),

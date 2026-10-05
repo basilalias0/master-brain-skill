@@ -26,4 +26,4 @@ Write the tests for the chosen items.
 - Test-only shortcuts (debug headers, pre-trusted device cookies) must be inert outside dev and test; report any that are not.
 - No snapshot-everything, no `assert true`, no sleeps, no testing private internals. A test must fail when behavior breaks and pass when only the implementation changes.
 
-Note anything you could not test and why.
+For the run command and file patterns of a stack, read `modules/tester/frameworks.md` (that stack only). Note anything you could not test and why.
