@@ -1,0 +1,10 @@
+{
+  "allowedOwners": ["basilalias0"],
+  "skills": {
+    "research-helper": { "repo": "https://github.com/basilalias0/research-helper.git", "ref": "unpublished", "sha": "", "skillSha256": "" },
+    "ponytail": { "repo": "https://github.com/basilalias0/ponytail.git", "ref": "unpublished", "sha": "", "skillSha256": "" },
+    "developer": { "repo": "https://github.com/basilalias0/developer.git", "ref": "unpublished", "sha": "", "skillSha256": "" },
+    "code-analyzer": { "repo": "https://github.com/basilalias0/code-analyzer.git", "ref": "unpublished", "sha": "", "skillSha256": "" },
+    "tester": { "repo": "https://github.com/basilalias0/tester.git", "ref": "unpublished", "sha": "", "skillSha256": "" }
+  }
+}

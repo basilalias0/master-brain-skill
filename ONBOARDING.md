@@ -111,12 +111,19 @@ autonomy rule) that won't automatically re-open to question it.
    specific row**, not just bless the document as a whole. A confidence tag nobody has to
    look at isn't a real gate — it's decoration.
 4. **On confirmation**, write `PROJECT_ADAPTER.md` into that project's own `master-brain/`
-   folder (alongside, not inside, the shared skill files — it's per-project data). Seed
-   `STATE.md`, `ACTION_LOG.md`, `FEATURE_INDEX.md`, `BOARD.md` (with a **Masters** table);
-   create `inbox/`, `archive/`, `masters/`, `handoffs/` (+ `archive/`, `pairs/`). Ask whether
-   the human wants a `LAWS.md` (Master/Worker rules); if yes, copy this skill's
+   folder (alongside, not inside, the shared skill files — it's per-project data). First
+   check that `master-brain/` is outside the project's git repo or gitignored; if it is
+   tracked, say so and fix it before going on. Seed `STATE.md`, `ACTION_LOG.md`,
+   `FEATURE_INDEX.md`, `BOARD.md` (with a **Masters** table); create `inbox/`, `archive/`,
+   `masters/`, `handoffs/` (+ `archive/`, `pairs/`, a `README.md`) and `locks/`.
+   Ask whether the human wants a `LAWS.md` (Master/Worker rules); if yes, copy this skill's
    `templates/LAWS.md`, fill every `{{slot}}` from what Step 2 found, and confirm each law
-   with them — never assume their rules.
+   with them — never assume their rules. Then run `node scripts/law-lint.cjs stamp` to write
+   `LAWS_DIGEST.md` (30 lines or fewer, with its `source_hash`). Seed `MODELS.md` from
+   `templates/MODELS.md` and `CAPABILITIES.md` from `templates/CAPABILITIES.md`, running the
+   capability probe (load tool schemas through ToolSearch, read-only, no calls) and writing
+   UNKNOWN for anything not confirmed. Templates hold no absolute paths; fill them in the
+   project's copy only.
 5. For an existing project (2B): offer a full first-pass `FEATURE_INDEX.md` population —
    ask whether to do it now or incrementally as features come up; it scales with project
    size and shouldn't be assumed free.

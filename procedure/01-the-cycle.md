@@ -9,8 +9,9 @@ Ambiguous requirement → ask now, don't guess and don't let it surface later as
 
 **Present the plan once. Get one approval, covering the whole feature** — which modules/
 files it touches, the build approach, which flows will get tested, whether it's split
-across parallel workers. Once approved, steps 2–13 run without re-asking. Exactly three
-things re-open a (scoped, not full-plan) question instead of proceeding silently:
+across parallel workers. Once approved, steps 2–13 run without re-asking. Exactly these
+re-open a (scoped, not full-plan) question instead of proceeding silently (and any approval gate
+in `core/SAFETY.md` always needs a fresh human yes):
 - a blocker forces a genuinely new decision (step 6) with no matching reuse signature,
 - the robustness pass surfaces a real business-rule ambiguity (step 8.3),
 - the touched-file/module set would expand past what was scoped at intake — that's
@@ -36,6 +37,7 @@ own instructions are what name it explicitly (tools gated on "only when a projec
 instruction names X explicitly" read this file as that instruction). Confirm the approved
 starting point is actually available to a fresh worktree/clone before relying on it — a
 worker isolated from local uncommitted state needs the baseline pushed somewhere it can see.
+Briefs carry `base_commit` and absolute `master_dir`/`skill_dir` paths (`core/BRIEF.md`).
 
 **4. Schema/contract-diff check** — robustness-pass step zero, done *before* any live
 interaction, not after. If the project adapter defines a client/server validation-schema
@@ -102,6 +104,8 @@ passed once.
   manually-verified only — this is a hard gate, not a best-effort reminder, specifically
   because "skip it under time pressure" is the reference system's own documented failure
   mode.
+- **Test-only shortcuts** (debug headers, pre-trusted device cookies) must be inert outside dev
+  and test; if one is not, report it (`core/SAFETY.md` 11).
 - **Credential hygiene — a real flaw seen in the reference system, designed against here:**
   the generated spec must contain zero literal password/secret strings. It references the
   project's existing named credential constants/helpers only. A brand-new credential need
@@ -112,7 +116,9 @@ passed once.
   this — the boundary breaks at generation time if the generated file itself embeds the
   plaintext value, regardless of where it was sourced from.)
 
-**10. Regression sweep.** Run the full existing regression suite. Diff results by test
+**10. Regression sweep.** Run the full existing regression suite (the Master's slot run, inside the
+heavy-slot lock; workers run only type-check, unit tests and their own flow). Run
+`scripts/test-guard.cjs compare` first. Diff results by test
 name/title (not just a pass/fail count — a count can't tell you *which* test flipped)
 against the project's known-red ledger:
 - **Known-red, still failing** → expected. Report "N known-red, unchanged" in one line — do
@@ -156,7 +162,7 @@ after each phase's build (step 3) completes:
 2. **Turn what was just checked into a regression spec** (step 9) — this is the only
    place new coverage enters the suite. A manual check that never becomes a spec is
    lost the moment a later phase's edits touch anything nearby.
-3. **Run the FULL regression suite** (step 10), not just the new spec — a phase's
+3. **Master's slot run of the FULL regression suite** (step 10), not just the new spec — a phase's
    change can break something the new spec never touches, and a full sweep is the only
    way to find that.
 4. **A failing test — new or existing — means an edge case wasn't mapped**, not a

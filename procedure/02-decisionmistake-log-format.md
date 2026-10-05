@@ -69,12 +69,12 @@ failure mode the calibration note at the top of this file describes.
 
 ## Cross-session coordination
 
-No assumption is made that separate sessions can message each other live — this procedure
-is written assuming the only reliable cross-session channel is plain files any session can
-read/write by an explicit, absolute path, regardless of that session's own working
-directory or start time. Coordination is therefore pull-based and eventually consistent, not
-live — state that honestly if asked, rather than implying more real-time coordination than
-a file can actually provide.
+Live channel: `SendMessage` (logical name `message`), Master and worker only, never a
+broadcast. Record and fallback: plain files any session can read or write by an absolute path
+(`handoffs/W#.md`, BOARD). The message says "done, see the file"; the file is the truth. If
+messaging is unavailable, coordination is pull-based through those files (`core/LEGACY-INBOX.md`)
+— say so honestly rather than implying real-time coordination a file cannot provide.
+Workers write DL candidates into their own `W#.md`; Master folds them into ACTION_LOG.
 
 1. Every session working under this procedure — whichever one the human is actively
    driving, or a worker — reads the coordination board in full before claiming anything.

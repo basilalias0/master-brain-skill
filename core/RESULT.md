@@ -1,0 +1,15 @@
+# RESULT: what a worker reports (10 lines or fewer by SendMessage)
+
+```
+status:           done | blocked | needs-master
+commit:           <sha or none>
+gates:            tsc <pass|fail|not run> · unit <...> · own-flow <...>
+files:            <paths touched>
+callers checked:  <how, or n/a>   (required for bug fixes; missing = incomplete)
+test-guard:       ok | violations | not run
+dl-candidates:    <one line each, or none>
+unresolved:       <or none>
+next:             <one line>
+```
+
+Detail goes to `handoffs/W#.md` LAST, with a LAST block on top and earlier entries append-only. DL candidates are written there; Master folds them into ACTION_LOG. Do not paste code or logs into the message; give paths.
