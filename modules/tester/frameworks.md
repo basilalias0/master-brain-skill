@@ -1,6 +1,6 @@
 # Test frameworks (load only the stack in use)
 
-Detect the stack from its manifest, then use the project's own command first. The test guard counts tests, skips and assertions for all of these; only JS/TS and Python are verified by running them here, the rest are pattern-tested.
+Detect the stack from its manifest, then use the project's own command first. The test guard counts tests, skips and assertions for all of these, and its counts were checked against each real runner. A skip form it does not know raises a "possible new skip form" flag.
 
 | Stack | Manifest | Run | Test files | Notes |
 |---|---|---|---|---|

@@ -68,3 +68,18 @@ test('skip forms found by running Node and Python are counted (matches the runne
   const py = 'class A(unittest.TestCase):\n    def test_one(self): self.assertEqual(1, 1)\n    def test_two(self): self.skipTest("x")\n    @unittest.skipIf(True, "x")\n    def test_three(self): pass\n';
   assert.deepStrictEqual(one('test_a.py', py), { tests: 3, skips: 2, only: 0, asserts: 1 });
 });
+
+test('safety net: an unlisted skip form raises a "possible new skip form" flag', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'mb-tgh-'));
+  fs.writeFileSync(path.join(d, 'a.test.js'), "test('a', () => { expect(1).toBe(1); });\n");
+  const snap = snapshot(d);
+  fs.writeFileSync(path.join(d, 'a.test.js'), "test('a', () => { expect(1).toBe(1); });\nmyRunner.disabled('b');\n");
+  assert.match(compare(d, snap).join('|'), /possible new skip form/);
+});
+
+test('forms found by running the real runners: rspec metadata, JUnit assumptions, NUnit ignore, PHP requires', () => {
+  assert.strictEqual(one('a_spec.rb', "it 'a', :skip do\nend\nit 'b', skip: true do\nend\n").skips, 2);
+  assert.strictEqual(one('ATest.java', '@Test void a() { Assumptions.assumeTrue(false); }\n@DisabledOnOs(OS.WINDOWS) @Test void b() {}\n').skips, 2);
+  assert.strictEqual(one('ATests.cs', '[Test] public void A() { Assert.Ignore("x"); }\n').skips, 1);
+  assert.strictEqual(one('ATest.php', '#[RequiresPhp(">=99")] public function testA() {}\n').skips, 1);
+});

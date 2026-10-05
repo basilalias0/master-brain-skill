@@ -11,13 +11,13 @@ const isTest = (n) => /\.(test|spec)\.[cm]?[jt]sx?$/.test(n) || /^test_.*\.py$/.
 const isRust = (f) => /\.rs$/.test(f) && /#\[(?:tokio::)?test\b/.test(fs.readFileSync(f, 'utf8'));
 const count = (s, re) => (s.match(re) || []).length;
 
-// Per-language markers. Verified by running only for JS/TS and Python; the rest are pattern-tested on snippets.
+// Per-language markers. Checked against each language's real runner (ab-check/langcheck); unlisted forms hit the HINT safety net.
 const LANG = [
   { ext: /_test\.go$/, tests: /^func\s+Test\w+\s*\(/gm, skips: /\bt\.Skip(?:Now|f)?\s*\(/g, asserts: /\bt\.(?:Error|Errorf|Fatal|Fatalf|Fail)\s*\(|\b(?:assert|require)\.\w+\s*\(/g },
-  { ext: /\.(?:java|kt)$/, tests: /@(?:Parameterized)?Test\b/g, skips: /@(?:Disabled|Ignore)\b/g, asserts: /\bassert\w*\s*\(|\bverify\s*\(/g },
-  { ext: /\.cs$/, tests: /\[(?:Fact|Theory|Test|TestMethod|TestCase)\b/g, skips: /Skip\s*=|\[Ignore\b/g, asserts: /\bAssert\.\w+\s*\(|\.Should\(\)/g },
-  { ext: /\.rb$/, tests: /^\s*(?:[xf]?it|[xf]?specify|test)\s*[('"]|^\s*def\s+test_\w+/gm, skips: /^\s*(?:xit|xspecify|skip|pending)\b/gm, only: /\bfit\b|\bfocus:\s*true/g, asserts: /\bexpect\s*[({]|\bassert\w*[\s(]|\.should\b/g },
-  { ext: /\.php$/, tests: /function\s+test\w+\s*\(|@test\b/g, skips: /markTestSkipped|markTestIncomplete/g, asserts: /\$this->assert\w+\s*\(|\bexpect\s*\(/g },
+  { ext: /\.(?:java|kt)$/, tests: /@(?:Parameterized)?Test\b/g, skips: /@(?:Disabled\w*|Ignore)\b|\bassume\w*\s*\(/g, asserts: /\bassert\w*\s*\(|\bverify\s*\(/g },
+  { ext: /\.cs$/, tests: /\[(?:Fact|Theory|Test|TestMethod|TestCase)\b/g, skips: /Skip\s*=|\[Ignore\b|\bAssert\.(?:Ignore|Inconclusive|Skip)\s*\(/g, asserts: /\bAssert\.\w+\s*\(|\.Should\(\)/g },
+  { ext: /\.rb$/, tests: /^\s*(?:[xf]?it|[xf]?specify|test)\s*[('"]|^\s*def\s+test_\w+/gm, skips: /^\s*(?:xit|xspecify|skip|pending)\b|,\s*(?::(?:skip|pending)\b|(?:skip|pending):)/gm, only: /\bfit\b|\bfocus:\s*true/g, asserts: /\bexpect\s*[({]|\bassert\w*[\s(]|\.should\b/g },
+  { ext: /\.php$/, tests: /function\s+test\w+\s*\(|@test\b/g, skips: /markTestSkipped|markTestIncomplete|#\[RequiresPhp|@requires\b/g, asserts: /\$this->assert\w+\s*\(|\bexpect\s*\(/g },
   { ext: /\.rs$/, tests: /#\[(?:tokio::)?test\b/g, skips: /#\[ignore\b/g, asserts: /\bassert(?:_eq|_ne)?!\s*\(/g },
 ];
 
@@ -43,9 +43,13 @@ function scan(file) {
   };
 }
 
+// Safety net for skip forms nobody listed: any line-level word that suggests disabling a test.
+const HINT = /\b(?:skip(?:ped|test|now)?|ignored?|disabled|pending|todo|xfail|fixme|xit|xdescribe|xtest|assume\w*)\b/gi;
+const hints = (file) => count(fs.readFileSync(file, 'utf8'), HINT);
+
 function snapshot(root) {
   const snap = {};
-  for (const f of walk(root)) snap[path.relative(root, f).replace(/\\/g, '/')] = scan(f);
+  for (const f of walk(root)) snap[path.relative(root, f).replace(/\\/g, '/')] = { ...scan(f), hints: hints(f) };
   return snap;
 }
 
@@ -58,6 +62,7 @@ function compare(root, snap) {
     if (b.tests < a.tests) v.push(`${f}: tests ${a.tests} -> ${b.tests}`);
     if (b.skips > a.skips) v.push(`${f}: skip/fixme markers ${a.skips} -> ${b.skips}`);
     if (b.only > a.only) v.push(`${f}: .only added`);
+    if (a.hints !== undefined && b.hints > a.hints && b.skips <= a.skips) v.push(`${f}: possible new skip form (skip/ignore/disabled/todo words ${a.hints} -> ${b.hints}); check by hand`);
     if (b.asserts < a.asserts) v.push(`${f}: assertions ${a.asserts} -> ${b.asserts}`);
   }
   return v;

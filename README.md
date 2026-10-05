@@ -56,7 +56,7 @@ Every finished task is logged in `<project>/master-brain/routing-log.jsonl`. `/m
 
 ## Languages: verified and not
 
-Verified by running here: JS/TS (Node) and Python. Go, Java/Kotlin, Rust, C#, Ruby and PHP are covered by the test guard and `modules/tester/frameworks.md`, but only pattern-tested on snippets, never run. The skill says "not run" when a toolchain is missing.
+Checked against each language's real test runner (Node, Python, Go, Java via JUnit, Rust, C# via xUnit, Ruby via RSpec, PHP via PHPUnit): test, skip and assertion counts from the guard matched the runner on a fixture that uses the common skip forms. Not checked: `.only`/focus markers in real runs, other frameworks (for example TestNG, NUnit, Minitest, Pest, Kotest) and unusual skip forms; the guard flags those as "possible new skip form" for a human look. The skill says "not run" when a toolchain is missing.
 
 ## Tools it uses, and the fallback without them
 
