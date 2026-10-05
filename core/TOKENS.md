@@ -41,4 +41,5 @@ Never route High work below T1 or default effort.
 - Check `get_usage` once per cycle and before each wave. Above 70% of the 5-hour window: drop non-critical work one tier. Above 90%: checkpoint and stop launching.
 - Workers do one task, then clear, unless the next task is in the same lane.
 - Compact or clear at task boundaries with a short keep-list, not at the context limit.
+- Keep the Master's session stable: choose model and effort at the start and do not switch them mid-session (a switch re-reads the whole context uncached). Change tier by dispatching, not by switching the Master.
 - Disable connectors a worker does not need (the human approves the change).

@@ -29,6 +29,9 @@ Status becomes `verified` after the first successful dispatch; the picker's ids 
 ## Floors (never go below)
 Planning, security, migrations, LOCK changes: T1 and default effort. Escalate only after a failed attempt and log one line of reason in `masters/M#.md`.
 
+## Cache note
+Haiku 4.5 does not cache prompts under 4,096 tokens, so small T0 jobs are never cached. Prefer a script for mechanical lookups; use T0 for judgment-light reading.
+
 ## Usage
 From `get_usage`: above 70% of the 5-hour window, drop non-critical work one tier; above 90%, checkpoint and stop launching.
 
