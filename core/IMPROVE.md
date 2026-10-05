@@ -25,5 +25,12 @@ When a task finishes, Master appends one line:
 ## 4. Fix at the strongest layer
 A script or test that enforces a rule beats a written law, which beats skill prose. A mistake that recurs moves up a layer. A new rule must replace or merge an older one so the skill does not grow without bound.
 
-## 5. Limits
+## 5. Measuring (lessons from the first A/B run)
+- Exact token use per subagent is in its transcript (`<session>/subagents/*.jsonl`, `usage` on each assistant message); the Agent result also shows `subagent_tokens`.
+- A subagent's answer arrives in a hand-back tool call, not a text block: grade that text, or the grader reads the wrong message.
+- Run a control (same prompt, no skill) every time. Fresh-token totals swung 20% on identical prompts because the prompt cache was warm or cold; compare turns, tool calls and cache-read as well.
+- Each subagent costs 55-160k tokens just to start, so a small skill edit is invisible in totals. Judge skill text by turns and quality; judge boot changes by tokens.
+- A pass rule must not depend on a fixture's deliberately red test. Use at least 3 runs per cell before claiming a saving.
+
+## 6. Limits
 Small samples mislead (hence the minimum). A new model invalidates old statistics: re-run the ladder. Case cards need a hidden test before they count as regression tests. The user stays the decision maker.
