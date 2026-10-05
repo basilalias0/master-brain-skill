@@ -37,7 +37,7 @@ function scan(file) {
   if (lang) return { tests: count(s, lang.tests), skips: count(s, lang.skips), only: lang.only ? count(s, lang.only) : 0, asserts: count(s, lang.asserts) };
   return {
     tests: count(s, /\b(?:it|test)(?:\.(?:only|skip|fixme))?\s*\(/g) + count(s, /^\s*(?:async\s+)?def\s+test_\w+/gm),
-    skips: count(s, /\b(?:it|test|describe)\.(?:skip|fixme)\b|\bxit\s*\(|\bxdescribe\s*\(|@pytest\.mark\.skip|\bunittest\.skip/g),
+    skips: count(s, /\b(?:it|test|describe)\.(?:skip|fixme)\b|\bxit\s*\(|\bxdescribe\s*\(|@pytest\.mark\.skip|\bunittest\.skip|\b(?:skip|todo)\s*:\s*(?:true|['"`])|\bt\.(?:skip|todo)\s*\(|\.todo\s*\(|\bself\.skipTest\s*\(|\bpytest\.skip\s*\(/g),
     only: count(s, /\b(?:it|test|describe)\.only\b/g),
     asserts: count(s, /\bexpect\s*\(|\bassert[\w.]*\s*\(|^\s*assert\s/gm),
   };

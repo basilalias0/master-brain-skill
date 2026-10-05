@@ -61,3 +61,10 @@ test('a Rust file without tests is not a test file; deleting a Go test is caught
   fs.writeFileSync(path.join(d, 'a_test.go'), 'func TestA(t *testing.T) { t.Fatal("x") }\n');
   assert.match(compare(d, snap).join('|'), /tests 2 -> 1/);
 });
+
+test('skip forms found by running Node and Python are counted (matches the runners)', () => {
+  const js = "test('a', () => { assert.ok(1); });\ntest('b', { skip: true }, () => {});\ntest('c', (t) => { t.skip('x'); });\ntest('d', { todo: 'x' }, () => {});\n";
+  assert.deepStrictEqual(one('a.test.js', js), { tests: 4, skips: 3, only: 0, asserts: 1 });
+  const py = 'class A(unittest.TestCase):\n    def test_one(self): self.assertEqual(1, 1)\n    def test_two(self): self.skipTest("x")\n    @unittest.skipIf(True, "x")\n    def test_three(self): pass\n';
+  assert.deepStrictEqual(one('test_a.py', py), { tests: 3, skips: 2, only: 0, asserts: 1 });
+});
