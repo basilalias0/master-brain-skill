@@ -6,14 +6,14 @@ The goal is the fewest tokens per task with no loss of quality. Every rule here 
 script, then T0 scout subagent, then Master directly, then a subagent, then a worker chat.
 - A script does anything mechanical (locks, test guard, line caps, code map, filtered test run, status).
 - A scout answers "where is X" and returns conclusions, never file dumps.
-- Master edits tiny things itself (one file, a few lines) with ponytail.
+- Master edits tiny things itself (one file, a few lines) with lean.
 - **Spawn a worker chat only** when the work is over about 3 files or 15 minutes, or truly parallel. A worker's boot costs more than a small fix.
 - Batch same-lane tasks into one worker. Reuse a warm idle worker; clear it when it changes module or its context grows. Cap parallel workers at 2-3.
 
 ## 2. Risk tiers (how much pipeline a task gets)
 | Tier | Example | Pipeline |
 |---|---|---|
-| Low | typo, copy, one-file fix | ponytail + type-check |
+| Low | typo, copy, one-file fix | lean + type-check |
 | Medium | one-lane feature or bugfix | + its own flow test |
 | High | auth, data, money, shared contract, LOCK | + analyzer + scoped audit + Master slot run |
 Never route High work below T1 or default effort.

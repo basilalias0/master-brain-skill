@@ -69,7 +69,7 @@ stale. Keep it at most 200 lines. Never commit it.
     will run out before reset: checkpoint, schedule a one-time task at `resets_at + 2 min` that
     writes `masters/RESUME.md` (status only) and notifies the human. Master asks before acting
     on RESUME.md.
-15. **Workers use a minimal-change approach** (ponytail) for simple tasks and bugfixes.
+15. **Workers use a minimal-change approach** (lean) for simple tasks and bugfixes.
 16. **Two phases per module.** Phase 1: develop + bugfix; green, then clear. Phase 2: optimise,
     same worker, capped at 2 passes (Master may extend). Order of authority:
     `core/PRECEDENCE.md`. **Source caps:** `{{e.g. .ts/.tsx ≤ 400, .js/.jsx ≤ 300}}`.

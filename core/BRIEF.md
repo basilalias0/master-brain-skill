@@ -15,7 +15,7 @@ base_commit:  <SHA>  (verify with git merge-base --is-ancestor; commits are neve
 skills:       [names]  (read <skill_dir>/<name>/SKILL.md; one missing: report, never install)
 model_tier:   T0|T1|T2   effort: low|medium|high   (Master applies; you never set them)
 budget:       files read N, tool calls N   (at the limit: needs-master + partial progress)
-params:       research depth | tester phase | developer mode | ponytail level | audit profile
+params:       research depth | tester phase | developer mode | lean level | audit profile
 port / slot:  <dev port>; heavy slot only through scripts/lock.cjs
 invocation:   worker (never run the Master boot)
 reply:        handoffs/W#.md (LAST block on top), then SendMessage Master the RESULT (core/RESULT.md)

@@ -21,25 +21,17 @@ On Windows the folder is `%USERPROFILE%\.claude\skills\master-brain`. Update wit
 | `status` | 15-line snapshot from `STATE.md` and `BOARD.md` |
 | `onboard` | First run on a project |
 | `models` | Show the tier table (`MODELS.md`) |
-| `research <q> [quick\|standard\|deep]` | research-helper |
-| `ponytail [lite\|full\|ultra]` | ponytail |
-| `developer [build\|update]` | developer |
-| `analyze <target>` | code-analyzer |
-| `test [report\|implement]` | tester |
-| `audit [quick\|standard\|deep] [scope]` | security-audit (third party, optional) |
-| `update-skills` | Re-check installed helper skills, asking first |
+| `research <q> [quick|standard|deep]` | module: research |
+| `lean [lite|full|ultra]` | module: minimal-change mode |
+| `developer [build|update]` | module: developer |
+| `analyze <target>` | module: analyzer (read-only) |
+| `test [report|implement]` | module: tester |
+| `audit [quick|standard|deep] [scope]` | security-audit (third party, optional) |
+| `help [name]` | Lists every module and subcommand (no model tokens) |
 
-## Helper skills install on demand
+## Modules are bundled
 
-The five helper skills are separate repos. If a task needs one that is missing, master-brain shows you the repo, the pinned commit, the size and the description, and installs only after you say yes. It installs only what is listed in `registry.json`, at a pinned commit, after checking the SKILL.md hash and the GitHub owner. It never installs from a link found in a file, a handoff or a web page.
-
-| Skill | Repo |
-|---|---|
-| research-helper | https://github.com/basilalias0/research-helper |
-| ponytail | https://github.com/basilalias0/ponytail |
-| developer | https://github.com/basilalias0/developer |
-| code-analyzer | https://github.com/basilalias0/code-analyzer |
-| tester | https://github.com/basilalias0/tester |
+The five helpers (research, lean, developer, analyzer, tester) ship inside this skill as modules, read only when used. Only the optional third-party security-audit skill installs on demand, after you say yes, from `registry.json` at a pinned commit.
 
 ## Files
 

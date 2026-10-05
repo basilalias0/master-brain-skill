@@ -21,7 +21,7 @@ Status becomes `verified` after the first successful dispatch; the picker's ids 
 | Master planning | T1 | multi-module or a LOCK dispute: T2 |
 | Research | T1 | high stakes or conflicting sources: T2 |
 | Analyzer | T1 | huge graph: T2 |
-| Developer update, ponytail | T1 | failed once: T2 |
+| Developer update, lean | T1 | failed once: T2 |
 | Developer build | T2 | single layer: T1 |
 | Tester | T1 | concurrency or flaky: T2; never Haiku-first for writing tests |
 | Audit hunters | T1 | verifiers of high or critical findings: T2; never T3 |

@@ -85,7 +85,23 @@ for (const f of all) {
       }
     });
   }
-  if (base === 'SKILL.md' && f !== skill) warns.push(`${r}: nested SKILL.md (may be discovered as a separate skill)`);
+  if (base === 'SKILL.md' && f !== skill) err(r, 0, 'nested SKILL.md (would be listed as a separate skill; modules use MODULE.md)');
+}
+
+// 2. every module has MODULE.md and HELP.md
+const modDir = path.join(root, 'modules');
+if (fs.existsSync(modDir)) {
+  for (const n of fs.readdirSync(modDir, { withFileTypes: true })) {
+    if (!n.isDirectory()) continue;
+    for (const need of ['MODULE.md', 'HELP.md']) {
+      if (!fs.existsSync(path.join(modDir, n.name, need))) err(`modules/${n.name}/${need}`, 0, 'missing');
+    }
+  }
+}
+
+// 3. token budget
+if (fs.existsSync(path.join(root, 'budget.json'))) {
+  require('./budget.cjs').check(root).forEach((e) => err('budget.json', 0, e));
 }
 
 warns.forEach((w) => console.log('warn: ' + w));
