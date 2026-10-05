@@ -8,3 +8,4 @@
 - tester: test guard covers Go, Java/Kotlin, Rust, C#, Ruby and PHP (pattern-tested; only JS/TS and Python are run here); `frameworks.md`.
 - update (ff-only), overlay (project-only approved rules), contribute (sanitized export).
 - Evidence: A/B run, 34 runs: pass 12/12 vs 11/12, turns -15%, tool calls -13% (see `core/IMPROVE.md` section 5 for the method).
+- tester: new rule "pin every character class a pattern names or omits". Evidence: test-writing task missed one broken version in 3 of 3 runs before (and for the old skill and the cheapest tier); with the rule 3 of 3 runs caught all three. Turns 5-7 against 4-9 before; fresh tokens in the same range (cache noise). Module +104 chars, under its cap.

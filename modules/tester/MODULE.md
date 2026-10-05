@@ -14,6 +14,7 @@ Write the tests for the chosen items.
 - **E2E:** the critical journey only, role-based locators, web-first assertions, no sleeps.
 - **Backend:** service rules plus endpoints, auth (401, 403, IDOR), validation (4xx and error shape), side effects (assert the job is enqueued).
 - **Contract:** assert both sides still agree.
+- **Patterns and ranges:** pin every character class a pattern names or omits (underscore, uppercase, digits, space, non-ASCII), one case each.
 
 ## Integrity rules
 - Never delete, skip or loosen an existing test. Report a wrong test to your briefer.
