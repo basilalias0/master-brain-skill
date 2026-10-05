@@ -130,6 +130,11 @@ against the project's known-red ledger:
 - The sweep only counts as passing when the "new failure" bucket is empty.
 - Run filtered to pass/fail-plus-title output, not the full verbose reporter — token
   efficiency, not a style preference.
+- Unattended sweep (learned 2026-10-05): run it as a detached script that writes a summary
+  file; wait on that file with a node check (Windows logs are UTF-16, so decode with node:
+  `iconv` may be missing and a silent watcher then never fires; a background wait dies at 2h,
+  re-arm it). Hand each failure batch to one fix subagent with the log paths. After any fix,
+  rebuild and re-run: an earlier green sweep does not cover the fixed code.
 - Fixing a *pre-existing* known-red entry is its own separately-approved task — never an
   automatic side effect of an otherwise-clean sweep.
 
