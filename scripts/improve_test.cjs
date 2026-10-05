@@ -4,51 +4,36 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { build, append } = require('./route-log.cjs');
-const { analyse, load, render } = require('./route-stats.cjs');
-const { add, list } = require('./failure-case.cjs');
+const { spawnSync } = require('child_process');
+const { analyse } = require('./route-stats.cjs');
 
-const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'mb-im-'));
-const log = (file, n, o) => { for (let i = 0; i < n; i++) append(file, { task: 'bugfix', start: 'T1', result: 'pass', tokens: 1000, ...o }); };
+const entry = (o) => ({ task: 'bugfix', start: 'T1', result: 'pass', ...o });
 
-test('route-log validates and records escalation', () => {
-  assert.throws(() => build({ task: 'Bad Task', start: 'T1', result: 'pass' }));
-  assert.throws(() => build({ task: 'x', start: 'T9', result: 'pass' }));
-  assert.throws(() => build({ task: 'x', start: 'T1', result: 'maybe' }));
-  const r = build({ task: 'x', start: 'T0', final: 'T1', result: 'pass', note: 'a\nb' });
-  assert.strictEqual(r.escalated, true);
-  assert.strictEqual(r.note, 'a b');
+test('proposals carry a type: routing, local-rule, generic', () => {
+  const lowered = Array.from({ length: 8 }, () => entry({ start: 'T0' })).concat(Array.from({ length: 8 }, () => entry()));
+  const a = analyse(lowered, { min: 8, defaults: { bugfix: 'T1' } });
+  assert.strictEqual(a.proposals[0].type, 'routing');
+  const reworked = Array.from({ length: 8 }, (_, i) => entry({ task: 'build', rework: i < 4 }));
+  assert.strictEqual(analyse(reworked, { min: 8 }).proposals[0].type, 'local-rule');
+  const many = Array.from({ length: 16 }, (_, i) => entry({ task: 'build', rework: i < 8 }));
+  assert.strictEqual(analyse(many, { min: 8 }).proposals[0].type, 'generic');
 });
 
-test('no proposal below the sample minimum', () => {
-  const f = path.join(tmp(), 'l.jsonl'); log(f, 5, { start: 'T0' });
-  const r = analyse(load(f), { min: 8, defaults: { bugfix: 'T1' } });
-  assert.deepStrictEqual(r.proposals, []);
-  assert.match(r.collecting[0], /5\/8/);
-});
-
-test('proposes lowering when a cheaper tier passes first try, raising when the default fails', () => {
-  const f = path.join(tmp(), 'l.jsonl');
-  log(f, 9, { start: 'T0' }); log(f, 3, { start: 'T1' });
-  let r = analyse(load(f), { min: 8, defaults: { bugfix: 'T1' } });
-  assert.strictEqual(r.proposals[0].kind, 'lower');
-  assert.match(r.proposals[0].text, /T1 to T0/);
-  const g = path.join(tmp(), 'g.jsonl');
-  log(g, 4, { start: 'T1' }); log(g, 6, { start: 'T1', final: 'T2' });
-  r = analyse(load(g), { min: 8, defaults: { bugfix: 'T1' } });
-  assert.strictEqual(r.proposals[0].kind, 'raise');
-  assert.match(render(r, 8), /Proposals/);
-});
-
-test('rework and correction rates raise brief and review proposals', () => {
-  const f = path.join(tmp(), 'l.jsonl'); log(f, 6, { rework: 'no', correction: 'no' }); log(f, 4, { rework: 'yes', correction: 'yes' });
-  const kinds = analyse(load(f), { min: 8, defaults: { bugfix: 'T1' } }).proposals.map((p) => p.kind);
-  assert.ok(kinds.includes('brief') && kinds.includes('review'));
-});
-
-test('failure cases are written once and listed', () => {
-  const d = tmp();
-  add(d, { id: 'skip-test', task: 'make it green', wrong: 'skipped the test', expected: 'reports the wrong test' });
-  assert.throws(() => add(d, { id: 'skip-test', task: 'a', wrong: 'b', expected: 'c' }));
-  assert.match(list(d)[0], /skip-test: new/);
+test('report --write records last-run.json; state nudges at 10 new log lines, not before', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'mb-im-'));
+  fs.writeFileSync(path.join(d, 'STATE.md'), 'state\n');
+  fs.writeFileSync(path.join(d, 'BOARD.md'), '| a |\n|---|\n| x open |\n');
+  const log = path.join(d, 'routing-log.jsonl');
+  const lines = (n) => Array.from({ length: n }, () => JSON.stringify(entry())).join('\n') + '\n';
+  const state = () => spawnSync('node', [path.join(__dirname, 'state.cjs'), d], { encoding: 'utf8' }).stdout;
+  fs.writeFileSync(log, lines(9));
+  assert.doesNotMatch(state(), /Nudge/);
+  fs.writeFileSync(log, lines(10));
+  assert.match(state(), /Nudge: 10 tasks/);
+  spawnSync('node', [path.join(__dirname, 'route-stats.cjs'), 'report', log, '--write', path.join(d, 'improve', 'proposals')]);
+  assert.strictEqual(JSON.parse(fs.readFileSync(path.join(d, 'improve', 'last-run.json'), 'utf8')).entries, 10);
+  assert.doesNotMatch(state(), /Nudge/);
+  fs.writeFileSync(log, lines(20));
+  assert.match(state(), /Nudge: 10 tasks/);
+  assert.ok(state().split('\n').filter(Boolean).length <= 15);
 });

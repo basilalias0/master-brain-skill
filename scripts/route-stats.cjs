@@ -32,13 +32,14 @@ function analyse(entries, { min = 8, defaults = {} } = {}) {
     const rate = (tier) => (t.tiers[tier] ? t.tiers[tier].first / t.tiers[tier].n : null);
     const ev = (tier) => `${tier}: ${t.tiers[tier].first}/${t.tiers[tier].n} first-try (${pct(t.tiers[tier].first, t.tiers[tier].n)}%)`;
     const lower = TIERS.filter((x) => TIERS.indexOf(x) < TIERS.indexOf(cur) && t.tiers[x] && t.tiers[x].n >= min && rate(x) >= 0.9)[0];
-    if (lower) proposals.push({ task, kind: 'lower', text: `Lower the default for "${task}" from ${cur} to ${lower}. Evidence: ${ev(lower)}.` });
+    if (lower) proposals.push({ task, type: 'routing', kind: 'lower', text: `Lower the default for "${task}" from ${cur} to ${lower}. Evidence: ${ev(lower)}.` });
     else if (t.tiers[cur] && t.tiers[cur].n >= min && rate(cur) < 0.7) {
       const next = TIERS[TIERS.indexOf(cur) + 1];
-      proposals.push({ task, kind: 'raise', text: `Raise the default for "${task}" from ${cur}${next ? ' to ' + next : ''} (or review the brief). Evidence: ${ev(cur)}.` });
+      proposals.push({ task, type: 'routing', kind: 'raise', text: `Raise the default for "${task}" from ${cur}${next ? ' to ' + next : ''} (or review the brief). Evidence: ${ev(cur)}.` });
     }
-    if (t.rework / t.n > 0.3) proposals.push({ task, kind: 'brief', text: `"${task}" needed rework in ${pct(t.rework, t.n)}% of ${t.n} tasks: improve the brief template or the file targets it carries.` });
-    if (t.correction / t.n > 0.2) proposals.push({ task, kind: 'review', text: `The user corrected "${task}" in ${pct(t.correction, t.n)}% of ${t.n} tasks: review the rule or skill text it relies on.` });
+    const ruleType = t.n >= 2 * min ? 'generic' : 'local-rule';
+    if (t.rework / t.n > 0.3) proposals.push({ task, type: ruleType, kind: 'brief', text: `"${task}" needed rework in ${pct(t.rework, t.n)}% of ${t.n} tasks: improve the brief template or the file targets it carries.` });
+    if (t.correction / t.n > 0.2) proposals.push({ task, type: ruleType, kind: 'review', text: `The user corrected "${task}" in ${pct(t.correction, t.n)}% of ${t.n} tasks: review the rule or skill text it relies on.` });
   }
   return { byTask, proposals, collecting };
 }
@@ -51,8 +52,9 @@ function render({ byTask, proposals, collecting }, min) {
       L.push(`| ${task} | ${t.n} | ${tier} | ${s.n} | ${pct(s.first, s.n)}% | ${s.tokN ? Math.round(s.tokens / s.tokN) : '-'} | ${pct(t.rework, t.n)}% | ${pct(t.correction, t.n)}% |`);
     }
   }
+  L.push('', 'Types: routing = a MODELS.md row; local-rule = an overlay rule for this project; generic = also worth contributing.');
   L.push('', `## Proposals (need your approval; minimum ${min} samples each)`, '');
-  L.push(...(proposals.length ? proposals.map((p, i) => `${i + 1}. [${p.kind}] ${p.text}`) : ['None. No change is justified by the data yet.']));
+  L.push(...(proposals.length ? proposals.map((p, i) => `${i + 1}. [${p.type}/${p.kind}] ${p.text}`) : ['None. No change is justified by the data yet.']));
   if (collecting.length) L.push('', 'Still collecting: ' + collecting.join('; '));
   return L.join('\n') + '\n';
 }
@@ -67,8 +69,11 @@ if (require.main === module) {
   const out = render(res, min);
   console.log(out);
   const dir = flag('--write', null);
-  if (dir && res.proposals.length) {
+  if (dir) {
     fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, '..', 'last-run.json'), JSON.stringify({ date: new Date().toISOString().slice(0, 10), entries: load(argv[1]).length }) + '\n');
+  }
+  if (dir && res.proposals.length) {
     const f = path.join(dir, new Date().toISOString().slice(0, 10) + '-routing.md');
     fs.writeFileSync(f, out + '\nStatus: pending (the user decides; one change at a time)\n');
     console.log('proposal file: ' + f);

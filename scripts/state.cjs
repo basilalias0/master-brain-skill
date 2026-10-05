@@ -21,4 +21,11 @@ if (board) {
   out.push(...open.slice(0, 6).map((l) => l.replace(/\s+/g, ' ').slice(0, 140)));
 } else out.push('BOARD.md: missing');
 
-console.log(out.slice(0, 15).join('\n'));
+// nudge: 10 or more routing-log lines since the last improve run
+const count = (f, fn) => { try { return fn(fs.readFileSync(path.join(dir, f), 'utf8')); } catch { return 0; } };
+const logN = count('routing-log.jsonl', (s) => s.split('\n').filter(Boolean).length);
+const lastN = count(path.join('improve', 'last-run.json'), (s) => JSON.parse(s).entries || 0);
+const res = out.slice(0, 14);
+if (logN - lastN >= 10) res.push(`Nudge: ${logN - lastN} tasks logged since the last review. Run /master-brain improve.`);
+else if (out[14]) res.push(out[14]);
+console.log(res.join('\n'));

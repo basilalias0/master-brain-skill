@@ -13,14 +13,15 @@ When a task finishes, Master appends one line:
 `node scripts/route-stats.cjs report <master_dir>/routing-log.jsonl --default <task=Tier,...from MODELS.md> --write <master_dir>/improve/proposals`
 - Proposals appear only with at least 8 samples per task. Fewer: it says "still collecting".
 - Rules: lower a default when a cheaper tier passes first try at 90% or better; raise it when the default passes under 70%; flag a brief when rework is over 30%; flag a rule when corrections are over 20%.
+- Each proposal has a type: **routing** (a MODELS.md row), **local-rule** (an overlay rule for this project) or **generic** (also worth contributing). The run writes `improve/last-run.json`; `state.cjs` nudges once 10 or more tasks are logged after it.
 - Master shows the proposals and the evidence. It never applies them.
 
 ## 3. Decide and apply (one change at a time)
 1. You approve or reject each proposal. Master sets its status line to approved or rejected.
-2. Apply one approved change (a `MODELS.md` row, a skill rule, a brief field).
+2. Apply one approved change by type: routing = a `MODELS.md` row; local-rule = `overlay.cjs add` (one line of rule, one of evidence); generic = overlay it, then offer `overlay.cjs export` so the user can send it (see `core/UPDATE.md`). Skill text itself changes only in the maintainer's repo.
 3. Run `node scripts/verify.cjs <skill dir>` and the A/B harness on the affected tasks.
 4. Keep it only if quality holds and tokens do not rise. Otherwise revert (every release has a git tag).
-5. Tag the skill version, re-pin it in `registry.json` with `scripts/pin.cjs`, and note the change in ACTION_LOG.
+5. Note the change in ACTION_LOG. Maintainers also bump `VERSION`, add a `CHANGELOG.md` entry and follow `RELEASING.md`.
 
 ## 4. Fix at the strongest layer
 A script or test that enforces a rule beats a written law, which beats skill prose. A mistake that recurs moves up a layer. A new rule must replace or merge an older one so the skill does not grow without bound.
