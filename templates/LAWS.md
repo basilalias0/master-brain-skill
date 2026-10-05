@@ -87,6 +87,11 @@ stale. Keep it at most 200 lines. Never commit it.
 22. **Security gate.** After phase 2, a scoped quick audit per module. No merge while a confirmed
     high or critical finding is open. Each confirmed finding gets a regression test.
 23. **Tools by logical name,** mapped in `CAPABILITIES.md`. An UNKNOWN there is never guessed.
+24. **Improvement loop** (`core/IMPROVE.md`). After each finished task Master logs one line with
+    `scripts/route-log.cjs`. Every ~10 tasks, on a new model release, or on request, run
+    `route-stats.cjs`: proposals only, at least 8 samples each, one change at a time. The user
+    approves, then verify + the A/B harness; keep a change only if quality holds and tokens do
+    not rise, else revert to the tag. Nothing edits `MODELS.md` or a skill without the user's yes.
 
 ## Project-specific rules (fill during onboarding)
 - Shared-resource locks (e.g. one database migration at a time): `{{…}}`

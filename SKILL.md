@@ -21,6 +21,7 @@ A router. Read other files only when a step needs them, never all at once. Token
 | `test [report\|implement]` | tester skill |
 | `audit [quick\|standard\|deep] [scope]` | security-audit skill (third party, optional, Master-run only) |
 | `update-skills` | Re-run the install step per skill, asking before each |
+| `improve` | Run `scripts/route-stats.cjs`, show proposals with evidence; apply nothing without approval (`core/IMPROVE.md`) |
 
 ## Boot (cheap: target 2k tokens)
 1. **Resolve the project:** walk up from the cwd (6 levels at most) for `master-brain/STATE.md`. None: read `ONBOARDING.md`. Several candidates: ask which.
@@ -49,7 +50,7 @@ Pick the cheapest path that works: script, T0 scout subagent, Master directly, s
 |---|---|
 | `PROCEDURE.md`, `procedure/` | build, test, regress, log cycle |
 | `ONBOARDING.md` | first run on a project |
-| `core/` | PRECEDENCE, SAFETY, TOKENS, BRIEF, RESULT, LEGACY-INBOX |
+| `core/` | PRECEDENCE, SAFETY, TOKENS, BRIEF, RESULT, IMPROVE, LEGACY-INBOX |
 | `templates/` | LAWS, MODELS, CAPABILITIES |
-| `scripts/` | zero-token helpers: lock, test-guard, law-lint, verify, codemap, run-quiet, state, install-skill, pin |
+| `scripts/` | zero-token helpers: lock, test-guard, law-lint, verify, codemap, run-quiet, state, install-skill, pin, route-log, route-stats, failure-case |
 | `registry.json` | the skills this one may install |
