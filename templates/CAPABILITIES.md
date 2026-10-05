@@ -20,6 +20,8 @@ verified: {{date}}
 | schedule | `mcp__scheduled-tasks__create_scheduled_task` | `taskId`, `prompt`, `description`, `cronExpression` or `fireAt` | |
 | connectors | `mcp__ccd_connectors__set_session_connector_enabled` | `connector`, `enabled` | status: `session_connectors_status` |
 
-UNKNOWN: whether Master can start a spawn_task chip itself; the exact picker model ids; whether a subagent result reports its token use.
+Verified 2026-10-05: the Agent tool accepts a model per call and the named model answered. A subagent result does not report its token use, so measure cost with get_usage (plan percent and context tokens) instead.
+
+UNKNOWN: whether Master can start a spawn_task chip itself; the exact picker model ids for set_session_model.
 
 Without the desktop app (plain CLI): spawn_task becomes a paste prompt (`core/LEGACY-INBOX.md`), clear and model switches become steps the human does, usage is reported by the human, scheduling becomes the human typing `resume`.
