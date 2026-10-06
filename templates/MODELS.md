@@ -24,7 +24,7 @@ Status becomes `verified` after the first successful dispatch; the picker's ids 
 | Developer update, lean | T1 | failed once: T2 |
 | Developer build | T2 | single layer: T1 |
 | Tester | T1 | concurrency or flaky: T2; never Haiku-first for writing tests |
-| Audit hunters | T1 | verifiers of high or critical findings: T2; never T3 |
+| Audit hunters (read-only; lower effort) | T1 | verifiers of high or critical findings: T2; never T3 |
 
 ## Floors (never go below)
 Planning, security, migrations, LOCK changes: T1 and default effort. Escalate only after a failed attempt and log one line of reason in `masters/M#.md`.
