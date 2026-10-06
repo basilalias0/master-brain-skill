@@ -40,7 +40,9 @@ stale. Keep it at most 200 lines. Never commit it.
       - **Red**: back to the worker.
 5. **Reuse workers.** Before the next brief, confirm the worker is idle (list_agents). When
    green, send `RESET`; the worker finalises `W#.md` and clears itself. Any worker can take any
-   module because history is in files.
+   module because history is in files. **The Master decides when a worker is opened, cleared or
+   closed.** A worker clears only itself (`clear_session self`), and only after the Master's
+   `RESET`; the Master cannot clear a chip-launched chat, and the human archives it.
 6. **History first.** Before planning, grep `handoffs/` (including `archive/` and `pairs/`),
    `FEATURE_INDEX.md` and `ACTION_LOG*`. The brief names that history. Reuse a dated verdict
    (same git hash) instead of re-analysing.
@@ -49,7 +51,7 @@ stale. Keep it at most 200 lines. Never commit it.
    - run **one** combined full suite (`{{full E2E command}}`) holding the heavy-slot lock
      (`scripts/lock.cjs acquire heavy`); the schema lock is the same mechanism;
    - never wait for a second wave.
-8. **After the sweep.** Green: clear the worker. Red: the same worker fixes its failures, no
+8. **After the sweep.** Green: the Master sends `RESET` (law 5). Red: the same worker fixes its failures, no
    clear, until green.
 9. **Workers ask only Master.** No worker talks to another unless Master pairs them (shared log
    `handoffs/pairs/W#-W#.md`). An unsafe or LOCK-breaking ask: stop and report.

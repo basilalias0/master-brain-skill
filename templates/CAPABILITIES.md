@@ -9,7 +9,7 @@ verified: {{date}}
 | list_agents | `ListAgents` | none | peers, busy/idle/waiting |
 | message | `SendMessage` | `to`, `message`, `summary`, `notify_when_idle` | the pinned messaging tool; `to` is the name from list_agents |
 | spawn_task | `mcp__ccd_session__spawn_task` | `title`, `prompt`, `tldr`, `cwd` | makes a chip the human starts; no model param |
-| clear_session | `mcp__ccd_session_mgmt__clear_session` | `session_id` = `self` or an idle session this session started | human approves each call; `self` clears when the turn ends |
+| clear_session | `mcp__ccd_session_mgmt__clear_session` | `session_id` = `self` or an idle session this session started | human approves each call; `self` clears when the turn ends; a worker uses it only after the Master's `RESET`; another chat is refused unless this session started it |
 | set_session_model | `mcp__ccd_session_mgmt__set_session_model` | `session_id`, `model` | refused for self; `model` must be a picker id |
 | set_session_effort | `mcp__ccd_session_mgmt__set_session_effort` | `session_id`, `effort` low/medium/high/xhigh/max | refused for self |
 | get_usage | `mcp__ccd_session_mgmt__get_usage` | `session_id` (default self) | plan windows with percentUsed and resetsAt; context tokens by category |
