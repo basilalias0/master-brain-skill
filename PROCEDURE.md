@@ -39,3 +39,4 @@ Split verbatim 2026-10-01 to keep every file ≤200 lines (LAWS law 19 — `mast
 | Cross-session coordination | [02-decisionmistake-log-format](procedure/02-decisionmistake-log-format.md) |
 | Keeping lookups cheap as the log grows | [02-decisionmistake-log-format](procedure/02-decisionmistake-log-format.md) |
 
+| Dependency upgrades, migrations, partial reports | [03-upgrades-migrations-handoffs](procedure/03-upgrades-migrations-handoffs.md) |
