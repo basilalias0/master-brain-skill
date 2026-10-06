@@ -2,13 +2,13 @@
 
 ```
 status:           done | blocked | needs-master
-commit:           <sha or none>
+commit:           <sha or none; list every sha if several>
 gates:            tsc <pass|fail|not run> · unit <...> · own-flow <...>
 files:            <paths touched>
 callers checked:  <how, or n/a>   (required for bug fixes; missing = incomplete)
 test-guard:       ok | violations | not run
 dl-candidates:    <one line each, or none>
-unresolved:       <or none>
+unresolved:       <or none; at a budget cap: items done, items remaining>
 next:             <one line>
 ```
 

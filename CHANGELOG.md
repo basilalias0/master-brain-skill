@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased (2026-10-06, not yet A/B tested per RELEASING.md)
+- Token rules: two budgets (read-only vs fix worker), hard stop at the cap, one subagent per job, cheaper read-only audits, fresh chat per milestone, status as commands.
+- Edit-time check after each edit batch; `tools:` brief field (skip browser/connector tools unless needed); examples in the brief; usage thresholds stated once.
+- procedure part 3: dependency upgrades, migration handoff, partial worker reports.
+
 ## 2.0.0
 - One skill with modules: research, lean, developer, analyzer, tester. Helpers no longer install separately.
 - lean: rewritten from scratch (replaces the earlier minimal-change skill).

@@ -33,7 +33,7 @@ Planning, security, migrations, LOCK changes: T1 and default effort. Escalate on
 Haiku 4.5 does not cache prompts under 4,096 tokens, so small T0 jobs are never cached. Prefer a script for mechanical lookups; use T0 for judgment-light reading.
 
 ## Usage
-From `get_usage`: above 70% of the 5-hour window, drop non-critical work one tier; above 90%, checkpoint and stop launching.
+Thresholds (70% and 90% of the 5-hour window) live in `core/TOKENS.md` section 6; do not restate them here.
 
 ## Evidence (A/B ladder, 2026-10-05, new skills, small synthetic tasks, 1-2 runs each)
 - The cheapest tier passed 6 of 7 tasks; it failed only test writing (caught 2 of 3 broken versions). Escalating that failure cost 126k tokens against 55k for the standard tier directly.

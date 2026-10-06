@@ -29,13 +29,14 @@ Never route High work below T1 or default effort.
 
 ## 4. Output
 - Run tests, build and type-check through `scripts/run-quiet.cjs`: full log to a file, only the verdict, first errors and the path on screen. Read the log file on any failure.
+- Check after each edit batch, not only at the end: run the project's type-check or linter through the same script. Fix or revert a batch that breaks it; never carry a red edit forward. Tests stay the final gate.
 - Edit, never rewrite whole files. Scaffold and codemod before writing by hand. Formatters and linters do formatting.
 - Reports 10 lines or fewer. Paths and line numbers, never pasted code. Diffs, not whole files, for review (read surrounding code for risky changes).
 - Screenshots only for visual changes; otherwise page text and the accessibility tree.
 - Batch independent tool calls into one message. Every extra turn re-reads the whole context.
 
 ## 5. Budget and effort
-- Each brief states a budget (files read, tool calls). Two budgets: read-only work (audit, diagnosis, recon) about 25-40 tool calls; a fix or build worker gets a per-task figure sized to its items (measured 2026-10-06: 7 fixes with tests took 60-95 calls, so a flat 25 would cut it off mid-task). Always read file ranges (offset and limit), not whole files. The merged full sweep is never trimmed: it is the quality gate, since workers do not run E2E and each sees only its own part. At the limit the worker returns `needs-master` with partial progress; Master may extend.
+- Each brief states a budget (files read, tool calls). Two budgets: read-only work (audit, diagnosis, recon) about 25-40 tool calls; a fix or build worker gets a per-task figure sized to its items (measured 2026-10-06: 7 fixes with tests took 60-95 calls, so a flat 25 would cut it off mid-task). Always read file ranges (offset and limit), not whole files. The merged full sweep is never trimmed: it is the quality gate, since workers do not run E2E and each sees only its own part. At the cap the worker stops and returns `needs-master` with partial progress (done items, remaining items, every commit sha); it never extends its own budget. Only the Master extends it, in a new brief.
 - Read-only audits and hunters run on a cheaper model or lower effort (see `MODELS.md`); keep the strong model for fix workers.
 - Effort follows the tier in `MODELS.md`: low for routine T0/T1 work, higher only after a failed attempt. Planning, security, migrations and LOCK changes never go below the floor in `MODELS.md`.
 
@@ -46,4 +47,4 @@ Never route High work below T1 or default effort.
 - Status checks are commands (a detached script that writes a summary file, plus a node watcher), never a model turn that re-reads context.
 - Compact or clear at task boundaries with a short keep-list, not at the context limit.
 - Keep the Master's session stable: choose model and effort at the start and do not switch them mid-session (a switch re-reads the whole context uncached). Change tier by dispatching, not by switching the Master.
-- Disable connectors a worker does not need (the human approves the change).
+- Load only the tools a job needs: a worker skips browser, Chrome and other tool groups unless its brief says `tools:` (UI work or a live check), and the Master disables connectors it does not need (the human approves the change). Every unused tool definition is re-read each turn.
