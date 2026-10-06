@@ -35,7 +35,7 @@ Never route High work below T1 or default effort.
 - Batch independent tool calls into one message. Every extra turn re-reads the whole context.
 
 ## 5. Budget and effort
-- Each brief states a budget (files read, tool calls). Default cap for a subagent: about 25 tool calls, reading file ranges (offset and limit), not whole files. At the limit the worker returns `needs-master` with partial progress; Master may extend.
+- Each brief states a budget (files read, tool calls). Two budgets: read-only work (audit, diagnosis, recon) about 25-40 tool calls; a fix or build worker gets a per-task figure sized to its items (measured 2026-10-06: 7 fixes with tests took 60-95 calls, so a flat 25 would cut it off mid-task). Always read file ranges (offset and limit), not whole files. The merged full sweep is never trimmed: it is the quality gate, since workers do not run E2E and each sees only its own part. At the limit the worker returns `needs-master` with partial progress; Master may extend.
 - Read-only audits and hunters run on a cheaper model or lower effort (see `MODELS.md`); keep the strong model for fix workers.
 - Effort follows the tier in `MODELS.md`: low for routine T0/T1 work, higher only after a failed attempt. Planning, security, migrations and LOCK changes never go below the floor in `MODELS.md`.
 

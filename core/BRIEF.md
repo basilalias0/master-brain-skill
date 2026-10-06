@@ -14,7 +14,7 @@ skill_dir:    <absolute path of the skills folder>
 base_commit:  <SHA>  (verify with git merge-base --is-ancestor; commits are never pushed)
 skills:       [modules]  (read <skill_dir>/modules/<name>/MODULE.md, then <master_dir>/overlay/<name>.md if present; missing: report, never install)
 model_tier:   T0|T1|T2   effort: low|medium|high   (Master applies; you never set them)
-budget:       files read N, tool calls N (default 25; read ranges, one job per agent)   (at the limit: needs-master + partial progress)
+budget:       files read N, tool calls N (read-only about 25-40; fix worker: per-task, about 10 calls per item; read ranges; one job per agent)   (at the limit: needs-master + partial progress)
 params:       research depth | tester phase | developer mode | lean level | audit profile
 port / slot:  <dev port>; heavy slot only through scripts/lock.cjs
 invocation:   worker (never run the Master boot)
