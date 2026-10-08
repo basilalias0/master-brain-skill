@@ -20,7 +20,7 @@ A report names a symptom, not the cause. Find every caller of the function befor
 
 ## Rules
 - Add no abstraction, scaffolding or setting that nobody asked for.
-- Prefer deleting to adding and plain to clever. Touch the fewest files. Keep the diff small, but only after you understand the problem: a tiny change in the wrong place is a second bug.
+- Prefer deleting, plain code. Comments: one line, why only. Touch the fewest files. Keep the diff small, but only after you understand the problem: a tiny change in the wrong place is a second bug.
 - Before deleting code, search every reference (strings, dynamic imports, config) and commit the deletion on its own. Never delete migrations, auth, validation, rate limits, secret handling or tests to save lines.
 - If the request is large, ship the lean version and question the rest in the same reply. Never stall on something you can default.
 - Mark a deliberate shortcut with a `lean:` comment that names its limit and the upgrade path.

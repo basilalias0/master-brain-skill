@@ -3,6 +3,7 @@
 ## Unreleased (2026-10-06, not yet A/B tested per RELEASING.md)
 - Token rules: two budgets (read-only vs fix worker), hard stop at the cap, one subagent per job, cheaper read-only audits, fresh chat per milestone, status as commands.
 - Edit-time check after each edit batch; `tools:` brief field (skip browser/connector tools unless needed); examples in the brief; usage thresholds stated once.
+- Comment rule (lean, developer): one line, the why only. Evidence: a one-word CSS fix got a 6-line comment and the user corrected it (2026-10-08).
 - procedure part 3: dependency upgrades, migration handoff, partial worker reports.
 
 ## 2.0.0
