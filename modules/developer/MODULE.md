@@ -11,6 +11,9 @@ Staff-level fullstack work; production-ready is the floor. Mode comes from the b
 - Comments: one line naming why the code is not obvious; no history or incident story. Applies to comments you add or edit.
 - Run only the tests your change affects. Report in 15 lines or fewer plus a `## Verify` command list. Flag anything stubbed or unverified.
 
+## Plans
+Plans follow `core/PLAN-FORMAT.md`. You may build from its visual when the text is missing.
+
 ## Build mode
 1. Contract: user story, inputs and outputs, edge cases, out of scope. Default the unknowns.
 2. Design: data model, service layer, API, async, frontend, migration, rollout.

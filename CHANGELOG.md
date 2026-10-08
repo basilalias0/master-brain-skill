@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0 (2026-10-08)
+- Plans: every plan is a visual layout plan plus the same plan section by section (`core/PLAN-FORMAT.md`; pointers in the router and the developer module).
+- A/B (developer module, planning task on a small fixture, 3 runs per cell, control = 2.1.0 module text, mid tier): pass rule = visual file with layout, reuse, build order and decisions, plus a text plan with 4+ sections, no code written. New 3/3, control 0/3 (text only). Cost: tokens avg 66,083 vs 62,547 (+5.7%), tool calls avg 12.0 vs 9.3. The release gate "tokens and tool calls not higher" is not met; the owner accepted it on 2026-10-08 because the extra is the second deliverable the rule asks for and planning is the core of a task. One task and one fixture only.
+- Developer module line is one sentence, to stay under its budget cap (2,945 of 3,014).
+
 ## 2.1.0 (2026-10-08)
 - A/B (lean, 3 runs per cell, control = 2.0.0 text, one-line CSS fix): pass 3/3 vs 3/3; 4 tool calls each; tokens 58,070 vs 58,098 avg (new not higher). No-regression result only: no run in either cell wrote a comment, so this task cannot show the comment rule changing behaviour. The wider A/B for the earlier token-rule items was not run.
 - Token rules: two budgets (read-only vs fix worker), hard stop at the cap, one subagent per job, cheaper read-only audits, fresh chat per milestone, status as commands.
