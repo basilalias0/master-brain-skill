@@ -1,6 +1,7 @@
 # Changelog
 
-## 2.1.0 (2026-10-08; the A/B suite was NOT run, released on the owner's say-so)
+## 2.1.0 (2026-10-08)
+- A/B (lean, 3 runs per cell, control = 2.0.0 text, one-line CSS fix): pass 3/3 vs 3/3; 4 tool calls each; tokens 58,070 vs 58,098 avg (new not higher). No-regression result only: no run in either cell wrote a comment, so this task cannot show the comment rule changing behaviour. The wider A/B for the earlier token-rule items was not run.
 - Token rules: two budgets (read-only vs fix worker), hard stop at the cap, one subagent per job, cheaper read-only audits, fresh chat per milestone, status as commands.
 - Edit-time check after each edit batch; `tools:` brief field (skip browser/connector tools unless needed); examples in the brief; usage thresholds stated once.
 - Comment rule (lean, developer): one line, the why only. Evidence: a one-word CSS fix got a 6-line comment and the user corrected it (2026-10-08).
