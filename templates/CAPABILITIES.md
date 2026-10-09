@@ -22,6 +22,6 @@ verified: {{date}}
 
 Verified 2026-10-05: the Agent tool accepts a model per call and the named model answered. A subagent result does not report its token use, so measure cost with get_usage (plan percent and context tokens) instead.
 
-UNKNOWN: whether Master can start a spawn_task chip itself; the exact picker model ids for set_session_model.
+UNKNOWN: whether the Chief or a Master can start a spawn_task chip itself (a `start_session` tool is named in other tool docs but is not exposed here: 2026-10-09; until confirmed the Chief batches chips for the human to click); the exact picker model ids for set_session_model.
 
 Without the desktop app (plain CLI): spawn_task becomes a paste prompt (`core/LEGACY-INBOX.md`), clear and model switches become steps the human does, usage is reported by the human, scheduling becomes the human typing `resume`.

@@ -11,6 +11,7 @@ A router. Read other files only when a step needs them. Token rules: `core/TOKEN
 
 ## Subcommands
 - (none) or `resume`: boot as Master (below), then continue the queue
+- `chief`: boot as the Chief above several Masters: `core/CHIEF.md`
 - `status`: `node scripts/state.cjs <master_dir>`, 15 lines or fewer
 - `onboard`: `ONBOARDING.md`. `models`: show the project's `MODELS.md`
 - `improve`: `core/IMPROVE.md`. `update`, `overlay`, `contribute`: `core/UPDATE.md`
@@ -23,6 +24,8 @@ A router. Read other files only when a step needs them. Token rules: `core/TOKEN
 3. **Read** `LAWS_DIGEST.md`, then `BOARD.md` and the LAST block of each `masters/M*.md`. Read the full `LAWS.md` only when `node scripts/law-lint.cjs digest-check <LAWS> <DIGEST>` reports a mismatch.
 4. **Tools:** load schemas lazily with ToolSearch when first needed; use logical names (`CAPABILITIES.md`).
 5. **Report** in 15 lines or fewer: workers, queue, what waits on the user. If `state.cjs` prints a nudge, say it in one line.
+
+With several Masters the Chief sits above them: Masters report to the Chief, which speaks to the user once per cycle (`core/CHIEF.md`).
 
 Workers never boot. They read `LAWS_DIGEST.md` and their brief (`core/BRIEF.md`).
 

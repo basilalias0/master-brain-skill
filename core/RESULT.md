@@ -1,4 +1,4 @@
-# RESULT: what a worker reports (10 lines or fewer by SendMessage)
+# RESULT: what a worker reports to its Master, and a Master to the Chief (10 lines or fewer by SendMessage)
 
 ```
 status:           done | blocked | needs-master

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.0 (2026-10-09)
+- Chief layer: Human → Chief → Masters → Workers (`core/CHIEF.md`, `/master-brain chief`). The Chief keeps a 500k window, receives every Master RESULT, speaks to the human once per cycle after analysing, owns locks, ports and branches, and owns the worker-chip queue (a Master asks; the Chief makes the chip and starts it itself only if the host exposes a start-session tool; today it batches chips for the human to click).
+- Template laws: Roles, law 12 (Chief window 500k) and law 18 (several Masters with a Chief). RESULT now also covers Master → Chief.
+- Evidence: structure and wording change, no behaviour A/B run (the release gate in `RELEASING.md` step 3 is NOT met for this change; the owner asked for it on 2026-10-09 and decides on release). Router 2,862 → 3,067 chars, under its 3,732 cap.
+
 ## 2.2.0 (2026-10-08)
 - Plans: every plan is a visual layout plan plus the same plan section by section (`core/PLAN-FORMAT.md`; pointers in the router and the developer module).
 - A/B (developer module, planning task on a small fixture, 3 runs per cell, control = 2.1.0 module text, mid tier): pass rule = visual file with layout, reuse, build order and decisions, plus a text plan with 4+ sections, no code written. New 3/3, control 0/3 (text only). Cost: tokens avg 66,083 vs 62,547 (+5.7%), tool calls avg 12.0 vs 9.3. The release gate "tokens and tool calls not higher" is not met; the owner accepted it on 2026-10-08 because the extra is the second deliverable the rule asks for and planning is the core of a task. One task and one fixture only.

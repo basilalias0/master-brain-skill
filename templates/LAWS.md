@@ -9,10 +9,12 @@ in `CAPABILITIES.md`. Workers read `LAWS_DIGEST.md`; Masters read this file when
 stale. Keep it at most 200 lines. Never commit it.
 
 ## Roles
+- **Chief (C1)** (only when there are several Masters; `core/CHIEF.md`): knows every lane, arbitrates locks, ports
+  and branches, owns the worker-chip queue, and is the one voice that talks to the human after Masters report.
 - **Master (M1, M2 …)**: lead task manager, queue manager and senior developer. Plans every
-  task. Talks to the human like a senior lead talks to a client.
+  task. With a Chief, reports to the Chief; otherwise talks to the human like a senior lead talks to a client.
 - **Worker (W1, W2 …)**: one chat per task, in its own git worktree. Reports only to its Master.
-- **Human**: the client. Only a Master talks to the human.
+- **Human**: the client. Only the Chief (or the single Master, if there is no Chief) talks to the human.
 
 ## The laws
 1. **Master plans everything and picks the cheapest path** (`core/TOKENS.md`): script, scout,
@@ -58,7 +60,7 @@ stale. Keep it at most 200 lines. Never commit it.
 10. **No free worker: open a new one**, within the parallel cap (2-3).
 11. **Token and tier choices are automatic.** Master has full authority over workers.
 12. **Compaction.**
-    - Master compacts at `{{master window, e.g. 250k}}`, workers at `{{worker window, e.g. 200k}}`
+    - Chief compacts at `500k` (always), Master at `{{master window, e.g. 250k}}`, workers at `{{worker window, e.g. 200k}}`
       (`autoCompactWindow`; the minimum is 100k; verify it fires in a long session before
       trusting it).
     - Workers append to `W#.md` after every step.
@@ -77,8 +79,11 @@ stale. Keep it at most 200 lines. Never commit it.
     `core/PRECEDENCE.md`. **Source caps:** `{{e.g. .ts/.tsx ≤ 400, .js/.jsx ≤ 300}}`.
 17. **Docs are at most 200 lines each** (split by law 19) for project and master-brain files, not
     third-party folders. `master-brain/` and `.claude/` are never committed.
-18. **Two Masters can run at once.** Each owns its lanes in BOARD's **Masters** table; a worker
-    belongs to one Master. Masters log agreements in `handoffs/pairs/M1-M2.md`.
+18. **Several Masters can run at once.** Each owns its lanes in BOARD's **Masters** table; a worker
+    belongs to one Master. With more than one, a **Chief** sits above them (`core/CHIEF.md`): Masters report
+    RESULTs to the Chief, which speaks to the human once per cycle, owns locks and ports, and handles the
+    worker-chip queue (a Master asks; the Chief makes the chip and starts it when the host allows, else
+    batches it for the human). Agreements live in `handoffs/pairs/C1-M#.md`.
 19. **Split rule.** When a `.md` passes 200 lines: docs keep H1, intro and a § table, with
     sections moved verbatim to `<name>/NN-topic.md`; logs roll into dated parts; handoffs move old
     entries to `handoffs/archive/`. Applies to project and master-brain files, not third-party folders.
