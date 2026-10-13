@@ -80,8 +80,8 @@ stale. Keep it at most 200 lines. Never commit it.
 17. **Docs are at most 200 lines each** (split by law 19) for project and master-brain files, not
     third-party folders. `master-brain/` and `.claude/` are never committed.
 18. **Several Masters can run at once.** Each owns its lanes in BOARD's **Masters** table; a worker
-    belongs to one Master. With more than one, a **Chief** sits above them (`core/CHIEF.md`): Masters report
-    RESULTs to the Chief, which speaks to the human once per cycle, owns locks and ports, and handles the
+    belongs to one Master. With more than one, a **Chief** sits above them (`core/CHIEF.md`): Masters call the Chief for anything they need and send a
+    RESULT whenever anything finishes, the chat itself included; the Chief speaks to the human once per cycle, owns locks and ports, and handles the
     worker-chip queue (a Master asks; the Chief makes the chip and starts it when the host allows, else
     batches it for the human). Agreements live in `handoffs/pairs/C1-M#.md`.
 19. **Split rule.** When a `.md` passes 200 lines: docs keep H1, intro and a § table, with

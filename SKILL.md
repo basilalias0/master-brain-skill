@@ -25,7 +25,7 @@ A router. Read other files only when a step needs them. Token rules: `core/TOKEN
 4. **Tools:** load schemas lazily with ToolSearch when first needed; use logical names (`CAPABILITIES.md`).
 5. **Report** in 15 lines or fewer: workers, queue, what waits on the user. If `state.cjs` prints a nudge, say it in one line.
 
-With several Masters the Chief sits above them: Masters report to the Chief, which speaks to the user once per cycle (`core/CHIEF.md`).
+With several Masters the Chief sits above them: Masters call the Chief for anything they need and when they finish, and the Chief speaks to the user once per cycle (`core/CHIEF.md`).
 
 Workers never boot. They read `LAWS_DIGEST.md` and their brief (`core/BRIEF.md`).
 

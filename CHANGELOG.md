@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.3.1 (2026-10-13)
+- Masters call the Chief, as workers call their Master (owner request): a Master messages the Chief whenever it needs anything (decision, lock, port or slot, chip, cross-lane fix, human-owned action) and whenever something finishes, a long background run and the chat itself included; it never ends a turn or closes with unreported work, then waits for the Chief's ack before reset. New status `needs-chief`. Touches `core/CHIEF.md` rule 2, `core/RESULT.md`, `SKILL.md` router line, template law 18. Wording only; no behaviour A/B run. Kept local: not pushed (owner, 2026-10-13).
+
 ## 2.3.0 (2026-10-09)
 - Chief layer: Human → Chief → Masters → Workers (`core/CHIEF.md`, `/master-brain chief`). The Chief keeps a 500k window, receives every Master RESULT, speaks to the human once per cycle after analysing, owns locks, ports and branches, and owns the worker-chip queue (a Master asks; the Chief makes the chip and starts it itself only if the host exposes a start-session tool; today it batches chips for the human to click).
 - Template laws: Roles, law 12 (Chief window 500k) and law 18 (several Masters with a Chief). RESULT now also covers Master → Chief.

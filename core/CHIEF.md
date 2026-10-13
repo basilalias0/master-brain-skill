@@ -14,6 +14,7 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
 2. **Reports go up the chain.** Workers report RESULTs to their Master (`core/RESULT.md`). Masters send the Chief a
    RESULT (10 lines or fewer) per finished step, blocker, decision needed and e2e result. A Master answers the human only
    when the human writes in that Master's chat.
+   **Masters call the Chief (owner, 2026-10-13), the way a worker calls its Master:** a Master messages the Chief (`SendMessage`) (a) whenever it needs anything: a decision, a lock, port or slot, a worker chip, a cross-lane fix, a human-owned action; (b) when something finishes: a step, a long background run (say once what runs and its ETA, then message when it ends), its queue, or the chat itself. It never ends a turn, goes idle or closes with unreported work. The finish message is the closing RESULT (status `done`, `blocked` or `needs-chief`, `core/RESULT.md`); after it the Master waits for the Chief's ack before any reset. The Chief replies only when action is needed (no ack-only messages) and may subscribe with `notify_when_idle` as a one-shot backstop.
 3. **The Chief speaks to the human once per cycle, after analysing:** what changed, what is blocked, what only the
    human can decide, the next step. Human-owned decisions (law 20: push, deploy, migrate, destructive git, new dependency,
    LOCK change) go Master → Chief → human.
