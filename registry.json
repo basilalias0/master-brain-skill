@@ -1,4 +1,16 @@
 {
-  "allowedOwners": ["basilalias0"],
-  "skills": {}
+  "allowedOwners": [
+    "basilalias0",
+    "Jakeschincariol"
+  ],
+  "skills": {
+    "arena": {
+      "repo": "https://github.com/Jakeschincariol/arena-skill",
+      "ref": "main",
+      "path": "skills/arena",
+      "sha": "df07b8e518e10cdecd8cd7712d9958b6f396250e",
+      "skillSha256": "c06f9828566485d5bd6507150f454d6f37d49c2b02e5308b8f744a4a046bdf39",
+      "note": "owner choice 2026-10-19; MIT; bracket.py stdlib only, no network or subprocess at this commit"
+    }
+  }
 }

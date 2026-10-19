@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 // install-skill.cjs <name> [--registry FILE] [--skills-dir DIR] [--yes] [--force]
+// A registry entry may name `path`: the skill's folder inside the repo; only that folder is hashed-checked and copied.
 // Installs a registry skill at its pinned commit. Without --yes it only prints the plan (dry run).
 // Env: MB_SKILLS_DIR (destination), MB_ALLOW_FILE=1 (tests only: allow file:// repos).
 // Exit: 0 ok or dry run, 1 refused (hash/pin/policy), 2 usage or unknown skill, 3 already installed.
@@ -51,14 +52,18 @@ function main() {
     git(['clone', '--quiet', '-c', 'core.autocrlf=false', e.repo, repo]);
     git(['checkout', '--quiet', e.sha], repo);
     if (git(['rev-parse', 'HEAD'], repo) !== e.sha) die(1, 'checked-out commit does not match the pinned sha');
-    const skill = path.join(repo, 'SKILL.md');
-    if (!fs.existsSync(skill)) die(1, 'no SKILL.md at the repo root');
+    // Optional `path`: the skill folder inside the repo (forward slashes, no '..', no leading slash).
+    const sub = e.path || '';
+    if (sub && (!/^[\w.-]+(?:\/[\w.-]+)*$/.test(sub) || sub.split('/').includes('..'))) die(1, 'bad path in the registry: ' + sub);
+    const root = sub ? path.join(repo, ...sub.split('/')) : repo;
+    const skill = path.join(root, 'SKILL.md');
+    if (!fs.existsSync(skill)) die(1, 'no SKILL.md at ' + (sub || 'the repo root'));
     // Hash the committed blob, not the working file: line-ending conversion would change the file hash per OS.
-    const blob = cp.execFileSync('git', ['show', `${e.sha}:SKILL.md`], { cwd: repo, maxBuffer: 1 << 24 });
+    const blob = cp.execFileSync('git', ['show', `${e.sha}:${sub ? sub + '/' : ''}SKILL.md`], { cwd: repo, maxBuffer: 1 << 24 });
     if (crypto.createHash('sha256').update(blob).digest('hex') !== e.skillSha256) die(1, 'SKILL.md hash does not match the registry: refusing');
     const fm = frontmatter(skill);
     if (fm.name !== name) die(1, `SKILL.md name "${fm.name}" does not match "${name}"`);
-    const list = files(repo);
+    const list = files(root);
     const bytes = list.reduce((n, f) => n + fs.statSync(f).size, 0);
     if (bytes > MAX_BYTES) die(1, `too large: ${bytes} bytes`);
     const dest = path.join(flag('--skills-dir') || process.env.MB_SKILLS_DIR || path.join(os.homedir(), '.claude', 'skills'), name);
@@ -66,7 +71,7 @@ function main() {
     if (!argv.includes('--yes')) { console.log('DRY RUN: show this to the human; re-run with --yes only after a clear yes.'); return; }
     if (fs.existsSync(dest) && !argv.includes('--force')) die(3, 'already installed (use --force to replace)');
     if (fs.existsSync(dest)) fs.rmSync(dest, { recursive: true, force: true });
-    fs.cpSync(repo, dest, { recursive: true, filter: (s) => path.basename(s) !== '.git' });
+    fs.cpSync(root, dest, { recursive: true, filter: (s) => path.basename(s) !== '.git' });
     console.log('installed.');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });

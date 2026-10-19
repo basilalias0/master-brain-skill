@@ -62,3 +62,24 @@ test('unknown skill, unpinned entry and disallowed repo are refused', () => {
   assert.match(run(['bad', '--registry', s.reg, '--skills-dir', s.dest, '--yes'], { MB_ALLOW_FILE: '0' }).stderr, /allowed GitHub owner/);
   assert.match(run(['unpinned', '--registry', s.reg, '--skills-dir', s.dest]).stderr, /not pinned/);
 });
+
+test('path: installs only the named sub-folder; bad paths are refused', () => {
+  const repo = tmp();
+  git(['init', '-q'], repo); git(['config', 'user.email', 't@t'], repo); git(['config', 'user.name', 't'], repo);
+  fs.mkdirSync(path.join(repo, 'skills', 'demo'), { recursive: true });
+  fs.writeFileSync(path.join(repo, 'skills', 'demo', 'SKILL.md'), SKILL);
+  fs.writeFileSync(path.join(repo, 'skills', 'demo', 'tool.py'), 'print(1)\n');
+  fs.writeFileSync(path.join(repo, 'README.md'), 'top\n');
+  git(['add', '.'], repo); git(['commit', '-qm', 'x'], repo);
+  const reg = path.join(tmp(), 'registry.json');
+  const entry = { repo: pathToFileURL(repo).href, ref: 'main', path: 'skills/demo', sha: git(['rev-parse', 'HEAD'], repo), skillSha256: crypto.createHash('sha256').update(SKILL).digest('hex') };
+  fs.writeFileSync(reg, JSON.stringify({ allowedOwners: ['o'], skills: { demo: entry, up: { ...entry, path: '../x' }, none: { ...entry, path: 'skills/missing' } } }));
+  const dest = tmp();
+  const ok = run(['demo', '--registry', reg, '--skills-dir', dest, '--yes']);
+  assert.strictEqual(ok.status, 0, ok.stderr);
+  assert.ok(fs.existsSync(path.join(dest, 'demo', 'SKILL.md')));
+  assert.ok(fs.existsSync(path.join(dest, 'demo', 'tool.py')));
+  assert.ok(!fs.existsSync(path.join(dest, 'demo', 'README.md')));
+  assert.match(run(['up', '--registry', reg, '--skills-dir', dest]).stderr, /bad path/);
+  assert.match(run(['none', '--registry', reg, '--skills-dir', dest]).stderr, /no SKILL.md at skills\/missing/);
+});
