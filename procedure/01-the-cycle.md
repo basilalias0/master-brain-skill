@@ -70,6 +70,7 @@ the decision log's reuse signatures.
   treating it as new. If it's genuinely new: present the real options, get a decision from
   the human, write the entry now, in the moment (format below) — never reconstructed from
   memory after the fact.
+- **Rejected answer** (a user correction or a RESULT sent back) → add 1 to `rejections: <task-id> <n>` in the `STATE.md` Handover; at 2 for the same task id, offer arena per procedure/05 instead of a third retry.
 - Fix the underlying issue.
 - **Regress before continuing**: replay steps 1..N already passed in this flow to confirm
   the fix didn't break them, then resume at N+1.
