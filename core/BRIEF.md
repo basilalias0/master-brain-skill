@@ -1,5 +1,7 @@
 # Brief: what a Master sends a worker (40 lines or fewer)
 
+**Never shorten a brief into a one-line prompt.** The `Agent` prompt (or worker message) carries every field below; when it edits files, it always carries the `worktree` and `sync` lines word for word.
+
 All paths are ABSOLUTE. A worktree does not contain the gitignored `master-brain/` folder. Fill every field; write `none` where empty.
 
 ```

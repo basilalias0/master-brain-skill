@@ -8,7 +8,7 @@ script, then T0 scout subagent, then Master directly, then a subagent, then a su
 - A scout answers "where is X" and returns conclusions, never file dumps.
 - Master edits tiny things itself (one file, a few lines) with lean.
 - **Spawn a worker chat only** when the work is over about 3 files or 15 minutes, or truly parallel. A worker's boot costs more than a small fix.
-- **Any agent that edits files gets its own worktree:** `Agent` with `isolation: "worktree"`, or a worker chat in its worktree. Its brief fills `worktree` and `sync` (`core/BRIEF.md`). Read-only scouts need none.
+- **Any agent that edits files gets its own worktree:** `Agent` with `isolation: "worktree"`, or a worker chat in its worktree. Its prompt carries the `worktree` and `sync` lines of `core/BRIEF.md` word for word, even for a one-line fix. Read-only scouts need none.
 - One subagent per job: never split triage and fix, and never let two agents read the same source (measured: subagents were 55% of one session's cost).
 - Workflow tool: offer it at most once per wave, in one line with a cost estimate; never run it unasked (no opt-in words from the human, no call).
 - Batch same-lane tasks into one worker. Reuse a warm idle worker; clear it when it changes module or its context grows. Cap parallel workers at 2-3.
