@@ -19,5 +19,10 @@
     "module_tester": 2729,
     "module_decide": 1800
   },
-  "justifications": []
+  "justifications": [
+    {
+      "key": "module_decide",
+      "gain": "A/B 2026-10-19, task 3 (decide a close question), 3 runs per cell, stricter of two graders: 2.4.0 passes 2/3, v2.3.2 0/3, no-skill control 2/3; median tokens 69,603 vs 70,596 (v2.3.2), tool calls 13 vs 13."
+    }
+  ]
 }
