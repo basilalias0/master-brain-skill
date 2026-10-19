@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.4.0 (2026-10-19)
+- Host compatibility (C3): new CAPABILITIES rows for `get_session`, `list_events`, `sync_base` and `dismiss_task`; `caps.cjs diff` compares the table with a live host tool list (fixture `host-2026-10-19.txt`, 17 mapped, exit 0); law 4.6 (workers use `sync_base`, never `git merge`/`pull`); T0 tier now names the newest small model (unverified).
+- Design projects (C4): `procedure/04` (research → plain summary → approval → spec → lock only on the owner's word); `drift.cjs` checks locked specs (`body_sha256`, dated change lines only); optional law 25 (status footer, off by default).
+- Arena and private decision bank (C5): `procedure/05`; third-party arena skill pinned in `registry.json` (commit, path, per-file hashes; `install-skill.cjs --check`); `decisions.cjs` (lint, due, find, check-private, scan-task, usage-gate, tree-hash). Decisions live only in a private bank, never in the skill; `improve` reviews due cards and supersedes failed ones. TOKENS §6 usage table; laws 14 and 20.
+- Rejections are counted per task id; arena is offered at the second rejection (C6). `decide` module for close two-option questions (C7, cap 1,800, justified in `budget.json`).
+- A/B (3 tasks × 3 cells × 3 runs = 27, mid tier, synthetic fixtures; cells new / v2.3.2 / no-skill control; two graders, stricter reading kept):
+  - Task 1 "dispatch a worker on the new host": 0/3, 0/3, 0/3. Criterion (g) (rejection count + arena offer) new 2/3 vs v2.3.2 0/3. Criteria (b) worktree isolation and (e) `sync_base` in the brief failed in every cell.
+  - Task 2 "update a locked spec": 3/3, 0/3, 3/3.
+  - Task 3 "decide a close question": 2/3, 0/3, 2/3.
+  - Cost, median tokens / tool calls (new vs v2.3.2): task 1 75,540 / 13 vs 73,387 / 14 (+3%); task 2 64,414 / 9 vs 66,172 / 10; task 3 69,603 / 13 vs 70,596 / 13. All within the 20% swing; cache-read not extracted.
+- **Owner exception (2026-10-19):** the plan's rule "task 1 (b)–(e) fail → revert C3" was not applied. The owner chose to keep every 2.4.0 change. C3 is reference text that showed no behaviour gain in this A/B (it did not regress either: v2.3.2 and the control also fail (b) and (e)). Stronger wording for worktree dispatch and `sync_base` is a 2.4.1 item, to be re-measured.
+- Upgrade notes: run `node scripts/install-skill.cjs --check arena` after installing arena. Project banks stay out of git; `decisions.cjs check-private <bank> --skill .` must exit 0. Pushed on the owner's request (2026-10-19).
+
 ## 2.3.2 (2026-10-14)
 - Research chat (R1) (owner request): a chat opened for research sits at the same level as the Chief, keeps a 600k window (`autoCompactWindow` 600k) and may not create worker chats; it hands findings to the Chief or Master as a RESULT. Touches `core/CHIEF.md` rule 9 and template Roles + law 12. Wording only; no behaviour A/B run. Kept local: not pushed.
 - Findings from a long private research session (2026-10-14): `/autocompact <N>k` is the way to set the window and it is per model (CHIEF rule 1, law 12); research module: one recommendation instead of comparison tables, date-stamp versions and prices, large research goes to numbered files plus an index.
