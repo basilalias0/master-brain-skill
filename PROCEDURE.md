@@ -40,3 +40,4 @@ Split verbatim 2026-10-01 to keep every file ≤200 lines (LAWS law 19 — `mast
 | Keeping lookups cheap as the log grows | [02-decisionmistake-log-format](procedure/02-decisionmistake-log-format.md) |
 
 | Dependency upgrades, migrations, partial reports | [03-upgrades-migrations-handoffs](procedure/03-upgrades-migrations-handoffs.md) |
+| Design projects: research, summary, approval, spec, lock; Handover; footer | [04-design-projects](procedure/04-design-projects.md) |

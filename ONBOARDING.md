@@ -118,7 +118,8 @@ autonomy rule) that won't automatically re-open to question it.
    `masters/`, `handoffs/` (+ `archive/`, `pairs/`, a `README.md`) and `locks/`.
    Ask whether the human wants a `LAWS.md` (Master/Worker rules); if yes, copy this skill's
    `templates/LAWS.md`, fill every `{{slot}}` from what Step 2 found, and confirm each law
-   with them — never assume their rules. Then run `node scripts/law-lint.cjs stamp` to write
+   with them — never assume their rules. Ask once whether to turn on law 25 (the reply footer: open decisions and
+   what others owe, 6 lines or fewer); it stays off unless they say yes. Then run `node scripts/law-lint.cjs stamp` to write
    `LAWS_DIGEST.md` (30 lines or fewer, with its `source_hash`). Seed `MODELS.md` from
    `templates/MODELS.md` and `CAPABILITIES.md` from `templates/CAPABILITIES.md`, running the
    capability probe (load tool schemas through ToolSearch, read-only, no calls) and writing

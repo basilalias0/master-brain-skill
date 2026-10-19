@@ -43,6 +43,7 @@ stale. Keep it at most 200 lines. Never commit it.
       inside the heavy slot (law 7).
       - **Green**: merge to `{{main branch}}` (never push unless told).
       - **Red**: back to the worker.
+   Step 6 also: scripts that produce deliverables are committed in the project, never only in a scratchpad.
 5. **Reuse workers.** Before the next brief, confirm the worker is idle (list_agents). When
    green, send `RESET`; the worker finalises `W#.md` and clears itself. Any worker can take any
    module because history is in files. **The Master decides when a worker is opened, cleared or
@@ -102,6 +103,8 @@ stale. Keep it at most 200 lines. Never commit it.
     `route-stats.cjs`: proposals only, at least 8 samples each, one change at a time. The user
     approves, then verify + the A/B harness; keep a change only if quality holds and tokens do
     not rise, else revert to the tag. Nothing edits `MODELS.md` or a skill without the user's yes.
+25. **Optional footer** (off unless the human turned it on at onboarding: `{{footer on|off}}`). When on, every reply
+    ends with a footer of 6 lines or fewer: open decisions and what others owe (procedure/04).
 
 ## Project-specific rules (fill during onboarding)
 - Shared-resource locks (e.g. one database migration at a time): `{{…}}`

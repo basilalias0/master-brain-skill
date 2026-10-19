@@ -1,5 +1,5 @@
 # LAWS_DIGEST (synthetic onboarded fixture; tests and gate G8 only)
-source_hash: 5b7f7f5a720b2f046ffef0f1c493d047a645396c67a25c8a9cd401c9ab20e644
+source_hash: d0a36716c6d856d8634c5e38c50021aaf55d6281d7f4d5ea56104ab871a85dac
 - Master plans everything and picks the cheapest path: script, scout, itself, subagent, worker chat.
 - Skills and briefs name tiers, never models. One worktree per worker. Fast mode stays off.
 - Talk direct by chat name (message), never broadcast. Report as a RESULT block, 10 lines or fewer.

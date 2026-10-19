@@ -34,4 +34,6 @@ Cheapest path first: script, T0 scout, Master itself, subagent, worker chat. Rul
 
 **Plans** (any feature, redesign or multi-step change, from Master or a developer): always a visual layout plan plus section-by-section text, per `core/PLAN-FORMAT.md`. Read it before writing a plan.
 
+**Design projects** (a spec others build from; research, summary, approval, spec, lock): `procedure/04-design-projects.md`.
+
 Optional third-party skills install only from `registry.json` (pinned, hash-checked, owner-allowlisted) after the user says yes: `node scripts/install-skill.cjs <name>` (dry run first).
