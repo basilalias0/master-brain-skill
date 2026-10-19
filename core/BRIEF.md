@@ -11,6 +11,8 @@ lane:         <BOARD lane>   (edit nothing outside it; list out-of-lane needs)
 history:      [handoffs/ files, ACTION_LOG DL-#, FEATURE_INDEX rows]
 master_dir:   <absolute path of the project's master-brain folder>
 skill_dir:    <absolute path of the skills folder>
+worktree:     own (Agent isolation: "worktree", or the worker chat's worktree) | none (read-only)
+sync:         sync_base only (CAPABILITIES); never git merge/pull; on conflicts resolve, commit, then report
 base_commit:  <SHA>  (verify with git merge-base --is-ancestor; commits are never pushed)
 skills:       [modules]  (read <skill_dir>/modules/<name>/MODULE.md, then <master_dir>/overlay/<name>.md if present; missing: report, never install)
 tools:        none | browser | <groups>   (default none: skip browser and connector tools unless the work is UI or a live check)

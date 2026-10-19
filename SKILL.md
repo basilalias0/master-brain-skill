@@ -30,7 +30,7 @@ With several Masters the Chief sits above them: Masters call the Chief for anyth
 Workers never boot. They read `LAWS_DIGEST.md` and their brief (`core/BRIEF.md`).
 
 ## Dispatch
-Cheapest path first: script, T0 scout, Master itself, subagent, worker chat. Rules, risk tiers and the spawn threshold: `core/TOKENS.md`. Tier to model: `MODELS.md`. Authority order: `core/PRECEDENCE.md`. Safety: `core/SAFETY.md`. Result format: `core/RESULT.md`. Without `spawn_task` or `SendMessage`: `core/LEGACY-INBOX.md`.
+Cheapest path first: script, T0 scout, Master itself, subagent, worker chat. Agents that edit files: `isolation: "worktree"`, brief `sync: sync_base` (`core/BRIEF.md`). Rules, risk tiers and the spawn threshold: `core/TOKENS.md`. Tier to model: `MODELS.md`. Authority order: `core/PRECEDENCE.md`. Safety: `core/SAFETY.md`. Result format: `core/RESULT.md`. Without `spawn_task` or `SendMessage`: `core/LEGACY-INBOX.md`.
 
 **Plans** (any feature, redesign or multi-step change, from Master or a developer): always a visual layout plan plus section-by-section text, per `core/PLAN-FORMAT.md`. Read it before writing a plan.
 
