@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.4.1 (2026-10-19)
+- Worker dispatch fix (the 2.4.0 A/B task 1 gap): an agent that edits files gets its own worktree (`Agent` with `isolation: "worktree"`; CAPABILITIES row, TOKENS §1, router line). Briefs gain two fields, `worktree` and `sync` (`sync_base` only, never `git merge`/`pull`), and are never shortened into a one-line prompt; editing agents carry those two lines word for word (`core/BRIEF.md`).
+- Waiting on a worker (TOKENS §1): its completion notice or `Monitor` on `handoffs/W#.md`, never `sleep`. Overdue, in order: get_session, list_events once per cycle, then `SendMessage` asking for its RESULT; no answer after 1 cycle = `blocked`. Added after an intermediate build stopped messaging workers (0/3).
+- A/B, task 1 only, 3 runs per cell, mid tier, two graders, stricter reading kept. Grading criteria v2 (owner-approved 2026-10-19): (b) accepts `isolation=worktree`, (c) accepts the full tool prefix, (f) a footer is a law-25-style block of project-wide open items, not the line naming this reply's own question.
+  - Pass: 2.4.1 2/3, 2.4.0 0/3, no-skill control 0/3. Worktree isolation 3/3 vs 1/3; `sync_base` in the brief 2/3 vs 0/3; SendMessage 3/3 vs 3/3.
+  - Cost, median tokens / tool calls: 70,960 / 11 vs 74,127 / 12.
+  - Tasks 2 and 3 were not re-run (the change touches dispatch text only).
+- Remaining miss: 1 run in 3 wrote a placeholder ("worktree/sync lines word for word") instead of the lines themselves.
+
+
 ## 2.4.0 (2026-10-19)
 - Host compatibility (C3): new CAPABILITIES rows for `get_session`, `list_events`, `sync_base` and `dismiss_task`; `caps.cjs diff` compares the table with a live host tool list (fixture `host-2026-10-19.txt`, 17 mapped, exit 0); law 4.6 (workers use `sync_base`, never `git merge`/`pull`); T0 tier now names the newest small model (unverified).
 - Design projects (C4): `procedure/04` (research → plain summary → approval → spec → lock only on the owner's word); `drift.cjs` checks locked specs (`body_sha256`, dated change lines only); optional law 25 (status footer, off by default).
