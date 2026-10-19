@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.2 (2026-10-14)
+- Research chat (R1) (owner request): a chat opened for research sits at the same level as the Chief, keeps a 600k window (`autoCompactWindow` 600k) and may not create worker chats; it hands findings to the Chief or Master as a RESULT. Touches `core/CHIEF.md` rule 9 and template Roles + law 12. Wording only; no behaviour A/B run. Kept local: not pushed.
+- Findings from a long private research session (2026-10-14): `/autocompact <N>k` is the way to set the window and it is per model (CHIEF rule 1, law 12); research module: one recommendation instead of comparison tables, date-stamp versions and prices, large research goes to numbered files plus an index.
+
 ## 2.3.1 (2026-10-13)
 - Masters call the Chief, as workers call their Master (owner request): a Master messages the Chief whenever it needs anything (decision, lock, port or slot, chip, cross-lane fix, human-owned action) and whenever something finishes, a long background run and the chat itself included; it never ends a turn or closes with unreported work, then waits for the Chief's ack before reset. New status `needs-chief`. Touches `core/CHIEF.md` rule 2, `core/RESULT.md`, `SKILL.md` router line, template law 18. Wording only; no behaviour A/B run. Kept local: not pushed (owner, 2026-10-13).
 

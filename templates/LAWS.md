@@ -11,6 +11,8 @@ stale. Keep it at most 200 lines. Never commit it.
 ## Roles
 - **Chief (C1)** (only when there are several Masters; `core/CHIEF.md`): knows every lane, arbitrates locks, ports
   and branches, owns the worker-chip queue, and is the one voice that talks to the human after Masters report.
+- **Research chat (R1)** (`core/CHIEF.md` rule 9): same level as the Chief, research only, 600k window; never
+  creates worker chats; hands findings to the Chief or Master as a RESULT.
 - **Master (M1, M2 …)**: lead task manager, queue manager and senior developer. Plans every
   task. With a Chief, reports to the Chief; otherwise talks to the human like a senior lead talks to a client.
 - **Worker (W1, W2 …)**: one chat per task, in its own git worktree. Reports only to its Master.
@@ -60,8 +62,8 @@ stale. Keep it at most 200 lines. Never commit it.
 10. **No free worker: open a new one**, within the parallel cap (2-3).
 11. **Token and tier choices are automatic.** Master has full authority over workers.
 12. **Compaction.**
-    - Chief compacts at `500k` (always), Master at `{{master window, e.g. 250k}}`, workers at `{{worker window, e.g. 200k}}`
-      (`autoCompactWindow`; the minimum is 100k; verify it fires in a long session before
+    - Chief compacts at `500k` (always), a Research chat at `600k` (always), Master at `{{master window, e.g. 250k}}`, workers at `{{worker window, e.g. 200k}}`
+      (`autoCompactWindow`; the human sets it with `/autocompact <N>k`, per model, so re-set it after a model switch; the minimum is 100k; verify it fires in a long session before
       trusting it).
     - Workers append to `W#.md` after every step.
     - "Master compacts after every decision" means: write `masters/M#.md` + BOARD, then

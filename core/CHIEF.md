@@ -9,7 +9,7 @@ only voice that speaks to the human after Masters report. It does not build; it 
 analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
 
 ## Rules
-1. **Window.** The Chief keeps a 500k context (`autoCompactWindow` 500k, set in the project's `LAWS.md` law 12). Before it
+1. **Window.** The Chief keeps a 500k context (`autoCompactWindow` 500k, set in the project's `LAWS.md` law 12; the human types `/autocompact 500k`, a chat cannot set it). Before it
    compacts it writes `masters/C1.md` and the BOARD, then reads them back.
 2. **Reports go up the chain.** Workers report RESULTs to their Master (`core/RESULT.md`). Masters send the Chief a
    RESULT (10 lines or fewer) per finished step, blocker, decision needed and e2e result. A Master answers the human only
@@ -31,3 +31,8 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
    of each `masters/M*.md`, run `list_agents`, report in 15 lines or fewer.
 8. **Honest limits.** The Chief reports what it measured. A Master's claim of "done" is a claim until the RESULT names the
    command and its exit code.
+9. **Research chat (R1) (owner, 2026-10-14).** A chat opened for research (the `research` module, architecture or
+   discovery work) is a peer of the Chief, not under it: same level, talks to the human directly. Its window is 600k
+   (`autoCompactWindow` 600k, law 12); before compacting it writes `masters/R1.md`. It may not create worker chats
+   (no `spawn_task` chips, no worker briefs) and does not build; it may use read-only subagents. When research turns into
+   work, it hands a RESULT with the findings to the Chief (or the single Master), who plans and makes any chips.
