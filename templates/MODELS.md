@@ -6,7 +6,7 @@ last_verified: 2026-10-05
 
 | Tier | Role | Model | Id accepted by `set_session_model` | Default effort | Status |
 |---|---|---|---|---|---|
-| T0 | scout | Haiku 4.5 | claude-haiku-4-5 | low | verified via Agent tool; picker id unverified |
+| T0 | scout | Haiku 5.5 | claude-haiku-5-5 | low | unverified (changed 2026-10-19; verified after the first dispatch) |
 | T1 | standard | Sonnet 5.5 | claude-sonnet-5-5 | low | verified via Agent tool; picker id unverified |
 | T2 | deep | Opus 5.5 | claude-opus-5-5 | medium | verified via Agent tool; picker id unverified |
 | T3 | top | Fable 5.1 | claude-fable-5-1 | medium | unverified |
@@ -30,10 +30,12 @@ Status becomes `verified` after the first successful dispatch; the picker's ids 
 Planning, security, migrations, LOCK changes: T1 and default effort. Escalate only after a failed attempt and log one line of reason in `masters/M#.md`.
 
 ## Cache note
-Haiku 4.5 does not cache prompts under 4,096 tokens, so small T0 jobs are never cached. Prefer a script for mechanical lookups; use T0 for judgment-light reading.
+The older T0 model (Haiku 4.5) did not cache prompts under 4,096 tokens; re-check this for the current T0 before relying on cache for small jobs. Prefer a script for mechanical lookups; use T0 for judgment-light reading.
 
 ## Usage
-Thresholds (70% and 90% of the 5-hour window) live in `core/TOKENS.md` section 6; do not restate them here.
+Thresholds live in the `core/TOKENS.md` section 6 table (5-hour and weekly windows); do not restate them here.
+
+The T0 model changed on 2026-10-19: the ladder below is for the older T0 and must be re-run (`core/IMPROVE.md` section 6) before its T0 numbers are trusted. Not re-run yet.
 
 ## Evidence (A/B ladder, 2026-10-05, new skills, small synthetic tasks, 1-2 runs each)
 - The cheapest tier passed 6 of 7 tasks; it failed only test writing (caught 2 of 3 broken versions). Escalating that failure cost 126k tokens against 55k for the standard tier directly.

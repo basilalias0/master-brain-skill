@@ -25,6 +25,7 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
    chip with `spawn_task`, names the requesting Master in the brief, and starts it itself when the host offers a
    start-session capability (logical name `start_session`; UNKNOWN today, see `CAPABILITIES.md`). Without it the Chief
    batches the chips and tells the human how many to click, one line each. A worker belongs to the Master that asked.
+   Stale chips: a chip this chat made that is superseded or no longer needed is withdrawn with `dismiss_task` (one-line reason); never another chat's chip.
 6. **Creating a Master.** The Chief writes `masters/M#.md` (lane, branch, folder, server and port, open items,
    reporting rule) and the pairs agreement, adds the BOARD row, then gives the human a paste-ready prompt or a chip.
 7. **Boot** (`/master-brain chief`): read `LAWS_DIGEST.md`, the BOARD Masters table, the LAST block of `masters/C1.md` and

@@ -124,6 +124,7 @@ autonomy rule) that won't automatically re-open to question it.
    capability probe (load tool schemas through ToolSearch, read-only, no calls) and writing
    UNKNOWN for anything not confirmed. Templates hold no absolute paths; fill them in the
    project's copy only.
+   Then run the probe check in `CAPABILITIES.md` (`scripts/caps.cjs diff` against today's tool list) and re-run it on a new host or app version.
 5. For an existing project (2B): offer a full first-pass `FEATURE_INDEX.md` population —
    ask whether to do it now or incrementally as features come up; it scales with project
    size and shouldn't be assumed free.

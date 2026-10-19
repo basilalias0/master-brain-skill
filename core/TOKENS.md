@@ -3,12 +3,13 @@
 The goal is the fewest tokens per task with no loss of quality. Every rule here has a guardrail; do not drop the guardrail to save more.
 
 ## 1. Cheapest path first
-script, then T0 scout subagent, then Master directly, then a subagent, then a worker chat.
+script, then T0 scout subagent, then Master directly, then a subagent, then a subagent in its own worktree (`isolation: "worktree"`), then a worker chat. Never two agents on the same files.
 - A script does anything mechanical (locks, test guard, line caps, code map, filtered test run, status).
 - A scout answers "where is X" and returns conclusions, never file dumps.
 - Master edits tiny things itself (one file, a few lines) with lean.
 - **Spawn a worker chat only** when the work is over about 3 files or 15 minutes, or truly parallel. A worker's boot costs more than a small fix.
 - One subagent per job: never split triage and fix, and never let two agents read the same source (measured: subagents were 55% of one session's cost).
+- Workflow tool: offer it at most once per wave, in one line with a cost estimate; never run it unasked (no opt-in words from the human, no call).
 - Batch same-lane tasks into one worker. Reuse a warm idle worker; clear it when it changes module or its context grows. Cap parallel workers at 2-3.
 
 ## 2. Risk tiers (how much pipeline a task gets)
@@ -44,6 +45,7 @@ Never route High work below T1 or default effort.
 - Check `get_usage` once per cycle and before each wave. Above 70% of the 5-hour window: drop non-critical work one tier. Above 90%: checkpoint and stop launching.
 - Workers do one task, then clear, unless the next task is in the same lane.
 - Start a fresh chat after each milestone; the state lives in `STATE.md` and the reports, not in the chat (a long chat is re-read every turn).
+- Waiting: `Monitor` or Bash `run_in_background` with an until-loop, never sleep loops or status turns; at most 1 `PushNotification` per cycle, only when the human is away.
 - Status checks are commands (a detached script that writes a summary file, plus a node watcher), never a model turn that re-reads context.
 - Compact or clear at task boundaries with a short keep-list, not at the context limit.
 - Keep the Master's session stable: choose model and effort at the start and do not switch them mid-session (a switch re-reads the whole context uncached). Change tier by dispatching, not by switching the Master.

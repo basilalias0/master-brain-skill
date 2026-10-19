@@ -38,6 +38,7 @@ stale. Keep it at most 200 lines. Never commit it.
    4. Master sends a brief (`core/BRIEF.md`) to a worker.
    5. The worker proposes plan improvements to Master. A change to locked scope goes to the human.
    6. The worker builds and runs type-check, unit tests and its own flow, appends `W#.md`, reports.
+      It syncs with the base through sync_base, never `git merge`/`pull`; on conflicts it resolves, commits, then reports.
    7. Master reads `W#.md`, runs `scripts/test-guard.cjs compare`, then the combined full E2E
       inside the heavy slot (law 7).
       - **Green**: merge to `{{main branch}}` (never push unless told).

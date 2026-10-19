@@ -60,3 +60,9 @@ test("today's host vs frozen 2.3.2 template lists exactly the 4 new tools", () =
   assert.strictEqual(r.stdout.match(/^unmapped: (.*)$/m)[1], ['mcp__ccd_host__sync_with_base_branch', 'mcp__ccd_session__dismiss_task',
     'mcp__ccd_session_mgmt__get_session', 'mcp__ccd_session_mgmt__list_events'].join(', '));
 });
+
+test("today's host list exits 0 against the live template", () => {
+  const r = run(path.join(__dirname, '..', 'templates', 'CAPABILITIES.md'), HOST);
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^mapped: 17$/m);
+});
