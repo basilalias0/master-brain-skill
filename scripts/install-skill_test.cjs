@@ -83,3 +83,28 @@ test('path: installs only the named sub-folder; bad paths are refused', () => {
   assert.match(run(['up', '--registry', reg, '--skills-dir', dest]).stderr, /bad path/);
   assert.match(run(['none', '--registry', reg, '--skills-dir', dest]).stderr, /no SKILL.md at skills\/missing/);
 });
+
+test('--check detects a changed file, exits 1', () => {
+  const dest = tmp();
+  fs.mkdirSync(path.join(dest, 'demo', 'lib'), { recursive: true });
+  fs.writeFileSync(path.join(dest, 'demo', 'SKILL.md'), SKILL);
+  fs.writeFileSync(path.join(dest, 'demo', 'lib', 'tool.py'), 'print(1)\n');
+  const h = (s) => crypto.createHash('sha256').update(s).digest('hex');
+  const reg = path.join(tmp(), 'registry.json');
+  fs.writeFileSync(reg, JSON.stringify({ allowedOwners: [], skills: { demo: { repo: 'x', fileSha256: { 'SKILL.md': h(SKILL), 'lib/tool.py': h('print(1)\n') } } } }));
+  const ok = run(['--check', 'demo', '--registry', reg, '--skills-dir', dest]);
+  assert.strictEqual(ok.status, 0, ok.stderr);
+  assert.match(ok.stdout, /2 files match/);
+  fs.writeFileSync(path.join(dest, 'demo', 'lib', 'tool.py'), 'print(2)\n');
+  const bad = run(['--check', 'demo', '--registry', reg, '--skills-dir', dest]);
+  assert.strictEqual(bad.status, 1);
+  assert.match(bad.stderr, /lib\/tool\.py: hash differs/);
+});
+
+test('folded description prints as text', () => {
+  const folded = '---\nname: demo\ndescription: >-\n  A folded\n  demo text\n---\nbody\n';
+  const s = setup(folded);
+  const dry = run(['demo', '--registry', s.reg, '--skills-dir', s.dest]);
+  assert.strictEqual(dry.status, 0, dry.stderr);
+  assert.match(dry.stdout, /description: A folded demo text\n/);
+});

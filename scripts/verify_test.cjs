@@ -43,3 +43,15 @@ test('exempt folder is skipped and deny words are caught', () => {
   assert.strictEqual(run(d).status, 0);
   assert.strictEqual(run(d, { MB_DENY: 'acme' }).status, 1);
 });
+
+test('decision card or .arena inside the skill fails', () => {
+  const card = repo({ 'notes/x.md': ['# notes', '## DC-001 — a card'].join('\n') + '\n' });
+  const r = run(card);
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stdout, /decision card inside the skill/);
+  assert.strictEqual(run(repo({ '.arena/run1/arena.json': '{}\n' })).status, 1);
+  const bank = run(repo({ 'master-brain/decisions/README.txt': 'x\n' }));
+  assert.strictEqual(bank.status, 1);
+  assert.match(bank.stdout, /private folder inside the skill/);
+  assert.strictEqual(run(repo({ 'notes/y.md': 'cards are named DC-NNN and cited as See: DC-001\n' })).status, 0);
+});

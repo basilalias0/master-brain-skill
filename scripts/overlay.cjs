@@ -67,6 +67,8 @@ function add(dir, skill, mod, rule, evidence, scope = 'project') {
   const text = rule + ' ' + evidence;
   if (WEAKEN.some((re) => re.test(text))) throw new Error('rejected: an overlay rule may not relax safety, tests, locks, approvals or floors');
   if (SECRET.some((re) => re.test(text))) throw new Error('rejected: looks like a secret');
+  // A decision card is private project data: a general (exportable) rule may state the mechanism, never cite the card.
+  if (scope === 'general' && /\bDC-\d+\b/.test(text)) throw new Error('rejected: a general rule may not cite a decision card (DC-n); keep it project scope or state the mechanism only');
   const file = path.join(dir, 'overlay', mod + '.md');
   const entries = parse(file);
   const used = entries.filter((e) => e.status === 'active').reduce((n, e) => n + e.rule.length, 0);

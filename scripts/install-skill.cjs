@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 // install-skill.cjs <name> [--registry FILE] [--skills-dir DIR] [--yes] [--force]
+// install-skill.cjs --check <name> [--registry FILE] [--skills-dir DIR]: sha256 of every file in the entry's
+//   `fileSha256` map ({ "relative/path": "<hex>" }) against the installed copy. Exit 0 all match, 1 any differ or missing.
 // A registry entry may name `path`: the skill's folder inside the repo; only that folder is hashed-checked and copied.
 // Installs a registry skill at its pinned commit. Without --yes it only prints the plan (dry run).
 // Env: MB_SKILLS_DIR (destination), MB_ALLOW_FILE=1 (tests only: allow file:// repos).
@@ -27,20 +29,41 @@ function files(dir, out = []) {
 }
 
 function frontmatter(f) {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(fs.readFileSync(f, 'utf8'));
-  const get = (k) => { const r = new RegExp('^' + k + ':\\s*(.*)$', 'm').exec(m ? m[1] : ''); return r ? r[1].replace(/^"|"$/g, '') : ''; };
+  const m = /^---\n([\s\S]*?)\n---/.exec(fs.readFileSync(f, 'utf8').replace(/\r\n/g, '\n'));
+  const get = (k) => {
+    const r = new RegExp('^' + k + ':[ \\t]*(.*)$((?:\\n[ \\t]+.*)*)', 'm').exec(m ? m[1] : '');
+    if (!r) return '';
+    // YAML block scalar (">", ">-", "|" ...): the value is the indented lines below, folded into one line of text.
+    if (/^[>|][+-]?$/.test(r[1].trim())) return r[2].split('\n').map((l) => l.trim()).filter(Boolean).join(' ');
+    return r[1].replace(/^"|"$/g, '');
+  };
   return { name: get('name'), description: get('description') };
+}
+
+function check(name, e, skillsDir) {
+  const want = e.fileSha256 || {};
+  if (!Object.keys(want).length) die(1, `"${name}" has no fileSha256 in the registry`);
+  const dir = path.join(skillsDir, name);
+  const bad = [];
+  for (const [rel, hex] of Object.entries(want)) {
+    const f = path.join(dir, ...rel.split('/'));
+    if (!fs.existsSync(f)) bad.push(`${rel}: missing`);
+    else if (sha256(f) !== hex) bad.push(`${rel}: hash differs`);
+  }
+  if (bad.length) die(1, `check FAILED for ${name}\n` + bad.join('\n'));
+  console.log(`check ok: ${name}, ${Object.keys(want).length} files match the pin`);
 }
 
 function main() {
   const argv = process.argv.slice(2);
   const flag = (n) => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : null; };
   const name = argv.find((a) => !a.startsWith('--') && argv[argv.indexOf(a) - 1] !== '--registry' && argv[argv.indexOf(a) - 1] !== '--skills-dir');
-  if (!name) die(2, 'usage: install-skill.cjs <name> [--yes] [--force]');
+  if (!name) die(2, 'usage: install-skill.cjs <name> [--yes] [--force] | --check <name>');
   const regFile = flag('--registry') || path.join(__dirname, '..', 'registry.json');
   const reg = JSON.parse(fs.readFileSync(regFile, 'utf8'));
   const e = reg.skills && reg.skills[name];
   if (!e) die(2, `"${name}" is not in the registry`);
+  if (argv.includes('--check')) return check(name, e, flag('--skills-dir') || process.env.MB_SKILLS_DIR || path.join(os.homedir(), '.claude', 'skills'));
   if (!/^[0-9a-f]{40}$/.test(e.sha || '') || !/^[0-9a-f]{64}$/.test(e.skillSha256 || '')) die(1, `"${name}" is not pinned yet (no commit/hash in the registry)`);
   const gh = /^https:\/\/github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?$/.exec(e.repo || '');
   const okFile = process.env.MB_ALLOW_FILE === '1' && /^file:\/\//.test(e.repo || '');

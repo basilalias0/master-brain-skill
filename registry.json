@@ -10,6 +10,12 @@
       "path": "skills/arena",
       "sha": "df07b8e518e10cdecd8cd7712d9958b6f396250e",
       "skillSha256": "c06f9828566485d5bd6507150f454d6f37d49c2b02e5308b8f744a4a046bdf39",
+      "fileSha256": {
+        "SKILL.md": "c06f9828566485d5bd6507150f454d6f37d49c2b02e5308b8f744a4a046bdf39",
+        "bracket.py": "f56ba7de9746c1aed77b5d6aee58a3c2ca07bd239896dbe7dba88654694c1fa2",
+        "rubric.md": "3296801e01035f3ad8dc2b57f0c47d84d296bbc716bf8b36bdb02b426c2735a5",
+        "strategies.json": "30517505dd84dba84e94c0a92ee7aaa48b5aee7817dd465fb04856b6b0d8ca40"
+      },
       "note": "owner choice 2026-10-19; MIT; bracket.py stdlib only, no network or subprocess at this commit"
     }
   }

@@ -64,3 +64,11 @@ test('export keeps only general rules, strips evidence, refuses paths and secret
   ov.add(dir, skill, 'tester', 'Read config from C:/Users/me/app', 'e', 'general');
   assert.throws(() => ov.exportRules(dir), /local path/);
 });
+
+test('general rule citing a decision card is refused', () => {
+  const { dir, skill } = setup();
+  assert.throws(() => ov.add(dir, skill, 'tester', 'Prefer the shared fixture loader', 'chosen in DC-004', 'general'), /decision card/);
+  assert.throws(() => ov.add(dir, skill, 'tester', 'Follow DC-12 for seeding', 'measured', 'general'), /decision card/);
+  assert.ok(ov.add(dir, skill, 'tester', 'Prefer the shared fixture loader', 'chosen in DC-004'));
+  assert.ok(ov.add(dir, skill, 'tester', 'Prefer the shared fixture loader for seeds', 'saved 3 turns', 'general'));
+});
