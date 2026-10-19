@@ -171,3 +171,27 @@ test('tree-hash detects a new file outside the arena folder', () => {
   assert.notDeepStrictEqual(after, before);
   assert.ok(after.some((l) => / b\.txt$/.test(l)));
 });
+
+test('usage numbers agree in TOKENS, law 14 and usage-gate', () => {
+  const root = path.join(__dirname, '..');
+  const lines = fs.readFileSync(path.join(root, 'core', 'TOKENS.md'), 'utf8').split('\n');
+  const head = lines.find((l) => /^\| Window \(`get_usage`\)/.test(l));
+  assert.ok(head, 'TOKENS section 6 has the usage table');
+  const cols = head.split('|').slice(2, -1).map((c) => Number(/(\d+)%/.exec(c)[1]));
+  const act = (cell) => [[/drops 1 tier/, 'drop'], [/no arena/, 'no-arena'], [/stop launching/, 'stop']].filter(([re]) => re.test(cell)).map(([, a]) => a).sort();
+  const table = {};
+  for (const [key, label] of [['five', '5-hour'], ['week', 'weekly']]) {
+    const row = lines.find((l) => l.startsWith(`| ${label} |`));
+    assert.ok(row, label + ' row');
+    table[key] = {};
+    row.split('|').slice(2, -1).forEach((c, i) => { const a = act(c); if (a.length) table[key][cols[i]] = a; });
+  }
+  const norm = (t) => JSON.parse(JSON.stringify(t, (k, v) => (Array.isArray(v) ? [...v].sort() : v)));
+  assert.deepStrictEqual(table, norm(d.TABLE));
+  const laws = fs.readFileSync(path.join(root, 'templates', 'LAWS.md'), 'utf8').split('\n');
+  const i = laws.findIndex((l) => l.startsWith('14. '));
+  const law14 = laws.slice(i, i + laws.slice(i + 1).findIndex((l) => /^\d+\. /.test(l)) + 1).join('\n');
+  assert.match(law14, /TOKENS §6/);
+  assert.match(law14, /weekly/);
+  assert.doesNotMatch(law14, /\d+\s*%/);
+});

@@ -42,7 +42,13 @@ Never route High work below T1 or default effort.
 - Effort follows the tier in `MODELS.md`: low for routine T0/T1 work, higher only after a failed attempt. Planning, security, migrations and LOCK changes never go below the floor in `MODELS.md`.
 
 ## 6. Sessions
-- Check `get_usage` once per cycle and before each wave. Above 70% of the 5-hour window: drop non-critical work one tier. Above 90%: checkpoint and stop launching.
+- Check `get_usage` once per cycle and before each wave and apply this table, the only place the numbers live (`MODELS.md`, procedure/05 and law 14 point here; `scripts/decisions.cjs usage-gate` applies it). A missing, failed or non-numeric value counts as 90%.
+
+| Window (`get_usage`) | ≥ 70% | ≥ 80% | ≥ 90% |
+|---|---|---|---|
+| 5-hour | non-critical work drops 1 tier; no arena | — | checkpoint, stop launching |
+| weekly | no arena | non-critical work drops 1 tier | stop launching |
+
 - Workers do one task, then clear, unless the next task is in the same lane.
 - Start a fresh chat after each milestone; the state lives in `STATE.md` and the reports, not in the chat (a long chat is re-read every turn).
 - Waiting: `Monitor` or Bash `run_in_background` with an until-loop, never sleep loops or status turns; at most 1 `PushNotification` per cycle, only when the human is away.

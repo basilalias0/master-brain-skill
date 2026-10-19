@@ -15,6 +15,7 @@ When a task finishes, Master appends one line:
 - Rules: lower a default when a cheaper tier passes first try at 90% or better; raise it when the default passes under 70%; flag a brief when rework is over 30%; flag a rule when corrections are over 20%.
 - Each proposal has a type: **routing** (a MODELS.md row), **local-rule** (an overlay rule for this project) or **generic** (also worth contributing). The run writes `improve/last-run.json`; `state.cjs` nudges once 10 or more tasks are logged after it.
 - Master shows the proposals and the evidence. It never applies them.
+- With a decision bank, also run `node scripts/decisions.cjs due <bank>` and show the due cards with their evidence (procedure/05).
 
 ## 3. Decide and apply (one change at a time)
 1. You approve or reject each proposal. Master sets its status line to approved or rejected.

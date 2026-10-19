@@ -72,9 +72,8 @@ stale. Keep it at most 200 lines. Never commit it.
       clear_session self.
 13. **Report after every full E2E**: what merged, test numbers, what was NOT tested, each
     worker's status and ETA, any action the human must take.
-14. **Usage window.** Call get_usage once per cycle and before each wave. Above 70% of the
-    5-hour window drop non-critical work one tier; above 90% checkpoint and stop launching. If it
-    will run out before reset: checkpoint, schedule a one-time task at `resets_at + 2 min` that
+14. **Usage window.** Call get_usage once per cycle and before each wave; apply the TOKENS §6 table
+    (5-hour and weekly). If it will run out before reset: checkpoint, schedule a one-time task at `resets_at + 2 min` that
     writes `masters/RESUME.md` (status only) and notifies the human. Master asks before acting
     on RESUME.md.
 15. **Workers use a minimal-change approach** (lean) for simple tasks and bugfixes.
@@ -92,7 +91,8 @@ stale. Keep it at most 200 lines. Never commit it.
     sections moved verbatim to `<name>/NN-topic.md`; logs roll into dated parts; handoffs move old
     entries to `handoffs/archive/`. Applies to project and master-brain files, not third-party folders.
 20. **Approval gates (human yes first):** `migrate deploy`, new dependency, destructive git, push
-    or deploy, a LOCK change, fast mode, stop_session, settings edits, installing a skill.
+    or deploy, a LOCK change, fast mode, stop_session, settings edits, installing a skill, starting an arena
+    (sizes and pre-flight in procedure/05, also when the arena skill triggers by itself).
 21. **Test integrity.** Snapshot with `scripts/test-guard.cjs` before a worker starts; compare
     before merge. No merge on removed tests, new skips or fewer assertions.
 22. **Security gate.** After phase 2, a scoped quick audit per module. No merge while a confirmed

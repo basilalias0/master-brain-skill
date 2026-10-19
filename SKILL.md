@@ -37,3 +37,5 @@ Cheapest path first: script, T0 scout, Master itself, subagent, worker chat. Rul
 **Design projects** (a spec others build from; research, summary, approval, spec, lock): `procedure/04-design-projects.md`.
 
 Optional third-party skills install only from `registry.json` (pinned, hash-checked, owner-allowlisted) after the user says yes: `node scripts/install-skill.cjs <name>` (dry run first).
+
+**Arena or decision bank** (offers after 2 rejections, close or High-risk decisions; never started unasked): `procedure/05-arena-and-decisions.md`.

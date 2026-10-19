@@ -130,6 +130,8 @@ autonomy rule) that won't automatically re-open to question it.
    ask whether to do it now or incrementally as features come up; it scales with project
    size and shouldn't be assumed free.
 6. Create `overlay/` and run `node scripts/overlay.cjs rebase --dir <master_dir>` (writes `overlay/base.json` with the installed skill version). Also seed `routing-log.jsonl` (empty) and `improve/`. These are local to the project and stay out of git.
+   If the human wants the decision bank, create `master-brain/decisions/` (private, procedure/05). If they use the
+   arena skill, add `.arena/` to the project `.gitignore` once, with their yes.
 7. Write one `DL-001` entry in the new `ACTION_LOG.md` recording the onboarding itself —
    what was found, what was confirmed vs. flagged, what's still `TBD`.
 8. `STATE.md` starts by reflecting reality: for a new project (2A), "not yet built — the
