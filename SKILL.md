@@ -1,6 +1,6 @@
 ---
 name: master-brain
-description: "Master/Worker orchestration plus helper modules: research, lean (lazy mode), developer, analyze, test. Boots a Master, tracks queue and state, dispatches workers. Use for /master-brain, help, catch me up, resume, research, lean, yagni, write tests, build, analyze, update."
+description: "Master/Worker orchestration plus helper modules: research, lean (lazy mode), developer, analyze, test. Boots a Master, tracks queue and state, dispatches workers. Use for /master-brain, help, catch me up, resume, research, lean, yagni, write tests, build, analyze, update, decide."
 ---
 
 # master-brain
@@ -15,7 +15,7 @@ A router. Read other files only when a step needs them. Token rules: `core/TOKEN
 - `status`: `node scripts/state.cjs <master_dir>`, 15 lines or fewer
 - `onboard`: `ONBOARDING.md`. `models`: show the project's `MODELS.md`
 - `improve`: `core/IMPROVE.md`. `update`, `overlay`, `contribute`: `core/UPDATE.md`
-- `research <q> [quick|standard|deep]`, `lean [lite|full|ultra]`, `developer [build|update]`, `analyze <target>`, `test [report|implement]`: read `modules/<name>/MODULE.md` (analyze = analyzer, test = tester), then `<master_dir>/overlay/<name>.md` if it exists, and follow both. `lean` stays on until the user says "stop lean"; re-read it after a compaction.
+- `research <q> [quick|standard|deep]`, `lean [lite|full|ultra]`, `developer [build|update]`, `analyze <target>`, `test [report|implement]`, `decide <question>`: read `modules/<name>/MODULE.md` (analyze = analyzer, test = tester), then `<master_dir>/overlay/<name>.md` if it exists, and follow both. `lean` stays on until the user says "stop lean"; re-read it after a compaction.
 - `audit`: the third-party security-audit skill, if installed. Master-run only; never auto-installed.
 
 ## Boot (cheap: target 2k tokens)

@@ -16,7 +16,8 @@
     "module_lean": 2505,
     "module_developer": 3014,
     "module_analyzer": 2017,
-    "module_tester": 2729
+    "module_tester": 2729,
+    "module_decide": 1800
   },
   "justifications": []
 }
