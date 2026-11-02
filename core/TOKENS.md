@@ -41,7 +41,7 @@ Never route High work below T1 or default effort.
 ## 5. Budget and effort
 - Each brief states a budget (files read, tool calls). Two budgets: read-only work (audit, diagnosis, recon) about 25-40 tool calls; a fix or build worker gets a per-task figure sized to its items (measured 2026-10-06: 7 fixes with tests took 60-95 calls, so a flat 25 would cut it off mid-task). Always read file ranges (offset and limit), not whole files. The merged full sweep is never trimmed: it is the quality gate, since workers do not run E2E and each sees only its own part. At the cap the worker stops and returns `needs-master` with partial progress (done items, remaining items, every commit sha); it never extends its own budget. Only the Master extends it, in a new brief.
 - Read-only audits and hunters run on a cheaper model or lower effort (see `MODELS.md`); keep the strong model for fix workers.
-- Effort follows the tier in `MODELS.md`: low for routine T0/T1 work, higher only after a failed attempt. Planning, security, migrations and LOCK changes never go below the floor in `MODELS.md`.
+- Effort comes from the task's score (`MODELS.md`, Effort score), not from the tier: 0-2 low, 3-5 medium, 6-7 high, 8-9 xhigh, 10 max. A coordinating Master stays at medium at most. Planning, security, migrations, permission and LOCK changes never go below the floors in `MODELS.md`.
 
 ## 6. Sessions
 - Check `get_usage` once per cycle and before each wave and apply this table, the only place the numbers live (`MODELS.md`, procedure/05 and law 14 point here; `scripts/decisions.cjs usage-gate` applies it). A missing, failed or non-numeric value counts as 90%.

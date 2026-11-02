@@ -27,7 +27,26 @@ Status becomes `verified` after the first successful dispatch; the picker's ids 
 | Audit hunters (read-only; lower effort) | T1 | verifiers of high or critical findings: T2; never T3 |
 
 ## Floors (never go below)
-Planning, security, migrations, LOCK changes: T1 and default effort. Escalate only after a failed attempt and log one line of reason in `masters/M#.md`.
+Planning: T1 and at least medium effort. Security, migrations, permission and LOCK changes: T1 and at least high effort. Escalate only after a failed attempt and log one line of reason in `masters/M#.md`.
+
+## Effort score (owner, 2026-11-02): effort per task, not per tier
+Effort is how much the model thinks and checks before it acts: same model, same knowledge. Higher costs more tokens and
+time and pays off only on hard tasks. Score the task 0, 1 or 2 on each line:
+
+| Factor | 0 | 1 | 2 |
+|---|---|---|---|
+| Clarity | exact steps | some choices | open design |
+| Reach | one file | a few files, one area | many areas or shared code |
+| Cost of a mistake | cosmetic | a bug users see | security, data, money, or messages to real people |
+| Newness | repeats a pattern | partly new | new ground or an unverified outside API |
+| Checking | tests and the type check catch it | partly | judgment only |
+
+Total to effort: 0-2 low, 3-5 medium, 6-7 high, 8-9 xhigh, 10 max (max only with the human's yes or after a failed attempt).
+- Model: the routing table picks the tier; a score of 8 or more lifts it to at least T2; read-only work scoring 0-2 may use T0.
+- Masters: score the hardest decision they will make, capped at medium for a coordinating Master (a long session multiplies
+  every level). A chip-started session inherits its parent's effort: set it with `set_session_effort` as soon as it starts.
+- Workers: the Master scores each brief (`score: N/10` plus the effort) and applies it (Agent `effort`, or `set_session_effort`).
+- Escalate one level after a failed attempt and log one line in `masters/M#.md`. A floor is never lowered.
 
 ## Cache note
 The older T0 model (Haiku 4.5) did not cache prompts under 4,096 tokens; re-check this for the current T0 before relying on cache for small jobs. Prefer a script for mechanical lookups; use T0 for judgment-light reading.

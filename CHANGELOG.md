@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased (2026-11-02, owner request; A/B suite not run)
+- core/TOKENS.md, core/BRIEF.md, core/CHIEF.md, templates/MODELS.md: effort is chosen per task from a 5-factor score (clarity, reach, cost of a mistake, newness, checking; 0-10) instead of per tier; floors raised for security, migrations, permissions and LOCK (at least high); coordinating Masters capped at medium; chip-started sessions get their effort set at start (they inherit the parent's). Evidence: a Master inherited xhigh from the Chief on 2026-11-02 and ran a medium-score task at xhigh.
+
 ## 2.4.1 (2026-10-19)
 - Worker dispatch fix (the 2.4.0 A/B task 1 gap): an agent that edits files gets its own worktree (`Agent` with `isolation: "worktree"`; CAPABILITIES row, TOKENS §1, router line). Briefs gain two fields, `worktree` and `sync` (`sync_base` only, never `git merge`/`pull`), and are never shortened into a one-line prompt; editing agents carry those two lines word for word (`core/BRIEF.md`).
 - Waiting on a worker (TOKENS §1): its completion notice or `Monitor` on `handoffs/W#.md`, never `sleep`. Overdue, in order: get_session, list_events once per cycle, then `SendMessage` asking for its RESULT; no answer after 1 cycle = `blocked`. Added after an intermediate build stopped messaging workers (0/3).

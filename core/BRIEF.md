@@ -18,7 +18,7 @@ sync:         sync_base only (CAPABILITIES); never git merge/pull; on conflicts 
 base_commit:  <SHA>  (verify with git merge-base --is-ancestor; commits are never pushed)
 skills:       [modules]  (read <skill_dir>/modules/<name>/MODULE.md, then <master_dir>/overlay/<name>.md if present; missing: report, never install)
 tools:        none | browser | <groups>   (default none: skip browser and connector tools unless the work is UI or a live check)
-model_tier:   T0|T1|T2   effort: low|medium|high   (Master applies; you never set them)
+model_tier:   T0|T1|T2|T3   effort: low|medium|high|xhigh|max   score: N/10 (MODELS.md Effort score; Master applies; you never set them)
 budget:       files read N, tool calls N (read-only about 25-40; fix worker: per-task, about 10 calls per item; read ranges; one job per agent)   (at the limit: needs-master + partial progress)
 params:       research depth | tester phase | developer mode | lean level | audit profile
 port / slot:  <dev port>; heavy slot only through scripts/lock.cjs
