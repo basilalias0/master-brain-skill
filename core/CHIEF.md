@@ -1,6 +1,6 @@
 # Chief: the layer above the Masters
 
-Human → **Chief (C1)** → **Masters (M1, M2 …)** → **Workers (W1, W2 …)**. Added in 2.3.0 at the owner's request
+Human → **Chief (C1)** → **Masters (M1, M2 …)** → **Workers (W-M1-1, W-M1-2 …)**. Added in 2.3.0 at the owner's request
 (2026-10-09). Use it when a project has more than one Master or lane; with a single Master, that Master is the top.
 
 ## What the Chief is
@@ -27,8 +27,9 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
    batches the chips and tells the human how many to click, one line each. A worker belongs to the Master that asked.
    A chip-started session inherits the Chief's effort: once it starts, set its effort from its score (`MODELS.md`, Effort score) with `set_session_effort`.
    Stale chips: a chip this chat made that is superseded or no longer needed is withdrawn with `dismiss_task` (one-line reason); never another chat's chip.
-6. **Creating a Master.** The Chief writes `masters/M#.md` (lane, branch, folder, server and port, open items,
-   reporting rule) and the pairs agreement, adds the BOARD row, then gives the human a paste-ready prompt or a chip.
+6. **Creating a Master.** Only for an area no Master owns yet (check the BOARD Masters table first, rule 10). The Chief
+   writes `masters/M#.md` (the area it owns, lane, branch, folder, server and port, open items, reporting rule) and the
+   pairs agreement, adds the BOARD row, then gives the human a paste-ready prompt or a chip.
 7. **Boot** (`/master-brain chief`): read `LAWS_DIGEST.md`, the BOARD Masters table, the LAST block of `masters/C1.md` and
    of each `masters/M*.md`, run `list_agents`, report in 15 lines or fewer.
 8. **Honest limits.** The Chief reports what it measured. A Master's claim of "done" is a claim until the RESULT names the
@@ -38,3 +39,13 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
    (`autoCompactWindow` 600k, law 12); before compacting it writes `masters/R1.md`. It may not create worker chats
    (no `spawn_task` chips, no worker briefs) and does not build; it may use read-only subagents. When research turns into
    work, it hands a RESULT with the findings to the Chief (or the single Master), who plans and makes any chips.
+10. **Masters own their areas for good (owner, 2026-11-03).** A Master's area is the kind of work it was created for,
+    across the whole application (a feature, an artifact, a gate), named in the BOARD Masters table. When its task
+    ends, the Master goes idle; it is **never archived, cleared or replaced**. Every later fix, change or upgrade in that
+    area goes back to that Master: the Chief routes it there (a message wakes an idle Master; if the host archived its
+    chat, the Chief unarchives it first), and the Master does it itself or opens its own workers. A new Master only for an
+    area nobody owns. Work that spans two areas: the Chief names one owner to lead and pairs the other
+    (`handoffs/pairs/`). A Master whose context is long compacts (law 12); its history file carries it forward.
+11. **Worker ids are per Master:** `W-<Master>-<n>` (`W-M9-1`, `W-M9-2` …; the Chief's own helpers are `W-C1-<n>`),
+    numbered by the Master that opens them; the history file is `handoffs/W-M9-1.md`. Ids made before 2026-11-03
+    (`W1`…`W39`) keep their names.

@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased (2026-11-03, owner request; A/B suite not run)
+- core/CHIEF.md rules 10-11, templates/LAWS.md (roles, laws 5 and 18), templates/CAPABILITIES.md: **Masters own their areas for good.** A Master is never archived, cleared or replaced when its task ends; every later fix or upgrade in its area goes back to it, and it does the work or opens its own workers. New Masters only for unowned areas. The Chief may unarchive an owning Master (new `unarchive_session` row; the app asks the human per call). **Worker ids are per Master:** `W-<Master>-<n>` (`W-M9-1`), history in `handoffs/W-M9-1.md`; older ids keep their names. Evidence: on 2026-11-03 three finished Masters had been archived, and the next round of changes to their areas had no owner to go to.
+
 ## Unreleased (2026-11-02, owner request; A/B suite not run)
 - core/TOKENS.md, core/BRIEF.md, core/CHIEF.md, templates/MODELS.md: effort is chosen per task from a 5-factor score (clarity, reach, cost of a mistake, newness, checking; 0-10) instead of per tier; floors raised for security, migrations, permissions and LOCK (at least high); coordinating Masters capped at medium; chip-started sessions get their effort set at start (they inherit the parent's). Evidence: a Master inherited xhigh from the Chief on 2026-11-02 and ran a medium-score task at xhigh.
 

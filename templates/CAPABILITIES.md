@@ -14,6 +14,7 @@ verified: {{date}}
 | set_session_effort | `mcp__ccd_session_mgmt__set_session_effort` | `session_id`, `effort` low/medium/high/xhigh/max | refused for self |
 | get_usage | `mcp__ccd_session_mgmt__get_usage` | `session_id` (default self) | plan windows with percentUsed and resetsAt; context tokens by category |
 | list_sessions | `mcp__ccd_session_mgmt__list_sessions` | `group`, `include_archived`, `limit`, `linked` | |
+| unarchive_session | `mcp__ccd_session_mgmt__unarchive_session` | `session_id` | Chief only: brings back an owning Master the host archived, before routing work to it (`core/CHIEF.md` rule 10); the app asks the human per call |
 | stop_session | `mcp__ccd_session_mgmt__stop_session` | `session_id` | registered workers only, human approves |
 | fast_mode | `mcp__ccd_session_mgmt__set_session_fast_mode` | `enabled`, `session_id` | never use |
 | subagent | `Agent` | `subagent_type`, `model` (the short names listed in MODELS.md), `prompt`, `isolation: "worktree"`, `run_in_background` | `isolation: "worktree"` is required whenever the agent edits files (one worktree per worker, law 2); read-only scouts omit it |

@@ -71,10 +71,10 @@ failure mode the calibration note at the top of this file describes.
 
 Live channel: `SendMessage` (logical name `message`), Master and worker only, never a
 broadcast. Record and fallback: plain files any session can read or write by an absolute path
-(`handoffs/W#.md`, BOARD). The message says "done, see the file"; the file is the truth. If
+(`handoffs/W-M#-n.md`, BOARD). The message says "done, see the file"; the file is the truth. If
 messaging is unavailable, coordination is pull-based through those files (`core/LEGACY-INBOX.md`)
 — say so honestly rather than implying real-time coordination a file cannot provide.
-Workers write DL candidates into their own `W#.md`; Master folds them into ACTION_LOG.
+Workers write DL candidates into their own `W-M#-n.md`; Master folds them into ACTION_LOG.
 
 1. Every session working under this procedure — whichever one the human is actively
    driving, or a worker — reads the coordination board in full before claiming anything.

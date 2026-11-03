@@ -30,8 +30,7 @@ const IGNORE_NAME = {
     'move_to_cloud', // moving a chat is the human's call
   ],
   mcp__ccd_session_mgmt__: [
-    'archive_session', // the human archives chats (law 5)
-    'unarchive_session', // the human's call
+    'archive_session', // the human archives worker chats (law 5); Masters are never archived (CHIEF rule 10)
     'delete_session', // destructive, never used
     'detach_session', // the human's call
     'export_transcript', // transcripts are read through list_events

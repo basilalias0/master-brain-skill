@@ -5,7 +5,7 @@
 All paths are ABSOLUTE. A worktree does not contain the gitignored `master-brain/` folder. Fill every field; write `none` where empty.
 
 ```
-task_id:      W#-slug
+task_id:      W-M#-n-slug
 goal:         one sentence
 locks:        [agreed LOCK items]
 touches:      [file:line-range or symbol, from the code map or analyzer]
@@ -23,10 +23,10 @@ budget:       files read N, tool calls N (read-only about 25-40; fix worker: per
 params:       research depth | tester phase | developer mode | lean level | audit profile
 port / slot:  <dev port>; heavy slot only through scripts/lock.cjs
 invocation:   worker (never run the Master boot)
-reply:        handoffs/W#.md (LAST block on top), then SendMessage Master the RESULT (core/RESULT.md)
+reply:        handoffs/W-M#-n.md (LAST block on top), then SendMessage Master the RESULT (core/RESULT.md)
 ```
 
-Example (short): `goal: refuse a blank title on POST /items`, `touches: items/route:40-70`, `budget: files read 6, tool calls 20`, `tools: none`, `reply: handoffs/W3.md`.
+Example (short): `goal: refuse a blank title on POST /items`, `touches: items/route:40-70`, `budget: files read 6, tool calls 20`, `tools: none`, `reply: handoffs/W-M2-3.md`.
 Purpose per field: `goal` is the one-sentence finish line; `touches` stops the worker exploring; `budget` and `tools` bound cost; `locks` and `lane` bound blast radius.
 
 The worker reads `LAWS_DIGEST.md` and this brief, then starts. Questions go to the Master only.

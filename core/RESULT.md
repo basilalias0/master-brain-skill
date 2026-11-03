@@ -12,4 +12,4 @@ unresolved:       <or none; at a budget cap: items done, items remaining>
 next:             <one line>
 ```
 
-A Master sends its Chief the same shape whenever it needs something and when anything finishes, the chat itself included (`core/CHIEF.md` rule 2). Detail goes to `handoffs/W#.md` LAST, with a LAST block on top and earlier entries append-only. DL candidates are written there; Master folds them into ACTION_LOG. Do not paste code or logs into the message; give paths.
+A Master sends its Chief the same shape whenever it needs something and when anything finishes, the chat itself included (`core/CHIEF.md` rule 2). Detail goes to `handoffs/W-M#-n.md` LAST, with a LAST block on top and earlier entries append-only. DL candidates are written there; Master folds them into ACTION_LOG. Do not paste code or logs into the message; give paths.

@@ -28,7 +28,7 @@ stale. Keep it at most 200 lines. Never commit it.
    proposals the human approves. Never enable fast mode.
 3. **Two-way talk, never broadcast.** Every message goes direct by chat name (message). A worker
    reports each completion and blocker as a RESULT block (`core/RESULT.md`, 10 lines or fewer).
-   Details and DL candidates go in `handoffs/W#.md`: a **LAST** block on top, entries below it
+   Details and DL candidates go in `handoffs/W-M#-n.md`: a **LAST** block on top, entries below it
    **append-only**. Master reads the file before deciding.
 4. **Pipeline**
    1. Human gives Master a task.
@@ -37,15 +37,15 @@ stale. Keep it at most 200 lines. Never commit it.
       they agree a **LOCK**.
    4. Master sends a brief (`core/BRIEF.md`) to a worker.
    5. The worker proposes plan improvements to Master. A change to locked scope goes to the human.
-   6. The worker builds and runs type-check, unit tests and its own flow, appends `W#.md`, reports.
+   6. The worker builds and runs type-check, unit tests and its own flow, appends `W-M#-n.md`, reports.
       It syncs with the base through sync_base, never `git merge`/`pull`; on conflicts it resolves, commits, then reports.
-   7. Master reads `W#.md`, runs `scripts/test-guard.cjs compare`, then the combined full E2E
+   7. Master reads `W-M#-n.md`, runs `scripts/test-guard.cjs compare`, then the combined full E2E
       inside the heavy slot (law 7).
       - **Green**: merge to `{{main branch}}` (never push unless told).
       - **Red**: back to the worker.
    Step 6 also: scripts that produce deliverables are committed in the project, never only in a scratchpad.
 5. **Reuse workers.** Before the next brief, confirm the worker is idle (list_agents). When
-   green, send `RESET`; the worker finalises `W#.md` and clears itself. Any worker can take any
+   green, send `RESET`; the worker finalises `W-M#-n.md` and clears itself. Any worker can take any
    module because history is in files. **The Master decides when a worker is opened, cleared or
    closed.** A worker clears only itself (`clear_session self`), and only after the Master's
    `RESET`; the Master cannot clear a chip-launched chat, and the human archives it.
@@ -60,14 +60,14 @@ stale. Keep it at most 200 lines. Never commit it.
 8. **After the sweep.** Green: the Master sends `RESET` (law 5). Red: the same worker fixes its failures, no
    clear, until green.
 9. **Workers ask only Master.** No worker talks to another unless Master pairs them (shared log
-   `handoffs/pairs/W#-W#.md`). An unsafe or LOCK-breaking ask: stop and report.
+   `handoffs/pairs/<id>-<id>.md`). An unsafe or LOCK-breaking ask: stop and report.
 10. **No free worker: open a new one**, within the parallel cap (2-3).
 11. **Token and tier choices are automatic.** Master has full authority over workers.
 12. **Compaction.**
     - Chief compacts at `500k` (always), a Research chat at `600k` (always), Master at `{{master window, e.g. 250k}}`, workers at `{{worker window, e.g. 200k}}`
       (`autoCompactWindow`; the human sets it with `/autocompact <N>k`, per model, so re-set it after a model switch; the minimum is 100k; verify it fires in a long session before
       trusting it).
-    - Workers append to `W#.md` after every step.
+    - Workers append to `W-M#-n.md` after every step.
     - "Master compacts after every decision" means: write `masters/M#.md` + BOARD, then
       clear_session self.
 13. **Report after every full E2E**: what merged, test numbers, what was NOT tested, each
@@ -117,6 +117,6 @@ stale. Keep it at most 200 lines. Never commit it.
 | `LAWS.md` / `LAWS_DIGEST.md` | the rules / the 30-line version workers read |
 | `MODELS.md` / `CAPABILITIES.md` | tiers and model ids / logical tool names |
 | `BOARD.md` | QUEUE · Masters table · worker `%` done · locks |
-| `masters/M#.md` · `handoffs/W#.md` · `handoffs/pairs/` | histories (LAST on top, append-only) |
+| `masters/M#.md` · `handoffs/W-M#-n.md` · `handoffs/pairs/` | histories (LAST on top, append-only) |
 | `locks/` | lock folders from `scripts/lock.cjs` |
 | `inbox/` | fallback when message fails |
