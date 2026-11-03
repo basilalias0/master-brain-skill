@@ -42,8 +42,8 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
 10. **Masters own their areas for good (owner, 2026-11-03).** A Master's area is the kind of work it was created for,
     across the whole application (a feature, an artifact, a gate), named in the BOARD Masters table. When its task
     ends, the Master goes idle; it is **never archived, cleared or replaced**. Every later fix, change or upgrade in that
-    area goes back to that Master: the Chief routes it there (a message wakes an idle Master; if the host archived its
-    chat, the Chief unarchives it first), and the Master does it itself or opens its own workers. A new Master only for an
+    area goes back to that Master: the Chief routes it there (a message wakes an idle Master; one that list_agents does not show is reached by its session id,
+    `local_…`; if the host archived its chat, the Chief unarchives it first), and the Master does it itself or opens its own workers. A new Master only for an
     area nobody owns. Work that spans two areas: the Chief names one owner to lead and pairs the other
     (`handoffs/pairs/`). A Master whose context is long compacts (law 12); its history file carries it forward.
 11. **Worker ids are per Master:** `W-<Master>-<n>` (`W-M9-1`, `W-M9-2` …; the Chief's own helpers are `W-C1-<n>`),
