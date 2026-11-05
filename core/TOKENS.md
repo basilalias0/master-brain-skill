@@ -12,7 +12,7 @@ script, then T0 scout subagent, then Master directly, then a subagent, then a su
 - **Waiting on a worker:** its completion notice or `Monitor` on its `handoffs/W-M#-n.md`, never `sleep` or status turns. Overdue, in this order: get_session (metadata), then list_events once per cycle, then message the worker by name (`SendMessage`) asking for its RESULT. No answer after 1 cycle = `blocked`.
 - One subagent per job: never split triage and fix, and never let two agents read the same source (measured: subagents were 55% of one session's cost).
 - Workflow tool: offer it at most once per wave, in one line with a cost estimate; never run it unasked (no opt-in words from the human, no call).
-- Batch same-lane tasks into one worker. Reuse a warm idle worker; clear it when it changes module or its context grows. Cap parallel workers at 2-3.
+- Batch same-lane tasks into one worker. Reuse a warm idle worker; clear it when it changes module or its context grows. Cap parallel work by the chat capacity law (`CAPACITY.md`, `scripts/capacity.cjs load`).
 
 ## 2. Risk tiers (how much pipeline a task gets)
 | Tier | Example | Pipeline |

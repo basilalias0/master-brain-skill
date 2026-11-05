@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased (2026-11-05, owner request; A/B suite not run)
+- New `scripts/capacity.cjs` (+ test): **chat capacity.** Each open task has a weight W = (1 + score/2) × hold × state, and each role has a limit (worker 8, Master 12, Chief 10). The limit shrinks as the chat's context fills (F 1.0 / 0.8 / 0.6, and 0 at 85%+, where the chat compacts first). There are hard caps (Master: 4 running worker chats; 2 subagents) and a machine budget.
+  - **The machine budget is calibrated for the machine itself:** `calibrate` at onboarding, and `check` at every boot (it recalibrates when RAM, cores or host change). Budget = max(4, min(floor(RAM GB) - 3, cores)). The owner: "not every system gets 16 GB".
+  - `load` prints a chat's load, limit and verdict. When the chat is full, the ladder is: reuse an idle worker, else `needs-chip`, then the Chief asks the human to click the chips.
+  - templates/LAWS.md law 26 (law 10 now points to it), SKILL.md boot step 3, ONBOARDING step 6, core/CHIEF.md rule 5, core/TOKENS.md §1.
+  - Evidence: 7 of 7 busy moments from one project's 2026-09-28 to 11-05 history agree with the formula (two overloads: 7 and 6 workers at once; one machine overload: 4 dev servers plus tests). The one git collision came from a shared checkout, not from load.
+
 ## Unreleased (2026-11-03, owner request; A/B suite not run)
 - core/CHIEF.md rules 10-11, templates/LAWS.md (roles, laws 5 and 18), templates/CAPABILITIES.md: **Masters own their areas for good.** A Master is never archived, cleared or replaced when its task ends; every later fix or upgrade in its area goes back to it, and it does the work or opens its own workers. New Masters only for unowned areas. The Chief may unarchive an owning Master (new `unarchive_session` row; the app asks the human per call). **Worker ids are per Master:** `W-<Master>-<n>` (`W-M9-1`), history in `handoffs/W-M9-1.md`; older ids keep their names. Evidence: on 2026-11-03 three finished Masters had been archived, and the next round of changes to their areas had no owner to go to.
 

@@ -64,7 +64,7 @@ stale. Keep it at most 200 lines. Never commit it.
    clear, until green.
 9. **Workers ask only Master.** No worker talks to another unless Master pairs them (shared log
    `handoffs/pairs/<id>-<id>.md`). An unsafe or LOCK-breaking ask: stop and report.
-10. **No free worker: open a new one**, within the parallel cap (2-3).
+10. **No free worker: open a new one**, within the chat capacity (law 26).
 11. **Token and tier choices are automatic.** Master has full authority over workers.
 12. **Compaction.**
     - Chief compacts at `500k` (always), a Research chat at `600k` (always), Master at `{{master window, e.g. 250k}}`, workers at `{{worker window, e.g. 200k}}`
@@ -108,6 +108,14 @@ stale. Keep it at most 200 lines. Never commit it.
     not rise, else revert to the tag. Nothing edits `MODELS.md` or a skill without the user's yes.
 25. **Optional footer** (off unless the human turned it on at onboarding: `{{footer on|off}}`). When on, every reply
     ends with a footer of 6 lines or fewer: open decisions and what others owe (procedure/04).
+26. **Chat capacity** (`CAPACITY.md`, written for this machine by `scripts/capacity.cjs`). Every open task weighs
+    W = (1 + score/2) × hold (do 1.0, subagent 0.6, worker chat 0.5, a Master for the Chief 1.5 flat) × state (active 1.0,
+    background 0.5, waiting 0.2, queued 0), +1 while holding an e2e, a sweep or the heavy lock. A task fits when
+    load + W ≤ limit × F: worker 8, Master 12, Chief 10; F = 1.0 under 50% context, 0.8 to 70%, 0.6 to 85%, 0 at 85%+
+    (write the LAST block and compact first). Hard caps: worker 1 job; Master 4 running worker chats; 2 subagents. Full:
+    reuse an idle worker, else the Master sends the Chief `needs-chip` and the Chief asks the human to click the chips;
+    a new Master only for an unowned area. Machine jobs (server 4, e2e 4, unit suite 3, sweep 2, type check 1) stay
+    within the calibrated budget, or wait for the slot. Check with `capacity.cjs load <role> <ctx%> <tasks>`.
 
 ## Project-specific rules (fill during onboarding)
 - Shared-resource locks (e.g. one database migration at a time): `{{…}}`

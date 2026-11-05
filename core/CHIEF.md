@@ -21,7 +21,7 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
 4. **Shared resources.** The Chief owns the lock order (`scripts/lock.cjs`), ports, branch rules and the heavy slot. A Master
    edits only its own lane's branch and folder; a fix for another lane goes by cherry-pick and is logged in
    `handoffs/pairs/C1-M#.md`.
-5. **Chips (worker chats).** A Master asks the Chief for a worker: lane, task, tier, branch, folder. The Chief makes the
+5. **Chips (worker chats).** A Master asks the Chief for a worker (`needs-chip`: lane, task, tier, branch, folder, the task's W and its own load / limit and context %; chat capacity law, `CAPACITY.md`). The Chief checks it with `scripts/capacity.cjs load` and the machine budget before making the chip. The Chief makes the
    chip with `spawn_task`, names the requesting Master in the brief, and starts it itself when the host offers a
    start-session capability (logical name `start_session`; UNKNOWN today, see `CAPABILITIES.md`). Without it the Chief
    batches the chips and tells the human how many to click, one line each. A worker belongs to the Master that asked.

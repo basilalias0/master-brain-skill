@@ -130,6 +130,7 @@ autonomy rule) that won't automatically re-open to question it.
    ask whether to do it now or incrementally as features come up; it scales with project
    size and shouldn't be assumed free.
 6. Create `overlay/` and run `node scripts/overlay.cjs rebase --dir <master_dir>` (writes `overlay/base.json` with the installed skill version). Also seed `routing-log.jsonl` (empty) and `improve/`. These are local to the project and stay out of git.
+   Run `node scripts/capacity.cjs calibrate <master_dir>`: it writes `CAPACITY.md` (the machine budget from this machine's RAM and cores; the chat limits). Say the budget in one line.
    If the human wants the decision bank, create `master-brain/decisions/` (private, procedure/05). If they use the
    arena skill, add `.arena/` to the project `.gitignore` once, with their yes.
 7. Write one `DL-001` entry in the new `ACTION_LOG.md` recording the onboarding itself —
