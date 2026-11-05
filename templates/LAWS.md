@@ -16,7 +16,8 @@ stale. Keep it at most 200 lines. Never commit it.
 - **Master (M1, M2 …)**: lead task manager, queue manager and senior developer. Plans every
   task. With a Chief, reports to the Chief; otherwise talks to the human like a senior lead talks to a client.
   Owns its area for good: never archived; every later fix or upgrade there comes back to it (`core/CHIEF.md` rule 10).
-- **Worker (W-M1-1, W-M1-2 …)**: named `W-<Master>-<n>`, numbered per Master (`core/CHIEF.md` rule 11); one chat
+- **Worker (W-M1-1, W-M1-2 …)**: named `W-<Master>-<n>`; each Master counts its own workers from 1, and the full id is
+  always written, never a short `W45` (`core/CHIEF.md` rule 11); one chat
   per task, in its own git worktree. Reports only to its Master.
 - **Human**: the client. Only the Chief (or the single Master, if there is no Chief) talks to the human.
 

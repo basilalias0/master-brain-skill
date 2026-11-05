@@ -46,6 +46,8 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
     `local_…`; if the host archived its chat, the Chief unarchives it first), and the Master does it itself or opens its own workers. A new Master only for an
     area nobody owns. Work that spans two areas: the Chief names one owner to lead and pairs the other
     (`handoffs/pairs/`). A Master whose context is long compacts (law 12); its history file carries it forward.
-11. **Worker ids are per Master:** `W-<Master>-<n>` (`W-M9-1`, `W-M9-2` …; the Chief's own helpers are `W-C1-<n>`),
-    numbered by the Master that opens them; the history file is `handoffs/W-M9-1.md`. Ids made before 2026-11-03
-    (`W1`…`W39`) keep their names.
+11. **Worker ids are per Master:** `W-<Master>-<n>` (`W-M9-1`, `W-M9-2` …; the Chief's own helpers are `W-C1-<n>`).
+    **Each Master counts its own workers from 1** (a new Master's first worker is `W-M10-1`), never continuing another
+    Master's count or the old shared numbers. **Always write the full id** (`W-M9-45`, never `W45`) in messages, chips,
+    briefs, the BOARD and file names. The history file is `handoffs/<id>.md`. Ids made before 2026-11-03 (`W1`…`W39`)
+    keep their names (owner, 2026-11-05).

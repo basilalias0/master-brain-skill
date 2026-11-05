@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased (2026-11-05, owner request; A/B suite not run)
+- core/CHIEF.md rule 11, templates/LAWS.md (roles): **worker ids.** Each Master counts its own workers from 1 (`W-M10-1` is a new Master's first), never continuing another Master's count or the old shared numbers. The full id `W-<Master>-<n>` is always written, never a short `W45`, in messages, chips, briefs, the BOARD and file names. The owner: "the id of worker need to be like W-masterID-workerID, but inside the workers of a master the count starts from 1". Evidence: messages and BOARD rows on 2026-11-05 used short forms ("W45", "W54") that read like the old shared numbering.
+
+## Unreleased (2026-11-05, owner request; A/B suite not run)
 - New `scripts/capacity.cjs` (+ test): **chat capacity.** Each open task has a weight W = (1 + score/2) × hold × state, and each role has a limit (worker 8, Master 12, Chief 10). The limit shrinks as the chat's context fills (F 1.0 / 0.8 / 0.6, and 0 at 85%+, where the chat compacts first). There are hard caps (Master: 4 running worker chats; 2 subagents) and a machine budget.
   - **The machine budget is calibrated for the machine itself:** `calibrate` at onboarding, and `check` at every boot (it recalibrates when RAM, cores or host change). Budget = max(4, min(floor(RAM GB) - 3, cores)). The owner: "not every system gets 16 GB".
   - `load` prints a chat's load, limit and verdict. When the chat is full, the ladder is: reuse an idle worker, else `needs-chip`, then the Chief asks the human to click the chips.
