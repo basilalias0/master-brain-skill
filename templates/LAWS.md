@@ -15,7 +15,7 @@ stale. Keep it at most 200 lines. Never commit it.
   creates worker chats; hands findings to the Chief or Master as a RESULT.
 - **Master (M1, M2 …)**: lead task manager, queue manager and senior developer. Plans every
   task. With a Chief, reports to the Chief; otherwise talks to the human like a senior lead talks to a client.
-  Owns its area for good: never archived; every later fix or upgrade there comes back to it (`core/CHIEF.md` rule 10).
+  Owns its area for good; every later fix or upgrade there comes back to it, in a fresh chat once the old one is long (`core/CHIEF.md` rule 10).
 - **Worker (W-M1-1, W-M1-2 …)**: named `W-<Master>-<n>`; each Master counts its own workers from 1, and the full id is
   always written, never a short `W45` (`core/CHIEF.md` rule 11); one chat
   per task, in its own git worktree. Reports only to its Master.
@@ -51,8 +51,8 @@ stale. Keep it at most 200 lines. Never commit it.
    green, send `RESET`; the worker finalises `W-M#-n.md` and clears itself. Any worker can take any
    module because history is in files. **The Master decides when a worker is opened, cleared or
    closed.** A worker clears only itself (`clear_session self`), and only after the Master's
-   `RESET`; the Master cannot clear a chip-launched chat, and the human archives it. Masters are never archived
-   (`core/CHIEF.md` rule 10).
+   `RESET`; the Master cannot clear a chip-launched chat, and the human archives it. A Master's area never changes owner;
+   a long or archived Master chat is replaced by a fresh chat for the same Master (`core/CHIEF.md` rule 10).
 6. **History first.** Before planning, grep `handoffs/` (including `archive/` and `pairs/`),
    `FEATURE_INDEX.md` and `ACTION_LOG*`. The brief names that history. Reuse a dated verdict
    (same git hash) instead of re-analysing.

@@ -48,11 +48,16 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
    work, it hands a RESULT with the findings to the Chief (or the single Master), who plans and makes any chips.
 10. **Masters own their areas for good (owner, 2026-11-03).** A Master's area is the kind of work it was created for,
     across the whole application (a feature, an artifact, a gate), named in the BOARD Masters table. When its task
-    ends, the Master goes idle; it is **never archived, cleared or replaced**. Every later fix, change or upgrade in that
-    area goes back to that Master: the Chief routes it there (a message wakes an idle Master; one that list_agents does not show is reached by its session id,
-    `local_…`; if the host archived its chat, the Chief unarchives it first), and the Master does it itself or opens its own workers. A new Master only for an
+    ends, the Master goes idle. The **owner** never changes: the area stays that Master's for good. Every later fix, change or upgrade in that
+    area goes back to that Master: the Chief routes it there (a message wakes an idle Master whose chat is under the rollover point; one that list_agents does not show is reached by
+    its session id, `local_…`), and the Master does it itself or opens its own workers. **A bug or change that comes back to
+    an area whose chat is past the rollover point, or archived, goes to a fresh chat for that same Master (owner,
+    2026-11-18):** `rollover.cjs handoff <master_dir> --chat M#` (its own open tasks only), then `start_session` with that
+    handoff and the bug report, on the human's yes as in rule 1; the new chat writes its session id into the BOARD row. A
+    Master also rolls over between tasks, never in the middle of one. The worker that just turned a sweep red still fixes it
+    in its own chat (law 8): that context is short and current. A new Master only for an
     area nobody owns. Work that spans two areas: the Chief names one owner to lead and pairs the other
-    (`handoffs/pairs/`). A Master whose context is long compacts (law 12); its history file carries it forward.
+    (`handoffs/pairs/`). Its history file carries a Master forward, whether it compacts or rolls over.
 11. **Worker ids are per Master:** `W-<Master>-<n>` (`W-M9-1`, `W-M9-2` …; the Chief's own helpers are `W-C1-<n>`).
     **Each Master counts its own workers from 1** (a new Master's first worker is `W-M10-1`), never continuing another
     Master's count or the old shared numbers. **Always write the full id** (`W-M9-45`, never `W45`) in messages, chips,

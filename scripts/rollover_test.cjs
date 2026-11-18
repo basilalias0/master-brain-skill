@@ -56,3 +56,12 @@ test('due says roll over at the point and keep below it', () => {
   assert.strictEqual(run('due', '120000', '--at', '100000').status, 0);
   assert.strictEqual(run('due', 'x').status, 2);
 });
+
+test('a Master handoff keeps only its own open tasks and says to resume as that Master', () => {
+  const md = project();
+  run('handoff', md, '--chat', 'M2');
+  const out = fs.readFileSync(path.join(md, 'masters', 'M2-next.md'), 'utf8');
+  assert.match(out, /W-M2-1/); assert.doesNotMatch(out, /W-M1-3/);
+  assert.match(out, /local_bbb/); assert.doesNotMatch(out, /local_aaa/);
+  assert.match(out, /resume.*as M2/); assert.match(out, /BOARD Masters row for M2/);
+});

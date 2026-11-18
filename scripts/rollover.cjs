@@ -2,7 +2,8 @@
 'use strict';
 // rollover.cjs: hand a long Chief chat over to a fresh one (owner, 2026-11-18). Zero model tokens.
 //   due <context_tokens> [--at 250000]   exit 0 and say "roll over" when the chat is at or past the point, else exit 1
-//   handoff <master_dir> [--chat C1]     write masters/<chat>-next.md: open work only, at most 60 lines, and print it
+//   handoff <master_dir> [--chat C1|M3]  write masters/<chat>-next.md: open work only, at most 60 lines, and print it.
+//                                        For a Master, only its own tasks (W-M3-*) go across, plus its area row.
 // Why: every step re-reads the whole chat, so a long Chief pays its full length on each step (cache reads were 97.7% of
 // one session's tokens). A fresh Chief built from files starts small, and the rules come from LAWS_DIGEST.md word for
 // word instead of a model's summary. Finished work is NOT copied: it stays in ACTION_LOG, handoffs/ and the BOARD's
@@ -35,13 +36,15 @@ function lastBlock(md) {
 }
 
 function handoff(md, chat) {
+  const master = /^M\d+$/.test(chat);
+  const mine = (r) => !master || new RegExp('\\b(W-)?' + chat + '\\b').test(r);
   const lines = [`# ${chat} handoff to a fresh chat (${new Date().toISOString().slice(0, 16)}Z)`, '',
-    'Boot as usual (`/master-brain chief`), then read this file instead of the old chat. Rules: `LAWS_DIGEST.md`, word for',
-    'word. Finished work is not here: grep ACTION_LOG, handoffs/ and the BOARD when you need it.', ''];
+    `Boot as usual (${master ? '`/master-brain resume`, as ' + chat + ', the same area owner' : '`/master-brain chief`'}), then read this file instead of the old chat.`,
+    'Rules: `LAWS_DIGEST.md`, word for word. Finished work is not here: grep ACTION_LOG, handoffs/ and the BOARD.', ''];
   const board = read(path.join(md, 'BOARD.md'));
   if (board) {
     for (const t of tables(board)) {
-      const keep = /master/i.test(t.heading) ? t.rows : t.rows.filter((r) => !DONE.test(r));
+      const keep = (/master/i.test(t.heading) ? t.rows : t.rows.filter((r) => !DONE.test(r))).filter(mine);
       if (!keep.length) continue;
       lines.push(`## ${t.heading || 'BOARD'}${/master/i.test(t.heading) ? '' : ` (open: ${keep.length} of ${t.rows.length})`}`, t.header, keep[0].replace(/[^|]/g, '-').replace(/-+/g, '---'), ...keep.slice(0, 20), '');
     }
@@ -54,8 +57,11 @@ function handoff(md, chat) {
   let servers = [];
   try { servers = require('./server.cjs').alive(md); } catch {}
   if (servers.length) lines.push('## Servers running', ...servers.map((s) => `- ${s.name}${s.port ? ' :' + s.port : ''} (pid ${s.pid})`), '');
-  lines.push('## First steps', '1. Message each Master in the table: "Chief is now <this session id>; send RESULTs here."',
-    `2. Tell the human in one line that the Chief rolled over and what is open.`, `3. The old chat writes nothing more; the human archives it.`);
+  lines.push('## First steps', master
+    ? `1. Write this session id into the BOARD Masters row for ${chat}, and tell the Chief: "${chat} is now <this session id>".`
+    : '1. Message each Master in the table: "Chief is now <this session id>; send RESULTs here."',
+    `2. ${master ? 'Then take the task that brought you here (the message from the Chief, or the bug report).' : 'Tell the human in one line that the Chief rolled over and what is open.'}`,
+    '3. The old chat writes nothing more; the human archives it.');
   return lines.slice(0, 60).join('\n') + '\n';
 }
 
