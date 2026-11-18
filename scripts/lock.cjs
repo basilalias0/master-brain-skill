@@ -6,6 +6,8 @@ const fs = require('fs');
 const path = require('path');
 
 const dirOf = (dir, name) => path.join(dir, String(name).replace(/[^\w.-]/g, '_'));
+const GRACE = 10e3; // ms a fresh folder may lack its owner file, and a reclaim guard may live
+const age = (d) => { try { return Date.now() - fs.statSync(d).mtimeMs; } catch { return Infinity; } };
 const meta = (owner, ttl) => JSON.stringify({ owner, time: Date.now(), expires: Date.now() + ttl * 1000 });
 
 function read(d) {
@@ -14,7 +16,8 @@ function read(d) {
     m.expired = Date.now() > m.expires;
     return m;
   } catch {
-    return fs.existsSync(d) ? { owner: '?', expired: true, corrupt: true } : null;
+    // No owner file: either another process is between mkdir and write, or a crash left it. Only the old one is stale.
+    return fs.existsSync(d) ? { owner: '?', expired: age(d) > GRACE, corrupt: true } : null;
   }
 }
 
@@ -33,11 +36,28 @@ function acquire(dir, name, owner, ttl) {
         fs.writeFileSync(path.join(d, 'owner.json'), meta(owner, ttl));
         return { ok: true, refreshed: true };
       }
-      if (!s || s.expired) { fs.rmSync(d, { recursive: true, force: true }); continue; }
+      if (!s) continue;
+      if (s.expired && reclaim(d)) continue;
       return { ok: false, holder: s };
     }
   }
   return { ok: false };
+}
+
+// Two contenders that both saw a stale lock would each delete it, and the later delete removes the other's new lock.
+// A guard folder lets one reclaim at a time, and the lock is read again under the guard before it is removed.
+function reclaim(d) {
+  const g = d + '.steal';
+  try { fs.mkdirSync(g); } catch (e) {
+    if (e.code !== 'EEXIST') throw e;
+    if (age(g) > GRACE) fs.rmSync(g, { recursive: true, force: true });
+    return false;
+  }
+  try {
+    const s = read(d);
+    if (s && s.expired) fs.rmSync(d, { recursive: true, force: true });
+    return true;
+  } finally { fs.rmSync(g, { recursive: true, force: true }); }
 }
 
 function release(dir, name, owner, force) {

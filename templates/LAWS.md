@@ -65,7 +65,8 @@ stale. Keep it at most 200 lines. Never commit it.
    clear, until green.
 9. **Workers ask only Master.** No worker talks to another unless Master pairs them (shared log
    `handoffs/pairs/<id>-<id>.md`). An unsafe or LOCK-breaking ask: stop and report.
-10. **No free worker: open a new one**, within the chat capacity (law 26).
+10. **No free worker: open a new one**, within the chat capacity (law 26). Size every request yourself (`core/SCALE.md`):
+    nobody has to name workers; ready tasks start together and the Master waits on any completion, never one at a time.
 11. **Token and tier choices are automatic.** Master has full authority over workers.
 12. **Compaction.**
     - Chief compacts at `500k` (always), a Research chat at `600k` (always), Master at `{{master window, e.g. 250k}}`, workers at `{{worker window, e.g. 200k}}`

@@ -8,7 +8,7 @@ verified: {{date}}
 |---|---|---|---|
 | list_agents | `ListAgents` | none | peers, busy/idle/waiting |
 | message | `SendMessage` | `to`, `message`, `summary`, `notify_when_idle` | the pinned messaging tool; `to` is the name from list_agents. The session-management send tool is deprecated. A peer in another permission mode may hold messages, so silence is not agreement: no answer after 1 cycle = `blocked`, never assume yes |
-| spawn_task | `mcp__ccd_session__spawn_task` | `title`, `prompt`, `tldr`, `cwd` | makes a chip the human starts; no model param |
+| spawn_task | `mcp__ccd_session__start_session` | `initiation`, `title`, `prompt`, `background` (fresh), `context` fresh/fork, `use_worktree`, `model`, `effort`, `name`, `wake_when_done` | starts a worker session and returns its id. `user_asked` only under the human's words (an approved scale plan's worker count: quote it); else `own_initiative`, a card the human starts. `model` and `effort` at or below this chat's. Replaced `spawn_task` (gone 2026-11-18) |
 | clear_session | `mcp__ccd_session_mgmt__clear_session` | `session_id` = `self` or an idle session this session started | human approves each call; `self` clears when the turn ends; a worker uses it only after the Master's `RESET`; another chat is refused unless this session started it |
 | set_session_model | `mcp__ccd_session_mgmt__set_session_model` | `session_id`, `model` | refused for self; `model` must be a picker id; no prompt for a session this chat started when the model is the same or cheaper |
 | set_session_effort | `mcp__ccd_session_mgmt__set_session_effort` | `session_id`, `effort` low/medium/high/xhigh/max | refused for self |
@@ -27,7 +27,9 @@ verified: {{date}}
 
 Verified 2026-10-05: the Agent tool accepts a model per call and the named model answered. A subagent result does not report its token use, so measure cost with get_usage (plan percent and context tokens) instead.
 
-UNKNOWN: whether the Chief or a Master can start a spawn_task chip itself (a `start_session` tool is named in other tool docs but is not exposed here: 2026-10-09; until confirmed the Chief batches chips for the human to click); the exact picker model ids for set_session_model.
+Verified 2026-11-18: `start_session` is on the desktop host and starts sessions itself (see the spawn_task row).
+
+UNKNOWN: the exact picker model ids for set_session_model.
 
 Probe check (no model tokens): copy the tool names from the loaded and deferred lists, one per line, to `<master_dir>/caps/tools-YYYY-MM-DD.txt`, then `node scripts/caps.cjs diff CAPABILITIES.md <that file>`. Exit 1 lists `missing:` or `unmapped:` tools: map each or mark it UNKNOWN. `Workflow`, `Monitor`, `ScheduleWakeup` and `PushNotification` are used by their real names and need no row.
 

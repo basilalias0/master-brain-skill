@@ -1,8 +1,29 @@
 # master-brain — a Claude Code skill for running a Master chat plus Worker chats
 
-Type `/master-brain` and that chat becomes a **Master**: it plans every task, picks the cheapest way to do each piece, runs worker chats in their own git worktrees, keeps append-only history files so any chat can resume, and reports to you. It works in any project. On first run it onboards the project.
+Type `/master-brain` and that chat becomes a **Master**: it sizes every request, picks the cheapest way to do each piece, runs worker chats in their own git worktrees, keeps append-only history files so any chat can resume, and reports to you. With several Masters, a **Chief** sits above them. It works in any project. On first run it onboards the project.
 
-It is built to spend few tokens: a 2k-token boot, scripts that do the mechanical work, tiered models and effort, short fixed-format briefs and results, and five helper modules bundled inside the skill (read only when used).
+It is built to spend few tokens: a 2k-token boot, scripts that do the mechanical work, tiered models and effort, short fixed-format briefs and results, and six helper modules bundled inside the skill (read only when used).
+
+## Big work runs in parallel (scale mode)
+
+You do not have to ask for workers. Every request is sized when it arrives (`scripts/scale.cjs size`):
+
+| Class | What happens |
+|---|---|
+| S | the Master does it itself |
+| M | one agent, no question to you |
+| L | workers start right away; you get one line saying so |
+| XL | **scale mode**: research, one round of questions, a costed plan, and you pick the worker count |
+
+In scale mode the Master researches the task, asks you up to 6 questions in one message (scope, the finish line, quality bar, deadline, how much of your usage it may spend), splits the work into waves by dependency, and shows a table like this (`scripts/scale.cjs plan`):
+
+| workers | wall hours | tokens | extra 5h windows | weekly % | bound by |
+|---|---|---|---|---|---|
+| 1 | 39 | 4.3M | 0 | 9 | workers |
+| 3 | 22 | 4.6M | 0 | 9 | dependencies |
+| 4 | 22 | 4.7M | 0 | 9 | dependencies |
+
+This is a sample 50-human-day plan: 3 workers finish in about 22 hours, and a 4th only adds tokens. You answer "how many workers?", they start together, and each finished task frees a slot for the next ready one. Nobody waits for tasks one at a time. Costs start as defaults marked "uncalibrated" and learn from your finished tasks (`route-log.cjs --size --pct`). More workers never save tokens: each adds its start-up cost, and your 5-hour window often limits speed before the worker count does. Details: `core/SCALE.md`.
 
 ## Install
 
@@ -18,6 +39,8 @@ On Windows the folder is `%USERPROFILE%\.claude\skills\master-brain`. Update wit
 | Type | Does |
 |---|---|
 | `/master-brain` or `resume` | Boot as Master (or onboard a new project), report status |
+| `chief` | Boot as the Chief above several Masters |
+| `scale <request>` | Size a request and, for big work, plan it with worker options |
 | `status` | 15-line snapshot from `STATE.md` and `BOARD.md` |
 | `onboard` | First run on a project |
 | `models` | Show the tier table (`MODELS.md`) |
@@ -26,12 +49,13 @@ On Windows the folder is `%USERPROFILE%\.claude\skills\master-brain`. Update wit
 | `developer [build|update]` | module: developer |
 | `analyze <target>` | module: analyzer (read-only) |
 | `test [report|implement]` | module: tester |
+| `decide <question>` | module: decide (close two-option questions) |
 | `audit [quick|standard|deep] [scope]` | security-audit (third party, optional) |
 | `help [name]` | Lists every module and subcommand (no model tokens) |
 
 ## Modules are bundled
 
-The five helpers (research, lean, developer, analyzer, tester) ship inside this skill as modules, read only when used. Only the optional third-party security-audit skill installs on demand, after you say yes, from `registry.json` at a pinned commit.
+The six helpers (research, lean, developer, analyzer, tester, decide) ship inside this skill as modules, read only when used. `research` (standard and deep) and `developer` update mode run a **community check** (`core/COMMUNITY.md`): they look for alternatives in issue trackers and community Q&A, then vet each one (date and version, official docs, security, licence, proof) before adopting it. Sites that refuse automated access are reported as not reached, never routed around. Only the optional third-party security-audit skill installs on demand, after you say yes, from `registry.json` at a pinned commit.
 
 ## Files
 
@@ -40,10 +64,10 @@ The five helpers (research, lean, developer, analyzer, tester) ship inside this 
 | `SKILL.md` | the router (boot, subcommands, install on demand) |
 | `PROCEDURE.md`, `procedure/` | the build, test, regress, log cycle |
 | `ONBOARDING.md` | first run on a project |
-| `core/` | PRECEDENCE, SAFETY, TOKENS, BRIEF, RESULT, LEGACY-INBOX |
+| `core/` | CHIEF, SCALE, COMMUNITY, TOKENS, PRECEDENCE, SAFETY, BRIEF, RESULT, PLAN-FORMAT, IMPROVE, UPDATE, LEGACY-INBOX |
 | `templates/` | LAWS, MODELS, CAPABILITIES |
 | `scripts/` | zero-token helpers (Node, no dependencies, each with a test) |
-| `modules/` | research, lean, developer, analyzer, tester (each `MODULE.md` + `HELP.md`) |
+| `modules/` | research, lean, developer, analyzer, tester, decide (each `MODULE.md` + `HELP.md`) |
 | `budget.json` | size caps; a cap may not rise without a measured gain |
 | `registry.json` | third-party skills it may install (none bundled) |
 | `VERSION`, `CHANGELOG.md`, `RELEASING.md` | versioning and the maintainer release gate |
@@ -60,7 +84,7 @@ Checked against each language's real test runner (Node, Python, Go, Java via JUn
 
 ## Tools it uses, and the fallback without them
 
-Laws name tools logically; `templates/CAPABILITIES.md` maps them. In the Claude desktop app everything is available. In the plain CLI:
+Laws name tools logically; `templates/CAPABILITIES.md` maps them, and `scripts/caps.cjs diff` checks that map against the tools a host offers. In the Claude desktop app everything is available: the Chief starts worker sessions itself with `start_session` after your yes (it replaced `spawn_task`, checked 2026-11-18). In the plain CLI:
 
 | Capability | Without it |
 |---|---|

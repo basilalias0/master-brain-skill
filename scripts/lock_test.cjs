@@ -30,3 +30,28 @@ test('force release works for any owner', () => {
   acquire(d, 'y', 'A', 60);
   assert.ok(release(d, 'y', 'Z', true).ok);
 });
+
+test('a lock being written (folder, no owner file yet) is not stolen', () => {
+  const d = tmp();
+  fs.mkdirSync(dirOf(d, 'mid'), { recursive: true });
+  assert.strictEqual(acquire(d, 'mid', 'B', 60).ok, false);
+});
+
+test('an old folder with no owner file is a crash leftover and is reclaimed', () => {
+  const d = tmp();
+  const p = dirOf(d, 'old');
+  fs.mkdirSync(p, { recursive: true });
+  const t = new Date(Date.now() - 60e3);
+  fs.utimesSync(p, t, t);
+  assert.ok(acquire(d, 'old', 'B', 60).ok);
+});
+
+test('while another contender reclaims a stale lock, nobody else deletes it', () => {
+  const d = tmp();
+  assert.ok(acquire(d, 's', 'A', 60).ok);
+  fs.writeFileSync(path.join(dirOf(d, 's'), 'owner.json'), JSON.stringify({ owner: 'A', time: 0, expires: 1 }));
+  fs.mkdirSync(dirOf(d, 's') + '.steal');
+  assert.strictEqual(acquire(d, 's', 'B', 60).ok, false);
+  fs.rmdirSync(dirOf(d, 's') + '.steal');
+  assert.ok(acquire(d, 's', 'B', 60).ok);
+});

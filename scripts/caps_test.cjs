@@ -9,7 +9,7 @@ const cp = require('child_process');
 const S = path.join(__dirname, 'caps.cjs');
 const FX = path.join(__dirname, 'fixtures', 'caps');
 const FROZEN = path.join(FX, 'CAPABILITIES-2.3.2.md');
-const HOST = path.join(FX, 'host-2026-10-19.txt');
+const HOST = path.join(FX, 'host-2026-11-18.txt'); // the newest host list; older ones stay as history
 const run = (cap, list) => cp.spawnSync('node', [S, 'diff', cap, list], { encoding: 'utf8' });
 const list = (names) => { const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'mb-cp-')), 'tools.txt'); fs.writeFileSync(f, names.join('\n') + '\n'); return f; };
 const { mapped } = require('./caps.cjs');
@@ -54,7 +54,7 @@ test('exact-name ignore does not hide a sibling tool', () => {
 });
 
 test("today's host vs frozen 2.3.2 template lists exactly the 5 new tools", () => {
-  const r = run(FROZEN, HOST);
+  const r = run(FROZEN, path.join(FX, 'host-2026-10-19.txt'));
   assert.strictEqual(r.status, 1);
   assert.match(r.stdout, /^missing: $/m);
   assert.strictEqual(r.stdout.match(/^unmapped: (.*)$/m)[1], ['mcp__ccd_host__sync_with_base_branch', 'mcp__ccd_session__dismiss_task',
@@ -65,4 +65,10 @@ test("today's host list exits 0 against the live template", () => {
   const r = run(path.join(__dirname, '..', 'templates', 'CAPABILITIES.md'), HOST);
   assert.strictEqual(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /^mapped: 18$/m);
+});
+
+test('the 2026-10-19 host had spawn_task, which the live template no longer maps', () => {
+  const r = run(path.join(__dirname, '..', 'templates', 'CAPABILITIES.md'), path.join(FX, 'host-2026-10-19.txt'));
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stdout, /^unmapped: mcp__ccd_session__spawn_task$/m);
 });

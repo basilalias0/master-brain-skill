@@ -14,6 +14,7 @@ const KNOWN_GROUPS = ['mcp__ccd_', 'mcp__scheduled-tasks__'];
 
 // Whole servers master-brain never uses.
 const IGNORE_PREFIX = [
+  'mcp__ccd_turn__', // the app's task list and wrap-up box, human-facing
   'mcp__ccd_sidebar__', // sidebar layout, human-facing
   'mcp__ccd_window__', // window layout, human-facing
   'mcp__ccd_view__', // pane layout, human-facing
@@ -28,6 +29,8 @@ const IGNORE_NAME = {
     'mark_chapter', // transcript chapters, cosmetic
     'read_widget_context', // inline widgets, not used by laws
     'move_to_cloud', // moving a chat is the human's call
+    'hand_off_to_session', // moves this chat's own task, the human's flow
+    'list_start_targets', // other folders and hosts are named by the human
   ],
   mcp__ccd_session_mgmt__: [
     'archive_session', // the human archives worker chats (law 5); Masters are never archived (CHIEF rule 10)

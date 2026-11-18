@@ -21,11 +21,11 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
 4. **Shared resources.** The Chief owns the lock order (`scripts/lock.cjs`), ports, branch rules and the heavy slot. A Master
    edits only its own lane's branch and folder; a fix for another lane goes by cherry-pick and is logged in
    `handoffs/pairs/C1-M#.md`.
-5. **Chips (worker chats).** A Master asks the Chief for a worker (`needs-chip`: lane, task, tier, branch, folder, the task's W and its own load / limit and context %; chat capacity law, `CAPACITY.md`). The Chief checks it with `scripts/capacity.cjs load` and the machine budget before making the chip. The Chief makes the
-   chip with `spawn_task`, names the requesting Master in the brief, and starts it itself when the host offers a
-   start-session capability (logical name `start_session`; UNKNOWN today, see `CAPABILITIES.md`). Without it the Chief
-   batches the chips and tells the human how many to click, one line each. A worker belongs to the Master that asked.
-   A chip-started session inherits the Chief's effort: once it starts, set its effort from its score (`MODELS.md`, Effort score) with `set_session_effort`.
+5. **Chips (worker chats).** A Master asks the Chief for a worker (`needs-chip`: lane, task, tier, branch, folder, the task's W and its own load / limit and context %; chat capacity law, `CAPACITY.md`). The Chief checks it with `scripts/capacity.cjs load` and the machine budget before making the chip. The Chief starts the
+   worker with `spawn_task` (`start_session`, confirmed 2026-11-18), names the requesting Master in the brief, and sets `effort` and
+   `model` from the task's score at start (`MODELS.md`, Effort score). `initiation: "user_asked"` only under the human's words for
+   this work (an approved scale plan's worker count counts: quote it); otherwise `own_initiative`, a card the human starts. No such
+   tool: batch the chips and tell the human how many to click, one line each. A worker belongs to the Master that asked.
    Stale chips: a chip this chat made that is superseded or no longer needed is withdrawn with `dismiss_task` (one-line reason); never another chat's chip.
 6. **Creating a Master.** Only for an area no Master owns yet (check the BOARD Masters table first, rule 10). The Chief
    writes `masters/M#.md` (the area it owns, lane, branch, folder, server and port, open items, reporting rule) and the
@@ -51,3 +51,7 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
     Master's count or the old shared numbers. **Always write the full id** (`W-M9-45`, never `W45`) in messages, chips,
     briefs, the BOARD and file names. The history file is `handoffs/<id>.md`. Ids made before 2026-11-03 (`W1`…`W39`)
     keep their names (owner, 2026-11-05).
+12. **Never one task at a time (owner, 2026-11-18).** The Chief and every Master size each request themselves
+    (`core/SCALE.md` §1; no one has to name workers), start every ready task of the plan at once within capacity, and
+    wait on any completion, not a chosen one. Each RESULT frees a slot that the next ready task takes at once. Big work
+    (class XL) goes through scale mode: research, one interview, the costed plan, the human's worker count.

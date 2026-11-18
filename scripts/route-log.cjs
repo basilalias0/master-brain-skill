@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 // route-log.cjs append --log FILE --task TYPE --start T1 --result pass|fail [--final T2] [--tokens N]
-//                      [--rework yes|no] [--correction yes|no] [--note TEXT]
+//                      [--rework yes|no] [--correction yes|no] [--size S|M|L|XL] [--pct N] [--note TEXT]
+// --size and --pct (the 5-hour window % this task used, get_usage before and after) calibrate scripts/scale.cjs.
 // Appends one JSON line per finished task. It only records; the routing table is never edited from here.
 // Task TYPE is a short key from the routing table (e.g. lookup, plan, bugfix). Never put secrets in --note.
 const fs = require('fs');
@@ -21,9 +22,12 @@ function build(o) {
   if (tokens !== null && !(Number.isInteger(tokens) && tokens >= 0)) err('--tokens must be a non-negative integer');
   const rework = yn(o.rework); const correction = yn(o.correction);
   if (rework === null || correction === null) err('--rework and --correction must be yes or no');
+  if (o.size !== undefined && !['S', 'M', 'L', 'XL'].includes(o.size)) err('--size must be S, M, L or XL');
+  const pct = o.pct === undefined ? null : Number(o.pct);
+  if (pct !== null && !(pct >= 0 && pct <= 100)) err('--pct must be 0-100');
   return {
     ts: new Date().toISOString(), task: o.task, start: o.start, final, result: o.result,
-    escalated: final !== o.start, tokens, rework, correction,
+    escalated: final !== o.start, tokens, rework, correction, size: o.size || null, pct,
     note: String(o.note || '').replace(/[\r\n]+/g, ' ').slice(0, 200),
   };
 }

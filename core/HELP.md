@@ -2,9 +2,13 @@
 
 ## index
 master-brain: Master/Worker orchestration plus helper modules. `help <name>` for detail.
-Boot and state: (none) or resume | status | onboard | models
+Boot and state: (none) or resume | scale | status | onboard | models
 Learning: improve | update | overlay | contribute
 Optional: audit (third-party security-audit)
+
+## scale
+Sizes a request (S, M, L, XL). Big work gets research, one round of questions, a plan in waves with wall time, tokens and 5-hour windows per worker count, and you pick how many workers run.
+Use: `/master-brain scale <request>`
 
 ## status
 Prints a snapshot of STATE.md and BOARD.md in 15 lines or fewer, with a nudge when enough tasks are logged to run improve.

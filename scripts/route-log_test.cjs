@@ -22,3 +22,12 @@ test('arena log line from procedure 05 is accepted', () => {
   assert.strictEqual(row.task, 'arena');
   assert.strictEqual(row.tokens, 2400000);
 });
+
+test('size and pct are recorded for scale.cjs and checked', () => {
+  const { build } = require('./route-log.cjs');
+  const r = build({ task: 'build', start: 'T1', result: 'pass', size: 'L', pct: '7', tokens: '400000' });
+  assert.strictEqual(r.size, 'L');
+  assert.strictEqual(r.pct, 7);
+  assert.throws(() => build({ task: 'build', start: 'T1', result: 'pass', size: 'huge' }), /--size/);
+  assert.throws(() => build({ task: 'build', start: 'T1', result: 'pass', pct: '140' }), /--pct/);
+});

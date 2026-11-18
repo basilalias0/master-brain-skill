@@ -22,7 +22,7 @@ Plans follow `core/PLAN-FORMAT.md`. You may build from its visual when the text 
 5. Self-audit: report only the items that failed or were not verified.
 
 ## Update mode
-1. Blast radius first: dependents, shared types and contracts, API consumers, jobs, frontend readers. List every place that must change with this one.
+1. Blast radius first: dependents, shared types and contracts, API consumers, jobs, frontend readers. List every place that must change. Tricky code (locks, spawning, parsing): community check, `core/COMMUNITY.md`.
 2. State the plan: "change A; that requires B, C and tests D because they share contract X".
 3. Change all affected modules consistently. Never edit one side of a contract. Keep the public contract unless the task changes it; if you must break it, version it and update every consumer.
 4. Update tests; add a regression test for the bug or gap.
