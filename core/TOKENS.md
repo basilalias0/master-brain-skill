@@ -35,7 +35,7 @@ Never route High work below T1 or default effort.
 - Check after each edit batch, not only at the end: run the project's type-check or linter through the same script. Fix or revert a batch that breaks it; never carry a red edit forward. Tests stay the final gate.
 - Edit, never rewrite whole files. Scaffold and codemod before writing by hand. Formatters and linters do formatting.
 - Reports 10 lines or fewer. Paths and line numbers, never pasted code. Diffs, not whole files, for review (read surrounding code for risky changes).
-- Screenshots only for visual changes; otherwise page text and the accessibility tree.
+- **Pages are checked by script, not by eye:** `scripts/page-check.cjs` waits until the page is ready (network quiet, fonts, `--wait-for`, animations off), checks `--text`, and compares an element with an approved baseline image. The model looks only at the `changed.png` crop a failing compare writes, never a full-page screenshot as proof. Without Playwright in the project: page text and the accessibility tree; a screenshot only for a visual change, after the page is ready, of the element, scaled down.
 - Batch independent tool calls into one message. Every extra turn re-reads the whole context.
 
 ## 5. Budget and effort

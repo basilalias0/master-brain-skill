@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased (2026-11-18, owner request; A/B suite not run): pages checked by script
+- `scripts/page-check.cjs` (tests): waits until a page is ready (network idle, fonts loaded, a `--wait-for` element visible, animations and caret off), checks expected text, counts console errors, and compares an element or the viewport with an approved baseline PNG pixel by pixel, in the browser's canvas so the skill needs no image library. On a difference it writes `diff.png` and a crop of only the changed area, `changed.png`. In a demo a colour change gave a 316x152 crop (2.6 KB) instead of a 1280x800 page. Uses the project's own Playwright and never installs it; when Playwright's browser was never downloaded it falls back to an installed Chrome or Edge, else exits 3 "not run". TOKENS §4: the model looks only at the crop; full-page screenshots are not proof.
+- Checked on this machine with Playwright 1.49 and 1.65 (neither had its own browser downloaded; both ran on the installed Chrome).
+
 ## Unreleased (2026-11-18, owner request; A/B suite not run): routing fixes from the Model Routing Playbook
 - `templates/MODELS.md` Escalation: diagnose before escalating (skipped a file or the checks: raise effort, same model; had everything and was still wrong: one tier up; never both). Under about 120k context change in place; over it, a fresh worker continues from the LAST block on the same branch, never a fork (a cache does not move between models). Once per task, then `needs-master`. Masters and the Chief never switch themselves.
 - Cheap-first only where the check is reliable: single-file fixes start on T0 only when tests or the type check catch a wrong fix (score Checking 0), else T1. Evidence: the playbook cites failed cheap runs at over 4x a good one and cascades degrading once the checker is wrong more than 20% of the time; here, a failed T0 test-writing run cost 126k against 55k for T1 (2026-10-05 ladder).
