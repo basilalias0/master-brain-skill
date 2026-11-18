@@ -1,5 +1,4 @@
-<!-- Part 4 of [PROCEDURE.md](../PROCEDURE.md) — added in 2.4.0 from lessons of a long design project (mechanisms only). -->
-## Design projects: research, summary, approval, spec, lock
+# Design projects: research, summary, approval, spec, lock
 
 Use this for work whose main output is a written design or spec that others build from (product design, architecture,
 a policy or a process), not code. It is loaded on demand.
@@ -25,12 +24,12 @@ a policy or a process), not code. It is loaded on demand.
 
 ### Handover (in `STATE.md`)
 - A `## Handover` block in `STATE.md`, 15 lines or fewer: current step, last decision, open decisions with their owner,
-  what others owe, next action. It also holds `rejections: <task-id> <n>` lines (procedure/05).
+  what others owe, next action. It also holds `rejections: <task-id> <n>` lines: a user correction or a RESULT sent back adds 1 (procedure/05).
 - Update it after every decision. After a compaction or a fresh chat, read it first. There is no separate start file.
 
 ### Deliverables
 - Scripts that produce a deliverable (a generated table, a diagram, an export) are committed in the project, next to
-  what they produce, never only in a scratchpad (law 4.6).
+  what they produce, never only in a scratchpad (law 4).
 - Before publishing a doc with diagrams, open it in the browser pane and read the console with
   `read_console_messages` (errors only): it must return 0 errors. Fix and re-check before sending the link.
 

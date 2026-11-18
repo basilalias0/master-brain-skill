@@ -69,6 +69,7 @@ test('general rule citing a decision card is refused', () => {
   const { dir, skill } = setup();
   assert.throws(() => ov.add(dir, skill, 'tester', 'Prefer the shared fixture loader', 'chosen in DC-004', 'general'), /decision card/);
   assert.throws(() => ov.add(dir, skill, 'tester', 'Follow DC-12 for seeding', 'measured', 'general'), /decision card/);
+  assert.throws(() => ov.add(dir, skill, 'tester', 'Follow DL-7 for seeding', 'measured', 'general'), /decision card/);
   assert.ok(ov.add(dir, skill, 'tester', 'Prefer the shared fixture loader', 'chosen in DC-004'));
   assert.ok(ov.add(dir, skill, 'tester', 'Prefer the shared fixture loader for seeds', 'saved 3 turns', 'general'));
 });
