@@ -60,7 +60,10 @@ stale. Keep it at most 200 lines. Never commit it.
    - if another worker is at 80% or more (BOARD `%`), wait for it **once**;
    - run **one** combined full suite (`{{full E2E command}}`) holding the heavy-slot lock
      (`scripts/lock.cjs acquire heavy`); the schema lock is the same mechanism;
-   - never wait for a second wave.
+   - never wait for a second wave;
+   - then stop the servers the run used: `scripts/server.cjs stop <master_dir> --all` (browser-pane previews:
+     `preview_stop`). Start every dev server with `server.cjs start` (it waits for the port, no polling turns) or
+     record it with `server.cjs register`, so it can be stopped; never stop a server the skill did not start.
 8. **After the sweep.** Green: the Master sends `RESET` (law 5). Red: the same worker fixes its failures, no
    clear, until green.
 9. **Workers ask only Master.** No worker talks to another unless Master pairs them (shared log

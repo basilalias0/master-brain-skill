@@ -53,6 +53,7 @@ Never route High work below T1 or default effort.
 
 - Workers do one task, then clear, unless the next task is in the same lane.
 - Start a fresh chat after each milestone; the state lives in `STATE.md` and the reports, not in the chat (a long chat is re-read every turn).
+- Dev servers: start with `scripts/server.cjs start` (it waits for the port), stop after the sweep and at task end (law 7). A running server costs no tokens but 4 machine points (`CAPACITY.md`); polling one with model turns costs tokens every turn.
 - Waiting: `Monitor` or Bash `run_in_background` with an until-loop, never sleep loops or status turns; at most 1 `PushNotification` per cycle, only when the human is away.
 - Status checks are commands (a detached script that writes a summary file, plus a node watcher), never a model turn that re-reads context.
 - Compact or clear at task boundaries with a short keep-list, not at the context limit.

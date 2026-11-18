@@ -21,7 +21,7 @@ tools:        none | browser | <groups>   (default none: skip browser and connec
 model_tier:   T0|T1|T2|T3   effort: low|medium|high|xhigh|max   score: N/10 (MODELS.md Effort score; Master applies; you never set them)
 budget:       files read N, tool calls N (read-only about 25-40; fix worker: per-task, about 10 calls per item; read ranges; one job per agent)   (at the limit: needs-master + partial progress)
 params:       research depth | tester phase | developer mode | lean level | audit profile
-port / slot:  <dev port>; heavy slot only through scripts/lock.cjs
+port / slot:  <dev port>; heavy slot only through scripts/lock.cjs; servers only via scripts/server.cjs start, stopped (stop <name>) before you report
 invocation:   worker (never run the Master boot)
 reply:        handoffs/W-M#-n.md (LAST block on top), then SendMessage Master the RESULT (core/RESULT.md)
 ```

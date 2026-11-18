@@ -17,7 +17,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const JOBS = [
-  ['dev or production server (grows to ~4 GB); a test run that starts its own server counts it too', 4],
+  ['dev or production server (grows to ~4 GB; stop it after use: scripts/server.cjs stop); a test run that starts its own server counts it too', 4],
   ['full browser e2e run (Playwright or similar)', 4],
   ['full unit test run', 3],
   ['browser sweep or driver (checker, screenshots)', 2],
@@ -102,6 +102,9 @@ function calibrate(dir, quiet) {
 }
 
 function check(dir) {
+  // Servers the skill started and never stopped hold 4 machine points each and nothing else does: say so at boot.
+  const left = require('./server.cjs').alive(dir || '');
+  if (left.length) console.log(`servers still running: ${left.map((r) => `${r.name}${r.port ? ' :' + r.port : ''}`).join(', ')}. Stop when no test needs them: node <skill_dir>/scripts/server.cjs stop <master_dir> --all`);
   const f = path.join(dir || '', 'CAPACITY.md');
   if (!fs.existsSync(f)) { calibrate(dir, true); return console.log(`capacity: calibrated for this machine, budget ${budget(spec())} (CAPACITY.md)`); }
   const m = fs.readFileSync(f, 'utf8').match(/<!-- capacity (\{.*\}) -->/);

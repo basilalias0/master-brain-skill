@@ -23,7 +23,9 @@ In scale mode the Master researches the task, asks you up to 6 questions in one 
 | 3 | 22 | 4.6M | 0 | 9 | dependencies |
 | 4 | 22 | 4.7M | 0 | 9 | dependencies |
 
-This is a sample 50-human-day plan: 3 workers finish in about 22 hours, and a 4th only adds tokens. You answer "how many workers?", they start together, and each finished task frees a slot for the next ready one. Nobody waits for tasks one at a time. Costs start as defaults marked "uncalibrated" and learn from your finished tasks (`route-log.cjs --size --pct`). More workers never save tokens: each adds its start-up cost, and your 5-hour window often limits speed before the worker count does. Details: `core/SCALE.md`.
+This is a sample 50-human-day plan: 3 workers finish in about 22 hours, and a 4th only adds tokens. You answer "how many workers?", they start together, and each finished task frees a slot for the next ready one. Nobody waits for tasks one at a time.
+
+**Dev servers stop after use.** Servers for browser tests start through `scripts/server.cjs start`, which waits for the port so no model turns are spent polling. They stop after the batched test run and at task end (`server.cjs stop --all`), including child processes such as `pnpm` → `vite`. Only servers the skill started are ever stopped, and boot reports any left running. Costs start as defaults marked "uncalibrated" and learn from your finished tasks (`route-log.cjs --size --pct`). More workers never save tokens: each adds its start-up cost, and your 5-hour window often limits speed before the worker count does. Details: `core/SCALE.md`.
 
 ## Install
 
