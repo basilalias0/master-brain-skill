@@ -6,7 +6,8 @@ Master sizes every request itself, and big work gets research, an interview, a c
 ## 1. Size every request (nobody has to ask for workers)
 At intake, before picking a path, estimate from the code map and FEATURE_INDEX, then run
 `node <skill_dir>/scripts/scale.cjs size --files N --areas N --parts N --hours H [--new] [--risk]`
-(`parts` = pieces that touch disjoint files and do not wait on each other; `hours` = agent hours). Follow the class:
+(`parts` = pieces that touch disjoint files and do not wait on each other; `hours` = agent hours). Quote its output line
+in the reply: a reply without it means the sizing was skipped (A/B pilot 2026-11-18: 1 run in 3 skipped it). Follow the class:
 
 | Class | Path |
 |---|---|
@@ -25,9 +26,9 @@ if the class moved. A worker with no passing check by half its budget stops and 
 ## 2. Scale mode (XL)
 1. **Research first** (`research` module, `deep` for new ground): the code, the stack, prior art, unknowns. Spend at most
    about 5% of the 5-hour window. Answer what the files answer; do not ask the human those.
-2. **Interview once:** one message, 6 questions or fewer, each with your default. Scope in and out; the finish line and how
-   it is checked; quality bar (prototype or production); deadline; areas not to touch; the share of the 5-hour and weekly
-   windows this run may use.
+2. **Questions, 6 or fewer, each with your default:** scope in and out; the finish line and how it is checked; quality bar
+   (prototype or production); deadline; areas not to touch; the share of the 5-hour and weekly windows this run may use.
+   Do not send them yet: plan on the defaults first (steps 3-5) and send everything in one message (step 6).
 3. **Break it down** into `<master_dir>/plans/<slug>.json`: tasks with `id`, `size` (S-XL), `deps`, `human_days` (how long a
    person would take), one lane each, disjoint files. Foundational work (schema, shared contracts) is alone in wave 1
    (procedure 3a). Split any XL task that can be split.
@@ -36,8 +37,10 @@ if the class moved. A worker with no passing check by half its budget stops and 
 5. **Plan:** `node <skill_dir>/scripts/scale.cjs plan <plan.json> --cap <C> --pct5h X --left5h P --pctWeek Y --leftWeek Q
    --log <master_dir>/routing-log.jsonl`. C = chat capacity (4 worker chats per Master, times the Masters you will use,
    within `CAPACITY.md`).
-6. **Ask:** the plan per `core/PLAN-FORMAT.md` (waves as the visual), the script's table as printed, its recommendation,
-   what is out of scope, top 3 risks, then one question: "How many workers? (recommended N)". Wait. Their number is the cap.
+6. **Ask once, in one message:** the questions with their defaults, then the plan built on those defaults per
+   `core/PLAN-FORMAT.md` (waves as the visual), the script's table as printed, its recommendation, what is out of scope,
+   top 3 risks, and "How many workers? (recommended N)". Wait. Answers that change the plan: re-run `plan` and send only
+   what changed. Their number is the cap. (A/B pilot 2026-11-18: 3 of 3 runs spent a round trip on questions alone.)
 7. **Start:** `start_session` per worker (CAPABILITIES `spawn_task`), `initiation: "user_asked"` quoting their yes, a full
    brief (`core/BRIEF.md`), `effort` and `model` from the task's score, `wake_when_done: true`.
 

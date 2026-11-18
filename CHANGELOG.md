@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased (2026-11-18, from the A/B pilot; not re-tested, owner: the weekly budget is low)
+- `core/SCALE.md` §2: scale mode sends its questions and the plan built on their defaults in one message, with the worker-count question, instead of questions first and the plan a round trip later (pilot: 3 of 3 runs stopped after the questions alone). Answers that change the plan re-run `plan` and send only what changed.
+- `core/SCALE.md` §1: the reply quotes the `scale.cjs size` output line, so a skipped sizing shows (pilot: 1 of 3 runs judged the class without the script).
+- Results and cost: `plans/ab-pilot-2026-11-18.md`. Re-test both next week with the full suite.
+
 ## Unreleased (2026-11-18, owner request; A/B suite not run): pages checked by script
 - `scripts/page-check.cjs` (tests): waits until a page is ready (network idle, fonts loaded, a `--wait-for` element visible, animations and caret off), checks expected text, counts console errors, and compares an element or the viewport with an approved baseline PNG pixel by pixel, in the browser's canvas so the skill needs no image library. On a difference it writes `diff.png` and a crop of only the changed area, `changed.png`. In a demo a colour change gave a 316x152 crop (2.6 KB) instead of a 1280x800 page. Uses the project's own Playwright and never installs it; when Playwright's browser was never downloaded it falls back to an installed Chrome or Edge, else exits 3 "not run". TOKENS §4: the model looks only at the crop; full-page screenshots are not proof.
 - Checked on this machine with Playwright 1.49 and 1.65 (neither had its own browser downloaded; both ran on the installed Chrome).
