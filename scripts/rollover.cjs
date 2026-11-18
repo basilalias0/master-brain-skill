@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// rollover.cjs: hand a long Chief chat over to a fresh one (owner, 2026-11-18). Zero model tokens.
+// rollover.cjs: hand a long Chief or Master chat over to a fresh one. Zero model tokens.
 //   due <context_tokens> [--at 250000]   exit 0 and say "roll over" when the chat is at or past the point, else exit 1
 //   handoff <master_dir> [--chat C1|M3]  write masters/<chat>-next.md: open work only, at most 60 lines, and print it.
 //                                        For a Master, only its own tasks (W-M3-*) go across, plus its area row.
@@ -27,12 +27,13 @@ function tables(md) {
   return out;
 }
 
-function lastBlock(md) {
+// The LAST block of a history file. Default: open lines only (done ones stay in the file), 12 at most.
+function lastBlock(md, { keepDone = false, max = 12 } = {}) {
   if (!md) return [];
   const ls = md.split('\n'); const i = ls.findIndex((l) => /^## LAST/.test(l));
   if (i < 0) return [];
   const end = ls.findIndex((l, k) => k > i && /^## /.test(l));
-  return ls.slice(i + 1, end < 0 ? ls.length : end).filter((l) => l.trim() && !DONE.test(l)).slice(0, 12);
+  return ls.slice(i + 1, end < 0 ? ls.length : end).filter((l) => l.trim() && (keepDone || !DONE.test(l))).slice(0, max);
 }
 
 function handoff(md, chat) {
@@ -66,6 +67,9 @@ function handoff(md, chat) {
   return lines.slice(0, 60).join('\n') + '\n';
 }
 
+// Due at or past the rollover point (default 250k context tokens).
+function due(tokens, at = 250000) { return Number(tokens) >= Number(at); }
+
 if (require.main === module) {
   const [cmd, a, ...rest] = process.argv.slice(2);
   const flag = (n, d) => { const i = rest.indexOf(n); return i >= 0 ? rest[i + 1] : d; };
@@ -87,4 +91,4 @@ if (require.main === module) {
   process.exit(2);
 }
 
-module.exports = { handoff, tables, lastBlock };
+module.exports = { handoff, tables, lastBlock, due };

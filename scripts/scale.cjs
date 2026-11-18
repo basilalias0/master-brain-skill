@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 'use strict';
-// scale.cjs: size a request and plan a parallel run (core/SCALE.md; owner, 2026-11-18). Zero model tokens.
+// scale.cjs: size a request and plan a parallel run (core/SCALE.md). Zero model tokens.
 //   size --files N --areas N --parts N --hours H [--new] [--risk]   prints the class S|M|L|XL and the path to take
+//        [--clarity --reach --mistake --newness --checking 0-2 each]  also prints tier and effort (MODELS.md Effort score)
 //   plan <plan.json> [--cap N] [--left5h PCT] [--leftWeek PCT] [--pct5h X] [--pctWeek X] [--log routing-log.jsonl]
 //     plan.json: { "tasks": [ { "id", "size": "S|M|L|XL", "deps": [ids], "hours"?, "tokens"?, "human_days"? } ] }
 //     --cap      most workers that may run at once (chat capacity law: 4 per Master, times the Masters you will use)
@@ -31,6 +32,21 @@ function classify({ files = 0, areas = 1, parts = 1, hours = 0, isNew = false, r
     XL: 'scale mode (core/SCALE.md): research, interview, plan with worker options, the human picks N',
   }[c];
   return { class: c, path, high: risk };
+}
+
+// MODELS.md Effort score: five factors 0-2. Total to effort; 8+ lifts the tier to T2; 0-2 with Checking 0 may use T0.
+// High risk (--risk): floors T1 and high effort. Max effort only with the human's yes or after a failed attempt.
+const FACTORS = ['clarity', 'reach', 'mistake', 'newness', 'checking'];
+function effort(o) {
+  if (!FACTORS.some((f) => o[f] !== undefined)) return null;
+  const v = FACTORS.map((f) => (o[f] === undefined ? 0 : Number(o[f])));
+  if (v.some((x) => ![0, 1, 2].includes(x))) throw new Error('--clarity --reach --mistake --newness --checking take 0, 1 or 2');
+  const score = v.reduce((a, b) => a + b, 0);
+  const LEVELS = ['low', 'medium', 'high', 'xhigh', 'max'];
+  let e = score <= 2 ? 0 : score <= 5 ? 1 : score <= 7 ? 2 : score <= 9 ? 3 : 4;
+  let tier = score >= 8 ? 'T2' : score <= 2 && v[4] === 0 && !o.risk ? 'T0' : 'T1';
+  if (o.risk) e = Math.max(e, 2);
+  return { score, effort: LEVELS[e], tier, note: e === 4 ? " (max needs the human's yes or a failed attempt; else xhigh)" : '' };
 }
 
 function calibrate(logFile) {
@@ -168,10 +184,14 @@ if (require.main === module) {
   const [cmd, ...rest] = process.argv.slice(2);
   const o = args(rest);
   try {
-    if (cmd === 'size') { const r = classify(o); console.log(`${r.class}: ${r.path}${r.high ? ' (High risk: tier floors apply)' : ''}`); }
+    if (cmd === 'size') {
+      const r = classify(o); const e = effort(o);
+      console.log(`${r.class}: ${r.path}${r.high ? ' (High risk: tier floors apply)' : ''}`);
+      if (e) console.log(`tier ${e.tier} (the routing table may raise it), effort ${e.effort}${e.note}: score ${e.score}/10`);
+    }
     else if (cmd === 'plan') { const r = plan(JSON.parse(fs.readFileSync(o._[0], 'utf8')), o); console.log(render(r, o)); }
-    else { console.error('usage: scale.cjs size --files N --areas N --parts N --hours H [--new] [--risk] | plan <plan.json> [--cap N] [--pct5h X] [--left5h PCT] [--pctWeek X] [--leftWeek PCT] [--log FILE]'); process.exit(2); }
+    else { console.error('usage: scale.cjs size --files N --areas N --parts N --hours H [--new] [--risk] [--clarity --reach --mistake --newness --checking 0-2] | plan <plan.json> [--cap N] [--pct5h X] [--left5h PCT] [--pctWeek X] [--leftWeek PCT] [--log FILE]'); process.exit(2); }
   } catch (e) { console.error(String(e.message || e)); process.exit(2); }
 }
 
-module.exports = { classify, plan, makespan, load, calibrate };
+module.exports = { classify, effort, plan, makespan, load, calibrate };

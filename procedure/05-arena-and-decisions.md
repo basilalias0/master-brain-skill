@@ -29,19 +29,19 @@ calls, about 2.4-6.9M tokens".
 
 ### Pre-flight (any failed item = no arena; name the item)
 *Phase A, before the offer (no model tokens):*
-1. `node scripts/install-skill.cjs --check arena` exits 0.
-2. `get_usage`, then `node scripts/decisions.cjs usage-gate --five <pct> --week <pct>` exits 0 (the "no arena" column
+1. `node <skill_dir>/scripts/install-skill.cjs --check arena` exits 0.
+2. `get_usage`, then `node <skill_dir>/scripts/decisions.cjs usage-gate --five <pct> --week <pct>` exits 0 (the "no arena" column
    of the `core/TOKENS.md` section 6 table; a missing, failed or non-numeric value counts as 90). Then the offer line.
 
 *Phase B, after the owner's yes:*
 3. `python3 --version` (or `python --version`) is 3.8 or newer.
-4. `<master_dir>/arena/` exists (create it); `node scripts/decisions.cjs check-private <master_dir>/arena --skill <skill root>`
+4. `<master_dir>/arena/` exists (create it); `node <skill_dir>/scripts/decisions.cjs check-private <master_dir>/arena --skill <skill root>`
    exits 0.
 5. In a git repo (`git rev-parse --is-inside-work-tree` exits 0): the project `.gitignore` has `.arena/` (added once,
    with the owner's yes) and `git check-ignore -q .arena` exits 0. In a plain folder: skip this item and say so.
 6. Before snapshot: in a repo, `git status --porcelain > <master_dir>/arena/before.txt`; in a plain folder,
-   `node scripts/decisions.cjs tree-hash <project> --skip <master_dir>/arena > <master_dir>/arena/before.txt`.
-7. `node scripts/decisions.cjs scan-task <master_dir>/arena/.arena` exits 0. It scans `task.md` and, when present,
+   `node <skill_dir>/scripts/decisions.cjs tree-hash <project> --skip <master_dir>/arena > <master_dir>/arena/before.txt`.
+7. `node <skill_dir>/scripts/decisions.cjs scan-task <master_dir>/arena/.arena` exits 0. It scans `task.md` and, when present,
    `baseline.md` (every sub-agent sees it) for secrets and denied words (`MB_DENY`), and accepts only this project's
    cards or `owner-wide` cards. It exits 2 when `task.md` is missing.
 
@@ -56,7 +56,7 @@ calls, about 2.4-6.9M tokens".
 11. After the run: the same snapshot command again, compared with `before.txt`. Any difference, and any
     `<project>/.arena`, is reported to the human. Results are applied only after the owner's yes.
 12. Log one line:
-    `node scripts/route-log.cjs append --log <master_dir>/routing-log.jsonl --task arena --start T1 --result pass|fail --tokens <integer> --rework no --correction no --note "<card>, attacks survived, final-check score or none"`
+    `node <skill_dir>/scripts/route-log.cjs append --log <master_dir>/routing-log.jsonl --task arena --start T1 --result pass|fail --tokens <integer> --rework no --correction no --note "<card>, attacks survived, final-check score or none"`
     The first real runs record the measured cost; that evidence sets the default size.
 
 ### The decision bank (private)

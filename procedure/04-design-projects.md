@@ -14,12 +14,12 @@ a policy or a process), not code. It is loaded on demand.
 
 ### A locked spec
 - The first lines are `Status: LOCKED YYYY-MM-DD` and `body_sha256: <hex>`. Get the hex with
-  `node scripts/drift.cjs hash <spec.md>` at lock time.
+  `node <skill_dir>/scripts/drift.cjs hash <spec.md>` at lock time.
 - After the lock the body is never edited. Changes are added only as lines under `## Change log`, each
   `- YYYY-MM-DD CL-<n>: <text>`, and a change line overrides the body where they differ.
 - A fold rewrites the body with the change lines merged in. It needs the owner's yes, a new lock date and hash, and a
   `<!-- folded YYYY-MM-DD -->` marker under `## Change log`.
-- Check: `node scripts/drift.cjs check <spec folder>` reports change lines since the last fold, `fold due` at 5 lines or
+- Check: `node <skill_dir>/scripts/drift.cjs check <spec folder>` reports change lines since the last fold, `fold due` at 5 lines or
   14 days, and `body edited after lock` on a hash mismatch. Run it before any reply that cites the spec; offer a fold
   when it is due; report an edited body to the owner at once.
 

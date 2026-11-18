@@ -85,7 +85,7 @@ waiting 0.2, queued 0. A task fits when L + W ≤ limit × F.
 
 | Context used | under 50% | 50-70% | 70-85% | 85% or more |
 |---|---|---|---|---|
-| F | 1.0 | 0.8 | 0.6 | 0: take nothing new; write the LAST block, compact, go on |
+| F | 1.0 | 0.8 | 0.6 | 0: take nothing new; write the LAST block, roll over |
 
 <!-- capacity ${JSON.stringify({ ...fp, budget: b })} -->
 `;
@@ -102,20 +102,23 @@ function calibrate(dir, quiet) {
 }
 
 function check(dir) {
+  const out = [];
   // Servers the skill started and never stopped hold 4 machine points each and nothing else does: say so at boot.
   const left = require('./server.cjs').alive(dir || '');
-  if (left.length) console.log(`servers still running: ${left.map((r) => `${r.name}${r.port ? ' :' + r.port : ''}`).join(', ')}. Stop when no test needs them: node <skill_dir>/scripts/server.cjs stop <master_dir> --all`);
+  if (left.length) out.push(`servers still running: ${left.map((r) => `${r.name}${r.port ? ' :' + r.port : ''}`).join(', ')}. Stop when no test needs them: node <skill_dir>/scripts/server.cjs stop <master_dir> --all`);
   const f = path.join(dir || '', 'CAPACITY.md');
-  if (!fs.existsSync(f)) { calibrate(dir, true); return console.log(`capacity: calibrated for this machine, budget ${budget(spec())} (CAPACITY.md)`); }
+  if (!fs.existsSync(f)) { calibrate(dir, true); out.push(`capacity: calibrated for this machine, budget ${budget(spec())} (CAPACITY.md)`); return out; }
   const m = fs.readFileSync(f, 'utf8').match(/<!-- capacity (\{.*\}) -->/);
   const now = fingerprint(spec());
   const old = m ? JSON.parse(m[1]) : {};
   if (old.ramGB !== now.ramGB || old.cores !== now.cores || old.host !== now.host) {
     calibrate(dir, true);
-    console.log(`capacity: machine changed, recalibrated: budget ${budget(spec())} (was ${old.budget ?? 'unknown'})`);
+    out.push(`capacity: machine changed, recalibrated: budget ${budget(spec())} (was ${old.budget ?? 'unknown'})`);
   }
+  return out;
 }
 
+// Returns { full, lines }; the CLI prints the lines and exits 1 when full.
 function load(role, ctxS, tasks, next) {
   if (!(role in LIMITS)) throw new Error(`bad role "${role}" (worker|master|chief)`);
   const ctx = Number(ctxS);
@@ -125,34 +128,37 @@ function load(role, ctxS, tasks, next) {
   const cap = q(LIMITS[role] * factor(ctx));
   const running = (h) => ws.filter((t) => t.hold === h && (t.state === 'active' || t.state === 'bg')).length;
   const broken = [];
+  const out = [];
   if (role === 'master' && running('sup') > 4) broken.push(`${running('sup')} worker chats running (cap 4)`);
   if (running('sub') > 2) broken.push(`${running('sub')} subagents (cap 2)`);
   if (role === 'worker' && running('do') > 1) broken.push(`${running('do')} jobs (cap 1)`);
-  ws.forEach((t) => console.log(`  ${t.task.padEnd(16)} W ${t.w}`));
-  console.log(`load ${L} / ${cap} (${role} limit ${LIMITS[role]} × F ${factor(ctx)} at ${ctx}% context)`);
-  if (broken.length) console.log(`hard cap broken: ${broken.join('; ')}`);
+  ws.forEach((t) => out.push(`  ${t.task.padEnd(16)} W ${t.w}`));
+  out.push(`load ${L} / ${cap} (${role} limit ${LIMITS[role]} × F ${factor(ctx)} at ${ctx}% context)`);
+  if (broken.length) out.push(`hard cap broken: ${broken.join('; ')}`);
   let full = L > cap || broken.length > 0;
   if (next) {
     const n = weight(next);
     const fits = !full && L + n.w <= cap;
-    console.log(`new ${next}: W ${n.w}: ${fits ? 'take it' : 'FULL: reuse an idle worker, else needs-chip to the Chief'}`);
+    out.push(`new ${next}: W ${n.w}: ${fits ? 'take it' : 'FULL: reuse an idle worker, else needs-chip to the Chief'}`);
     full = !fits;
-  } else console.log(full ? 'FULL: take nothing new (ladder: reuse an idle worker, else needs-chip)' : `room ${q(cap - L)}`);
-  if (factor(ctx) === 0) console.log('context at 85%+: write the LAST block and BOARD, let it compact, then go on');
-  return full ? 1 : 0;
+  } else out.push(full ? 'FULL: take nothing new (ladder: reuse an idle worker, else needs-chip)' : `room ${q(cap - L)}`);
+  if (factor(ctx) === 0) out.push('context at 85%+: take nothing new; write the LAST block and BOARD, then roll over (a worker: a fresh worker continues)');
+  return { full, lines: out };
 }
 
 if (require.main === module) {
   const [cmd, ...a] = process.argv.slice(2);
   try {
     if (cmd === 'calibrate') calibrate(a[0]);
-    else if (cmd === 'check') check(a[0]);
+    else if (cmd === 'check') check(a[0]).forEach((l) => console.log(l));
     else if (cmd === 'load') {
       const i = a.indexOf('--new');
       const next = i >= 0 ? a[i + 1] : null;
       const rest = i >= 0 ? a.slice(0, i).concat(a.slice(i + 2)) : a;
-      process.exit(load(rest[0], rest[1], rest.slice(2), next));
+      const r = load(rest[0], rest[1], rest.slice(2), next);
+      r.lines.forEach((l) => console.log(l));
+      process.exit(r.full ? 1 : 0);
     } else { console.error('usage: capacity.cjs calibrate|check <master_dir> | load <role> <ctx%> <score:hold:state>... [--new <task>]'); process.exit(2); }
   } catch (e) { console.error(String(e.message || e)); process.exit(2); }
 }
-module.exports = { budget, factor, weight, fingerprint };
+module.exports = { budget, factor, weight, fingerprint, check, load, LIMITS };

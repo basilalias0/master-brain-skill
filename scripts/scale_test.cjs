@@ -76,3 +76,20 @@ test('plan: --pct5h comes from the log when it is not given', () => {
   assert.strictEqual(r.o.pct5h, 12);
   assert.strictEqual(r.rows[0].windows5h, 0);
 });
+
+test('size with the five effort factors prints tier and effort from the MODELS score', () => {
+  const { effort } = require('./scale.cjs');
+  assert.strictEqual(effort({ files: 1 }), null, 'no factors: no effort line');
+  assert.deepStrictEqual(effort({ clarity: 0, reach: 1, checking: 0 }), { score: 1, effort: 'low', tier: 'T0', note: '' });
+  assert.strictEqual(effort({ clarity: 1, checking: 1 }).tier, 'T1');
+  assert.strictEqual(effort({ clarity: 2, reach: 1, mistake: 1, newness: 1 }).effort, 'medium');
+  assert.strictEqual(effort({ clarity: 2, reach: 2, mistake: 2, newness: 1, checking: 1 }).effort, 'xhigh');
+  assert.strictEqual(effort({ clarity: 2, reach: 2, mistake: 2, newness: 1, checking: 1 }).tier, 'T2');
+  assert.match(effort({ clarity: 2, reach: 2, mistake: 2, newness: 2, checking: 2 }).note, /human's yes/);
+  assert.deepStrictEqual([effort({ clarity: 1, risk: true }).effort, effort({ clarity: 1, risk: true }).tier], ['high', 'T1']);
+  assert.throws(() => effort({ clarity: 3 }), /0, 1 or 2/);
+  const r = cp.spawnSync('node', [S, 'size', '--files', '2', '--hours', '1', '--clarity', '1', '--reach', '1', '--mistake', '1', '--newness', '0', '--checking', '1'], { encoding: 'utf8' });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^M: /);
+  assert.match(r.stdout, /tier T1 .*effort medium: score 4\/10/);
+});

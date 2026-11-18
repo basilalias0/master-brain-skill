@@ -30,6 +30,20 @@ test('stamp writes the hash and digest-check detects a changed LAWS', () => {
   assert.notStrictEqual(digestHash(dig), sha(laws));
 });
 
+test('digest generates one line per law with title and first sentence, and stamps it', () => {
+  const { digest } = require('./law-lint.cjs');
+  const d = tmp();
+  const laws = path.join(d, 'LAWS.md');
+  const dig = path.join(d, 'LAWS_DIGEST.md');
+  fs.writeFileSync(laws, '# LAWS\n## Roles\n1. not a law\n## The laws\n1. **Plan first.** Master plans. Then more.\n2. **Talk**: direct\n   by name; never broadcast.\n## Files\n3. no\n');
+  assert.strictEqual(digest(laws, dig), 2);
+  const out = fs.readFileSync(dig, 'utf8');
+  assert.match(out, /^1\. \*\*Plan first\.\*\* Master plans\.$/m);
+  assert.match(out, /^2\. \*\*Talk\.\*\* direct by name;$/m);
+  assert.doesNotMatch(out, /not a law|^3\./m);
+  assert.strictEqual(digestHash(dig), sha(laws));
+});
+
 const FX = path.join(__dirname, 'fixtures', 'onboarded', 'master-brain');
 const TEMPLATE = path.join(__dirname, '..', 'templates', 'LAWS.md');
 // The text of law n: from the line "n. " up to the next numbered law or heading; null when the law does not exist.

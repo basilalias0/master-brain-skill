@@ -33,6 +33,6 @@ Verified 2026-11-18: `start_session` is on the desktop host and starts sessions 
 
 UNKNOWN: the exact picker model ids for set_session_model.
 
-Probe check (no model tokens): copy the tool names from the loaded and deferred lists, one per line, to `<master_dir>/caps/tools-YYYY-MM-DD.txt`, then `node scripts/caps.cjs diff CAPABILITIES.md <that file>`. Exit 1 lists `missing:` or `unmapped:` tools: map each or mark it UNKNOWN. `Workflow`, `Monitor`, `ScheduleWakeup` and `PushNotification` are used by their real names and need no row.
+Probe check (no model tokens): copy the tool names from the loaded and deferred lists, one per line, to `<master_dir>/caps/tools-YYYY-MM-DD.txt`, then `node <skill_dir>/scripts/caps.cjs diff CAPABILITIES.md <that file>`. Exit 1 lists `missing:` or `unmapped:` tools: map each or mark it UNKNOWN. `Workflow`, `Monitor`, `ScheduleWakeup` and `PushNotification` are used by their real names and need no row.
 
 Without the desktop app (plain CLI): spawn_task becomes a paste prompt (`core/LEGACY-INBOX.md`), clear and model switches become steps the human does, usage is reported by the human, scheduling becomes the human typing `resume`.

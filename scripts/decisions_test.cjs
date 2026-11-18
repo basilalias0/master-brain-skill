@@ -12,65 +12,50 @@ const run = (args, env) => cp.spawnSync('node', [S, ...args], { encoding: 'utf8'
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'mb-dc-'));
 const git = (a, cwd) => cp.execFileSync('git', a, { cwd, encoding: 'utf8' });
 
-function card(id, o = {}) {
-  const f = { Keywords: 'cache, queue', Date: '2026-09-01', Question: 'Which queue for jobs?', Options: 'A; B', Criteria: 'cost 50, effort 50',
-    Evidence: 'two public write-ups', 'Inspired-by': 'public docs', Decision: 'A', Confidence: '70', Arena: 'none',
-    'Review-by': '2026-12-01', 'Failure-signal': 'p95 over 2s', Share: 'project', Supersedes: 'none', ...o.fields };
-  const head = [`## ${id} — ${o.sig || 'queue choice'}`, ...Object.entries(f).filter(([, v]) => v !== null).map(([k, v]) => `${k}: ${v}`)];
-  return head.concat(o.tail || []).join('\n') + '\n';
+function entry(id, o = {}) {
+  const f = { Keywords: 'cache, queue', Type: 'Architecture-Decision', 'First seen': 'jobs, 2026-09-01', Trigger: 'Which queue for jobs?',
+    'Decision/Fix': 'A', 'Reuse signature': 'queue choice', Confidence: '70', 'Review-by': '2026-12-01', 'Failure-signal': 'p95 over 2s', ...o.fields };
+  return [`## ${id} — ${o.sig || 'queue choice'}`, ...Object.entries(f).filter(([, v]) => v !== null).map(([k, v]) => `${k}: ${v}`), ...(o.tail || []), ''].join('\n');
 }
-function bank(cards) {
-  const b = tmp();
-  for (const [id, text] of Object.entries(cards)) fs.writeFileSync(path.join(b, id + '.md'), text);
-  return b;
+function log(...es) {
+  const f = path.join(tmp(), 'ACTION_LOG.md');
+  fs.writeFileSync(f, fs.readFileSync(path.join(__dirname, '..', 'templates', 'ACTION_LOG.md'), 'utf8') + es.join('\n'));
+  return f;
 }
 
-test('lint rejects a card missing review-by or failure signal', () => {
-  const b = bank({ 'DC-001': card('DC-001', { fields: { 'Review-by': null } }), 'DC-002': card('DC-002', { fields: { 'Failure-signal': null } }), 'DC-003': card('DC-003') });
-  const r = run(['lint', b]);
-  assert.strictEqual(r.status, 1);
-  assert.match(r.stdout, /DC-001: missing Review-by/);
-  assert.match(r.stdout, /DC-002: missing Failure-signal/);
-  assert.doesNotMatch(r.stdout, /DC-003/);
-  assert.strictEqual(run(['lint', path.join(b, 'nope')]).status, 2);
+test('lint checks the optional decision fields and Supersedes; the template alone is clean', () => {
+  assert.strictEqual(run(['lint', log()]).status, 0);
+  const bad = run(['lint', log(entry('DL-001', { fields: { Confidence: '140' } }), entry('DL-002', { fields: { 'Review-by': 'soon', Supersedes: 'DL-009' } }), entry('DL-003', { fields: { Confidence: null } }))]);
+  assert.strictEqual(bad.status, 1);
+  assert.match(bad.stdout, /DL-001: Confidence must be 0-100/);
+  assert.match(bad.stdout, /DL-002: Review-by must be YYYY-MM-DD/);
+  assert.match(bad.stdout, /DL-002: Supersedes names an entry that does not exist: DL-009/);
+  assert.doesNotMatch(bad.stdout, /DL-003/);
+  assert.strictEqual(run(['lint', path.join(tmp(), 'nope.md')]).status, 2);
 });
 
-test('due lists only past-review and failure-seen cards', () => {
-  const b = bank({
-    'DC-001': card('DC-001', { fields: { 'Review-by': '2026-10-01' } }),
-    'DC-002': card('DC-002', { tail: ['Outcome 2026-10-05: failure-signal seen — p95 3s'] }),
-    'DC-003': card('DC-003'),
-    'DC-004': card('DC-004', { fields: { 'Review-by': '2026-10-01' }, tail: ['Status 2026-10-02: superseded-by DC-003 — replaced'] }),
-  });
-  const out = d.due(b, '2026-10-19');
-  assert.deepStrictEqual(out.map((l) => l.split(' ')[0]), ['DC-001', 'DC-002']);
+test('due lists only past-review and failure-seen entries, never superseded ones', () => {
+  const f = log(
+    entry('DL-001', { fields: { 'Review-by': '2026-10-01' } }),
+    entry('DL-002', { tail: ['Outcome 2026-10-05: failure-signal seen — p95 3s'] }),
+    entry('DL-003'),
+    entry('DL-004', { fields: { 'Review-by': '2026-10-01' } }),
+    entry('DL-005', { fields: { Supersedes: 'DL-004', 'Review-by': null } }),
+  );
+  const out = d.due(f, '2026-10-19');
+  assert.deepStrictEqual(out.map((l) => l.split(' ')[0]), ['DL-001', 'DL-002']);
   assert.match(out[1], /failure signal seen 2026-10-05/);
 });
 
-test('edited card head is refused', () => {
-  const b = bank({ 'DC-001': card('DC-001') });
-  assert.strictEqual(run(['lint', b]).status, 0);
-  assert.ok(JSON.parse(fs.readFileSync(path.join(b, '.index.json'), 'utf8')).cards['DC-001']);
-  fs.appendFileSync(path.join(b, 'DC-001.md'), 'Status 2026-10-10: under-review — new numbers\n');
-  assert.strictEqual(run(['lint', b]).status, 0, 'appending a Status line is allowed');
-  fs.writeFileSync(path.join(b, 'DC-001.md'), card('DC-001', { fields: { Decision: 'B' } }));
-  const r = run(['lint', b]);
-  assert.strictEqual(r.status, 1);
-  assert.match(r.stdout, /head was edited/);
+test('find returns the top matches by keyword', () => {
+  const f = log(entry('DL-001', { sig: 'login cookie expiry', fields: { Keywords: 'auth', Trigger: 'logout' } }), entry('DL-002', { sig: 'queue choice' }));
+  assert.match(run(['find', f, 'which', 'queue']).stdout, /^DL-002 \(score/);
+  assert.match(run(['find', f, 'nothing']).stdout, /no similar entries/);
 });
 
-test('superseded-by must name an existing card', () => {
-  const b = bank({ 'DC-001': card('DC-001', { tail: ['Status 2026-10-10: superseded-by DC-009 — moved'] }) });
-  const r = run(['lint', b]);
-  assert.strictEqual(r.status, 1);
-  assert.match(r.stdout, /superseded-by names a card that does not exist: DC-009/);
-  fs.writeFileSync(path.join(b, 'DC-009.md'), card('DC-009', { fields: { Supersedes: 'DC-001' } }));
-  assert.strictEqual(run(['lint', b]).status, 0);
-});
-
-test('check-private refuses a bank inside the skill', () => {
+test('check-private refuses an arena folder inside the skill', () => {
   const skill = tmp();
-  const inside = path.join(skill, 'master-brain', 'decisions');
+  const inside = path.join(skill, 'master-brain', 'arena');
   fs.mkdirSync(inside, { recursive: true });
   const r = run(['check-private', inside, '--skill', skill]);
   assert.strictEqual(r.status, 1);
@@ -80,18 +65,18 @@ test('check-private refuses a bank inside the skill', () => {
   assert.strictEqual(run(['check-private', path.join(outside, 'missing'), '--skill', skill]).status, 2);
 });
 
-test('check-private refuses a git-tracked, non-ignored bank', () => {
+test('check-private refuses a git-tracked, non-ignored folder', () => {
   const repo = tmp();
   git(['init', '-q'], repo); git(['config', 'user.email', 't@t'], repo); git(['config', 'user.name', 't'], repo);
-  const b = path.join(repo, 'master-brain', 'decisions');
+  const b = path.join(repo, 'master-brain', 'arena');
   fs.mkdirSync(b, { recursive: true });
-  fs.writeFileSync(path.join(b, 'DC-001.md'), card('DC-001'));
+  fs.writeFileSync(path.join(b, 'before.txt'), 'x\n');
   const notIgnored = run(['check-private', b]);
   assert.strictEqual(notIgnored.status, 1);
   assert.match(notIgnored.stdout, /not ignored/);
   fs.writeFileSync(path.join(repo, '.gitignore'), 'master-brain/\n');
   assert.strictEqual(run(['check-private', b]).status, 0);
-  git(['add', '-f', 'master-brain/decisions/DC-001.md'], repo);
+  git(['add', '-f', 'master-brain/arena/before.txt'], repo);
   git(['commit', '-qm', 'x'], repo);
   const tracked = run(['check-private', b]);
   assert.strictEqual(tracked.status, 1);
@@ -99,37 +84,42 @@ test('check-private refuses a git-tracked, non-ignored bank', () => {
 });
 
 function arena(task, baseline) {
-  const master = tmp();
-  const a = path.join(master, 'arena', '.arena');
+  const a = path.join(tmp(), 'arena', '.arena');
   fs.mkdirSync(a, { recursive: true });
-  fs.mkdirSync(path.join(master, 'decisions'));
-  fs.writeFileSync(path.join(master, 'decisions', 'DC-001.md'), card('DC-001'));
   if (task !== null) fs.writeFileSync(path.join(a, 'task.md'), task);
   if (baseline) fs.writeFileSync(path.join(a, 'baseline.md'), baseline);
   return a;
 }
-const owner = () => { const o = tmp(); fs.writeFileSync(path.join(o, 'DC-050.md'), card('DC-050', { fields: { Share: 'owner-wide' } })); fs.writeFileSync(path.join(o, 'DC-051.md'), card('DC-051')); return o; };
 
 test('scan-task refuses a key-like string', () => {
   const key = ['sk', 'A1b2C3d4E5f6G7h8I9j0K1l2'].join('-');
-  const bad = run(['scan-task', arena(`# Task\nUse the key ${key} to call the API\n`), '--owner-bank', owner()]);
+  const bad = run(['scan-task', arena(`# Task\nUse the key ${key} to call the API\n`)]);
   assert.strictEqual(bad.status, 1);
   assert.match(bad.stdout, /task\.md:2: possible secret/);
   assert.ok(!bad.stdout.includes(key));
-  const o = owner();
-  assert.strictEqual(run(['scan-task', arena('# Task\nSee DC-001 and DC-050\n'), '--owner-bank', o]).status, 0);
-  assert.match(run(['scan-task', arena('# Task\nSee DC-051\n'), '--owner-bank', o]).stdout, /DC-051 is not this project's card/);
-  assert.strictEqual(run(['scan-task', arena(null), '--owner-bank', o]).status, 2);
+  assert.strictEqual(run(['scan-task', arena('# Task\nSee DL-001\n')]).status, 0);
+  assert.strictEqual(run(['scan-task', arena(null)]).status, 2);
 });
 
 test('scan-task scans the baseline file too', () => {
-  const o = owner();
-  const r = run(['scan-task', arena('# Task\nclean\n', 'rejected answer naming Acme Corp\n'), '--owner-bank', o], { MB_DENY: 'acme' });
+  const r = run(['scan-task', arena('# Task\nclean\n', 'rejected answer naming Acme Corp\n')], { MB_DENY: 'acme' });
   assert.strictEqual(r.status, 1);
   assert.match(r.stdout, /baseline\.md:1: denied word/);
-  const ok = run(['scan-task', arena('# Task\nclean\n', 'a plain rejected answer\n'), '--owner-bank', o], { MB_DENY: 'acme' });
+  const ok = run(['scan-task', arena('# Task\nclean\n', 'a plain rejected answer\n')], { MB_DENY: 'acme' });
   assert.strictEqual(ok.status, 0);
   assert.match(ok.stdout, /task\.md, baseline\.md/);
+});
+
+test('preflight phase A names the failed item and stops there', () => {
+  const master = path.join(tmp(), 'master-brain');
+  fs.mkdirSync(master);
+  const none = run(['preflight', master, '--five', '10', '--week', '10', '--skills-dir', tmp()]);
+  assert.strictEqual(none.status, 1);
+  assert.match(none.stdout, /1\. arena skill matches its pin: FAIL/);
+  assert.match(none.stdout, /no arena: item 1 failed/);
+  assert.doesNotMatch(none.stdout, /^2\./m, 'stops at the first failed item');
+  assert.strictEqual(d.preflight(master, { five: 10, week: 75, skillsDir: tmp() }).ok, false);
+  assert.strictEqual(run(['preflight', path.join(master, 'nope')]).status, 2);
 });
 
 test('usage-gate refuses arena at 70% weekly or 5-hour', () => {

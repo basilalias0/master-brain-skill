@@ -119,7 +119,7 @@ autonomy rule) that won't automatically re-open to question it.
    Ask whether the human wants a `LAWS.md` (Master/Worker rules); if yes, copy this skill's
    `templates/LAWS.md`, fill every `{{slot}}` from what Step 2 found, and confirm each law
    with them — never assume their rules. Ask once whether to turn on law 25 (the reply footer: open decisions and
-   what others owe, 6 lines or fewer); it stays off unless they say yes. Then run `node scripts/law-lint.cjs stamp` to write
+   what others owe, 6 lines or fewer); it stays off unless they say yes. Then run `node <skill_dir>/scripts/law-lint.cjs stamp` to write
    `LAWS_DIGEST.md` (30 lines or fewer, with its `source_hash`). Seed `MODELS.md` from
    `templates/MODELS.md` and `CAPABILITIES.md` from `templates/CAPABILITIES.md`, running the
    capability probe (load tool schemas through ToolSearch, read-only, no calls) and writing
@@ -129,8 +129,8 @@ autonomy rule) that won't automatically re-open to question it.
 5. For an existing project (2B): offer a full first-pass `FEATURE_INDEX.md` population —
    ask whether to do it now or incrementally as features come up; it scales with project
    size and shouldn't be assumed free.
-6. Create `overlay/` and run `node scripts/overlay.cjs rebase --dir <master_dir>` (writes `overlay/base.json` with the installed skill version). Also seed `routing-log.jsonl` (empty) and `improve/`. These are local to the project and stay out of git.
-   Run `node scripts/capacity.cjs calibrate <master_dir>`: it writes `CAPACITY.md` (the machine budget from this machine's RAM and cores; the chat limits). Say the budget in one line.
+6. Create `overlay/` and run `node <skill_dir>/scripts/overlay.cjs rebase --dir <master_dir>` (writes `overlay/base.json` with the installed skill version). Also seed `routing-log.jsonl` (empty) and `improve/`. These are local to the project and stay out of git.
+   Run `node <skill_dir>/scripts/capacity.cjs calibrate <master_dir>`: it writes `CAPACITY.md` (the machine budget from this machine's RAM and cores; the chat limits). Say the budget in one line.
    Offer the test gate once: a Stop hook (`scripts/stop-gate.cjs`, setup in its header) that keeps a worker from saying
    "done" while the project's quick check fails. Only worker worktrees are gated; it lets go after 2 blocks. It is a
    settings edit, so add it to the project's `.claude/settings.json` only on the human's yes.
