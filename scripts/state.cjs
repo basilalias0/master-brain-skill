@@ -14,9 +14,11 @@ function snapshot(dir, max = 15) {
 
   const board = read('BOARD.md');
   if (board) {
-    const rows = board.filter((l) => l.startsWith('|') && !/^\|\s*-+/.test(l));
-    const open = rows.slice(1).filter((l) => !/\b(done|merged)\b/i.test(l));
-    out.push(`BOARD: ${rows.length - 1} rows, ${open.length} open`);
+    // A header is the row just above a separator; every table in the BOARD has one, not only the first.
+    const sep = (l) => /^\|\s*:?-+/.test(l || '');
+    const rows = board.filter((l, i) => l.startsWith('|') && !sep(l) && !sep(board[i + 1]));
+    const open = rows.filter((l) => !/\b(done|merged)\b/i.test(l));
+    out.push(`BOARD: ${rows.length} rows, ${open.length} open`);
     out.push(...open.slice(0, 6).map((l) => l.replace(/\s+/g, ' ').slice(0, 140)));
   } else out.push('BOARD.md: missing');
 
