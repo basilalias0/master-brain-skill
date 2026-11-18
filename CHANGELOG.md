@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased (2026-11-18, owner request; not A/B tested)
+- After a rollover the new chat removes the old one itself once every Master has the new id: archive by default (restorable), delete when the project chose `old chats: delete` at onboarding (owner, 2026-11-18). New CAPABILITIES rows for `archive_session` and `delete_session`, limited to that one chat (SAFETY 6).
 - Masters roll over too (owner, 2026-11-18): between tasks, and whenever a bug or change comes back to an area whose chat is past the point or archived, a fresh chat for the same Master starts from `rollover.cjs handoff --chat M#` (its own tasks only). The owner never changes; the BOARD row gets the new session id. The worker that just turned a sweep red still fixes it in its own chat (law 8). CHIEF rule 10 and law 5 reworded.
 - Chief rollover (`scripts/rollover.cjs` with tests; CHIEF rule 1, law 12, TOKENS §6, README). Each cycle the Chief checks its context; past the point (default 250k) it writes a handoff of open work only (Masters table, open BOARD rows, open LAST items, locks, running servers; 60 lines or fewer) and, on the human's yes, starts a fresh Chief from it. Finished work is not carried; it stays in ACTION_LOG, handoffs/ and the BOARD. Masters keep compacting (they own their areas). Evidence: this session's usage was 97.7% cache reads, which grow with chat length on every step.
 

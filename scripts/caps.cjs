@@ -33,8 +33,6 @@ const IGNORE_NAME = {
     'list_start_targets', // other folders and hosts are named by the human
   ],
   mcp__ccd_session_mgmt__: [
-    'archive_session', // the human archives worker chats (law 5); Masters are never archived (CHIEF rule 10)
-    'delete_session', // destructive, never used
     'detach_session', // the human's call
     'export_transcript', // transcripts are read through list_events
     'search_session_transcripts', // history lives in files (law 6)

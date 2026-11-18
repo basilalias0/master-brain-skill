@@ -61,7 +61,8 @@ function handoff(md, chat) {
     ? `1. Write this session id into the BOARD Masters row for ${chat}, and tell the Chief: "${chat} is now <this session id>".`
     : '1. Message each Master in the table: "Chief is now <this session id>; send RESULTs here."',
     `2. ${master ? 'Then take the task that brought you here (the message from the Chief, or the bug report).' : 'Tell the human in one line that the Chief rolled over and what is open.'}`,
-    '3. The old chat writes nothing more; the human archives it.');
+    '3. Once every Master has answered with the new id, remove the old chat: `archive_session` on its id, or `delete_session`',
+    '   when LAWS.md law 12 says `old chats: delete`. Never before the answers, never any other chat.');
   return lines.slice(0, 60).join('\n') + '\n';
 }
 

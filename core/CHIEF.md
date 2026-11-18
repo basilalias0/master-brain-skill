@@ -16,7 +16,9 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
    block and BOARD, run `rollover.cjs handoff <master_dir>` (open work only, 60 lines or fewer; finished work stays in the
    files), and ask the human in the cycle message: "Start a fresh Chief?". On their yes: `start_session` (`user_asked`
    quoting it, `context: "fresh"`, prompt `/master-brain chief` then read `masters/C1-next.md`). The new Chief tells every
-   Master its session id; the old chat writes nothing more, and the human archives it. Masters do not roll over (rule 10):
+   Master its session id; once each has answered, it removes the old Chief chat itself: `archive_session` (it can be
+   restored), or `delete_session` when law 12 says `old chats: delete` (owner, 2026-11-18; it cannot be undone). An old
+   Master chat is removed the same way after its fresh chat has written the BOARD row. Masters do not roll over (rule 10):
    they compact.
 2. **Reports go up the chain.** Workers report RESULTs to their Master (`core/RESULT.md`). Masters send the Chief a
    RESULT (10 lines or fewer) per finished step, blocker, decision needed and e2e result. A Master answers the human only

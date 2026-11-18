@@ -53,18 +53,18 @@ test('exact-name ignore does not hide a sibling tool', () => {
   assert.strictEqual(r.stdout.match(/^unmapped: (.*)$/m)[1], [...sib].sort().join(', '));
 });
 
-test("today's host vs frozen 2.3.2 template lists exactly the 5 new tools", () => {
+test("today's host vs frozen 2.3.2 template lists exactly the tools mapped since then", () => {
   const r = run(FROZEN, path.join(FX, 'host-2026-10-19.txt'));
   assert.strictEqual(r.status, 1);
   assert.match(r.stdout, /^missing: $/m);
-  assert.strictEqual(r.stdout.match(/^unmapped: (.*)$/m)[1], ['mcp__ccd_host__sync_with_base_branch', 'mcp__ccd_session__dismiss_task',
+  assert.strictEqual(r.stdout.match(/^unmapped: (.*)$/m)[1], ['mcp__ccd_host__sync_with_base_branch', 'mcp__ccd_session__dismiss_task', 'mcp__ccd_session_mgmt__archive_session', 'mcp__ccd_session_mgmt__delete_session',
     'mcp__ccd_session_mgmt__get_session', 'mcp__ccd_session_mgmt__list_events', 'mcp__ccd_session_mgmt__unarchive_session'].join(', '));
 });
 
 test("today's host list exits 0 against the live template", () => {
   const r = run(path.join(__dirname, '..', 'templates', 'CAPABILITIES.md'), HOST);
   assert.strictEqual(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /^mapped: 18$/m);
+  assert.match(r.stdout, /^mapped: 20$/m);
 });
 
 test('the 2026-10-19 host had spawn_task, which the live template no longer maps', () => {

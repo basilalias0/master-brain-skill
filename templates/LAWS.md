@@ -77,7 +77,8 @@ stale. Keep it at most 200 lines. Never commit it.
       trusting it).
     - Read the real window with `get_usage` (context: tokens, window, auto-compact %), never from memory; law 26 stops new work at 85% of it.
     - The Chief rolls over to a fresh chat at `{{rollover point, default 250k}}` (`core/CHIEF.md` rule 1, `scripts/rollover.cjs`):
-      open work only goes across; finished work stays in the files.
+      open work only goes across; finished work stays in the files. Old chats: `{{archive | delete}}` (default archive;
+      delete removes the old chat and its history for good, only if the human chose it at onboarding).
     - Workers append to `W-M#-n.md` after every step.
     - "Master compacts after every decision" means: write `masters/M#.md` + BOARD, then
       clear_session self.
