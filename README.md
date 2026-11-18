@@ -15,7 +15,7 @@ You do not have to ask for workers. Every request is sized when it arrives (`scr
 | L | workers start right away; you get one line saying so |
 | XL | **scale mode**: research, one round of questions, a costed plan, and you pick the worker count |
 
-In scale mode the Master researches the task, asks you up to 6 questions in one message (scope, the finish line, quality bar, deadline, how much of your usage it may spend), splits the work into waves by dependency, and shows a table like this (`scripts/scale.cjs plan`):
+In scale mode the Master researches the task, splits the work into waves by dependency, and sends you one message: up to 6 questions, each with a default (scope, the finish line, quality bar, deadline, how much of your usage it may spend), the plan built on those defaults, and a table like this (`scripts/scale.cjs plan`). If your answers change the plan, it re-runs it and sends only what changed:
 
 | workers | wall hours | tokens | extra 5h windows | weekly % | bound by |
 |---|---|---|---|---|---|
