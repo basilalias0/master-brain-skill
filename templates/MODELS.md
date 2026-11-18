@@ -1,37 +1,38 @@
 # MODELS: the one place model names live
 
-Skills and briefs name tiers (T0-T3), never models. Dispatch resolves tier to id here at dispatch time. Agents never edit this file; they propose changes and the human approves. Fast mode stays off.
+Skills and briefs name tiers (T0-T3), never models; dispatch resolves the tier here. Agents never edit this file; they propose and the human approves. Fast mode stays off. Evidence: `<skill_dir>/templates/MODELS-evidence.md` (only when re-checking a default).
 
 last_verified: 2026-10-05
 
 | Tier | Role | Model | Id accepted by `set_session_model` | Default effort | Status |
 |---|---|---|---|---|---|
-| T0 | scout | Haiku 5.5 | claude-haiku-5-5 | low | unverified (changed 2026-10-19; verified after the first dispatch) |
+| T0 | scout | Haiku 5.5 | claude-haiku-5-5 | low | unverified (changed 2026-10-19) |
 | T1 | standard | Sonnet 5.5 | claude-sonnet-5-5 | low | verified via Agent tool; picker id unverified |
 | T2 | deep | Opus 5.5 | claude-opus-5-5 | medium | verified via Agent tool; picker id unverified |
 | T3 | top | Fable 5.1 | claude-fable-5-1 | medium | unverified |
 
-Status becomes `verified` after the first successful dispatch; the picker's ids are authoritative (the tool lists them when an id is refused). Fallback chain: T3, T2, T1, T0; tell the human when it is used. The Agent tool takes `haiku`, `sonnet`, `opus` or `fable`.
+Status becomes `verified` after the first successful dispatch; the picker's ids are authoritative. Fallback: T3, T2, T1, T0; tell the human. The Agent tool takes `haiku`, `sonnet`, `opus` or `fable`.
 
 ## Routing: task, default tier, escalate when
 | Task | Default | Escalate when |
 |---|---|---|
 | Lookups, log digging, recon, sweep running | T0 | never |
-| Single-file fix or a one-to-two-step edit | T0 only when tests or the type check catch a wrong fix (score Checking 0); else T1 | multi-file, callers to check, or failed once: T1 |
-| Master planning | T1 | multi-module or a LOCK dispute: T2 |
+| Single-file fix or a one-to-two-step edit | T0 only when tests or the type check catch a wrong fix (Checking 0); else T1 | multi-file, callers to check, or failed once: T1 |
+| Master planning | T1 | multi-module or a LOCK dispute: a T2 subagent or worker plans it (Masters never switch) |
 | Research | T1 | high stakes or conflicting sources: T2 |
 | Analyzer | T1 | huge graph: T2 |
 | Developer update, lean | T1 | failed once: T2 |
 | Developer build | T2 | single layer: T1 |
-| Tester | T1 | concurrency or flaky: T2; never Haiku-first for writing tests |
+| Tester | T1 | concurrency or flaky: T2; never T0 first for writing tests |
 | Audit hunters (read-only; lower effort) | T1 | verifiers of high or critical findings: T2; never T3 |
 
 ## Floors (never go below)
-Planning: T1 and at least medium effort. Security, migrations, permission and LOCK changes: T1 and at least high effort. Escalate only after a failed attempt and log one line of reason in `masters/M#.md`.
+Planning: T1 and at least medium effort. Security, migrations, permission and LOCK changes: T1 and at least high effort.
 
-## Effort score (owner, 2026-11-02): effort per task, not per tier
-Effort is how much the model thinks and checks before it acts: same model, same knowledge. Higher costs more tokens and
-time and pays off only on hard tasks. Score the task 0, 1 or 2 on each line:
+## Effort score: effort per task, not per tier
+Effort is how much the model thinks and checks before acting; higher pays off only on hard tasks.
+Score each line 0, 1 or 2; `scale.cjs size --clarity --reach --mistake --newness --checking` adds it up and prints
+tier and effort:
 
 | Factor | 0 | 1 | 2 |
 |---|---|---|---|
@@ -41,35 +42,17 @@ time and pays off only on hard tasks. Score the task 0, 1 or 2 on each line:
 | Newness | repeats a pattern | partly new | new ground or an unverified outside API |
 | Checking | tests and the type check catch it | partly | judgment only |
 
-Total to effort: 0-2 low, 3-5 medium, 6-7 high, 8-9 xhigh, 10 max (max only with the human's yes or after a failed attempt).
-- Model: the routing table picks the tier; a score of 8 or more lifts it to at least T2; read-only work scoring 0-2 may use T0.
-- Masters: score the hardest decision they will make, capped at medium for a coordinating Master (a long session multiplies
-  every level). A chip-started session inherits its parent's effort: set it with `set_session_effort` as soon as it starts.
-- Workers: the Master scores each brief (`score: N/10` plus the effort) and applies it (Agent `effort`, or `set_session_effort`).
-- Escalate after a failed attempt by the rules below and log one line in `masters/M#.md`. A floor is never lowered.
+Total: 0-2 low, 3-5 medium, 6-7 high, 8-9 xhigh, 10 max (max only with the human's yes or after a failed attempt).
+8 or more lifts the tier to at least T2; 0-2 with Checking 0 may use T0. A coordinating Master stays at medium at most.
+The Master writes `score: N/10` and the effort in each brief and applies it (Agent `effort`, or `set_session_effort`
+as soon as a chip-started session starts: it inherits its parent's).
 
-## Escalation (owner, 2026-11-18; Anthropic's rule, via the Model Routing Playbook)
-Cheap-first pays only when the check is reliable: a failed cheap run cost over 4x a good one (playbook), and here a failed
-T0 test-writing run cost 126k against 55k for T1 directly (evidence below). So T0 starts only where tests catch mistakes.
-1. **Diagnose the failure.** It skipped a file, did not run the checks, or rushed: raise **effort** one level, same
-   model. It had all the context, ran the checks and was still wrong: one **tier** up. Never both at once.
-2. **Where.** Worker context under about 120k (get_usage; an estimate until measured): change it in place. Over 120k: the
-   worker writes its LAST block (tried, failed, the failing check, next step) and stops; a **fresh worker** at the new
-   level continues from that handoff on the same branch. A cache does not move between models, and a long chat re-read
-   uncached costs about as much as a fresh worker's boot. Never fork the old chat for an escalation.
-3. **Once per task.** A second failure goes back to the Master (`needs-master`), and from there to the human.
-Masters and the Chief never switch their own model or effort (TOKENS §6): hard work goes to a worker at the right level.
-
-## Cache note
-The older T0 model (Haiku 4.5) did not cache prompts under 4,096 tokens; re-check this for the current T0 before relying on cache for small jobs. Prefer a script for mechanical lookups; use T0 for judgment-light reading.
-
-## Usage
-Thresholds live in the `core/TOKENS.md` section 6 table (5-hour and weekly windows); do not restate them here.
-
-The T0 model changed on 2026-10-19: the ladder below is for the older T0 and must be re-run (`core/IMPROVE.md` section 6) before its T0 numbers are trusted. Not re-run yet.
-
-## Evidence (A/B ladder, 2026-10-05, new skills, small synthetic tasks, 1-2 runs each)
-- The cheapest tier passed 6 of 7 tasks; it failed only test writing (caught 2 of 3 broken versions). Escalating that failure cost 126k tokens against 55k for the standard tier directly.
-- On multi-step work the cheapest tier used 2-4 times the turns of the standard tier (34 against 9 on a 3-caller bug fix), so it saves only if its price per token is lower by more than that.
-- A single-file fix cost about a third of the standard tier's tokens on the cheapest tier.
-- The deep tier passed everything it was given but the standard tier already did; no quality gain on these tasks, so the build default stays as is until a larger run says otherwise.
+## Escalation (once per task)
+Cheap-first pays only when the check is reliable (a failed cheap run cost over 4x a good one).
+1. **Diagnose.** It skipped a file, skipped the checks or rushed: one **effort** level up, same model. It had the
+   context, ran the checks and was still wrong: one **tier** up. Never both at once.
+2. **Where.** Worker context under about 120k: change it in place. Over: the worker writes its LAST block (tried,
+   failed, the failing check, next step) and stops; a **fresh worker** at the new level continues on the same branch.
+   Never fork the old chat (a cache does not move between models).
+3. A second failure goes back to the Master (`needs-master`), then to the human. Log one line of reason in `masters/M#.md`.
+Masters and the Chief never switch their own model or effort: hard work goes to a worker or subagent at the right level.

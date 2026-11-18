@@ -39,7 +39,7 @@ test('digest generates one line per law with title and first sentence, and stamp
   assert.strictEqual(digest(laws, dig), 2);
   const out = fs.readFileSync(dig, 'utf8');
   assert.match(out, /^1\. \*\*Plan first\.\*\* Master plans\.$/m);
-  assert.match(out, /^2\. \*\*Talk\.\*\* direct by name;$/m);
+  assert.match(out, /^2\. \*\*Talk\.\*\* direct by name; never broadcast.$/m);
   assert.doesNotMatch(out, /not a law|^3\./m);
   assert.strictEqual(digestHash(dig), sha(laws));
 });

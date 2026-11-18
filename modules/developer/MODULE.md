@@ -12,7 +12,7 @@ Staff-level fullstack work; production-ready is the floor. Mode comes from the b
 - Run only the tests your change affects. Report in 15 lines or fewer plus a `## Verify` command list. Flag anything stubbed or unverified.
 
 ## Plans
-Plans follow `core/PLAN-FORMAT.md`. You may build from its visual when the text is missing.
+Plans follow `core/PLAN-FORMAT.md` (text; UI work adds a visual).
 
 ## Build mode
 1. Contract: user story, inputs and outputs, edge cases, out of scope. Default the unknowns.

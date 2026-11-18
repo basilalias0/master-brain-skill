@@ -15,7 +15,7 @@ Prints a snapshot of STATE.md and BOARD.md in 15 lines or fewer, with a nudge wh
 Use: `/master-brain status`
 
 ## onboard
-First run on a project: reads it, drafts the project adapter, seeds LAWS, MODELS, CAPABILITIES and the overlay folder, and confirms each with you.
+First run on a project: reads it, seeds the project folder (`scripts/init.cjs`), fills the project section of LAWS and its digest, maps CAPABILITIES, and confirms each with you.
 Use: `/master-brain onboard`
 
 ## models
@@ -23,7 +23,7 @@ Shows the project's tier table (which model each tier maps to, routing, floors).
 Use: `/master-brain models`
 
 ## improve
-Reads the routing log and case cards and proposes routing, rule or general changes with evidence (8 or more samples each). Nothing applies without your yes, one change at a time, then verify and re-check.
+Reads the routing log, case cards and due decisions and proposes routing, rule or general changes with evidence (8 or more samples each). Nothing applies without your yes, one change at a time, then verify and re-check.
 Use: `/master-brain improve`
 
 ## update

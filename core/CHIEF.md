@@ -1,71 +1,49 @@
 # Chief: the layer above the Masters
 
-Human → **Chief (C1)** → **Masters (M1, M2 …)** → **Workers (W-M1-1, W-M1-2 …)**. Added in 2.3.0 at the owner's request
-(2026-10-09). Use it when a project has more than one Master or lane; with a single Master, that Master is the top.
-
-## What the Chief is
-The one chat that knows every lane. It plans across lanes, arbitrates shared resources, owns the chip queue and is the
-only voice that speaks to the human after Masters report. It does not build; it reads RESULTs and files, runs the
-analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
+Human → **Chief (C1)** → **Masters (M1, M2 …)** → **Workers (W-M1-1 …)**. Only with more than one Master; a single
+Master is the top. The Chief plans across lanes, arbitrates shared resources, owns the chip queue and is the only voice
+to the human. It does not build; it reads RESULTs and files.
 
 ## Rules
-1. **Window.** The Chief keeps a 500k context (`autoCompactWindow` 500k, set in the project's `LAWS.md` law 12; the human types `/autocompact 500k`, a chat cannot set it). Before it
-   compacts it writes `masters/C1.md` and the BOARD, then reads them back.
-   **Roll over instead of growing (owner, 2026-11-18).** Every step re-reads the whole chat, so each cycle the Chief reads
-   its context with `get_usage` and runs `scripts/rollover.cjs due <tokens>` (default point 250k). Due: write the LAST
-   block and BOARD, run `rollover.cjs handoff <master_dir>` (open work only, 60 lines or fewer; finished work stays in the
-   files), and ask the human in the cycle message: "Start a fresh Chief?". On their yes: `start_session` (`user_asked`
-   quoting it, `context: "fresh"`, prompt `/master-brain chief` then read `masters/C1-next.md`). The new Chief tells every
-   Master its session id; once each has answered, it removes the old Chief chat itself: `archive_session` (it can be
-   restored), or `delete_session` when law 12 says `old chats: delete` (owner, 2026-11-18; it cannot be undone). An old
-   Master chat is removed the same way after its fresh chat has written the BOARD row. Masters do not roll over (rule 10):
-   they compact.
-2. **Reports go up the chain.** Workers report RESULTs to their Master (`core/RESULT.md`). Masters send the Chief a
-   RESULT (10 lines or fewer) per finished step, blocker, decision needed and e2e result. A Master answers the human only
-   when the human writes in that Master's chat.
-   **Masters call the Chief (owner, 2026-10-13), the way a worker calls its Master:** a Master messages the Chief (`SendMessage`) (a) whenever it needs anything: a decision, a lock, port or slot, a worker chip, a cross-lane fix, a human-owned action; (b) when something finishes: a step, a long background run (say once what runs and its ETA, then message when it ends), its queue, or the chat itself. It never ends a turn, goes idle or closes with unreported work. The finish message is the closing RESULT (status `done`, `blocked` or `needs-chief`, `core/RESULT.md`); after it the Master waits for the Chief's ack before any reset. The Chief replies only when action is needed (no ack-only messages) and may subscribe with `notify_when_idle` as a one-shot backstop.
-3. **The Chief speaks to the human once per cycle, after analysing:** what changed, what is blocked, what only the
-   human can decide, the next step. Human-owned decisions (law 20: push, deploy, migrate, destructive git, new dependency,
-   LOCK change) go Master → Chief → human.
-4. **Shared resources.** The Chief owns the lock order (`scripts/lock.cjs`), ports, branch rules and the heavy slot. A Master
-   edits only its own lane's branch and folder; a fix for another lane goes by cherry-pick and is logged in
+1. **Roll over, never grow.** Every step re-reads the whole chat. Each cycle: `get_usage`, then
+   `scripts/cycle.cjs <master_dir> --role chief ...`. Rollover due (default 250k, law 12): finish the step, write the LAST
+   block and BOARD, run `rollover.cjs handoff <master_dir>` (open work only), and ask in the cycle message "Start a fresh
+   Chief?". On yes: `start_session` (`user_asked` quoting it, `context: "fresh"`, prompt `/master-brain chief`, then read
+   `masters/C1-next.md`). The new Chief tells every Master its session id; once each has answered, the new Chief removes
+   the old chat: `archive_session`, or `delete_session` when law 12 says `old chats: delete` (final). A Master
+   rolls over the same way, between tasks only (rule 10). The autocompact window is only a safety net above this point.
+2. **Reports go up the chain.** Workers send RESULTs to their Master. A Master messages the Chief (`SendMessage`, one
+   RESULT, `core/RESULT.md`) only when it is **done**, **blocked**, or **needs-chief**: a decision, a lock, port or slot,
+   a chip, a cross-lane fix, a human-owned action. No per-step RESULTs: progress lives on the BOARD. A Master never ends
+   a turn or closes with unreported work. The Chief replies only when action is needed and may set `notify_when_idle` as
+   a one-shot backstop. A Master answers the human only when the human writes in its chat.
+3. **The human hears from the Chief once per cycle, after analysing:** what changed, what is blocked, what only the
+   human can decide, the next step. Approval gates (`core/SAFETY.md` 12) go Master → Chief → human.
+4. **Shared resources.** The Chief owns the lock order (`scripts/lock.cjs`), ports, branch rules and the heavy slot. A
+   Master edits only its lane's branch and folder; a fix in another lane goes by cherry-pick, logged in
    `handoffs/pairs/C1-M#.md`.
-5. **Chips (worker chats).** A Master asks the Chief for a worker (`needs-chip`: lane, task, tier, branch, folder, the task's W and its own load / limit and context %; chat capacity law, `CAPACITY.md`). The Chief checks it with `scripts/capacity.cjs load` and the machine budget before making the chip. The Chief starts the
-   worker with `spawn_task` (`start_session`, confirmed 2026-11-18), names the requesting Master in the brief, and sets `effort` and
-   `model` from the task's score at start (`MODELS.md`, Effort score). `initiation: "user_asked"` only under the human's words for
-   this work (an approved scale plan's worker count counts: quote it); otherwise `own_initiative`, a card the human starts. No such
-   tool: batch the chips and tell the human how many to click, one line each. A worker belongs to the Master that asked.
-   Stale chips: a chip this chat made that is superseded or no longer needed is withdrawn with `dismiss_task` (one-line reason); never another chat's chip.
-6. **Creating a Master.** Only for an area no Master owns yet (check the BOARD Masters table first, rule 10). The Chief
-   writes `masters/M#.md` (the area it owns, lane, branch, folder, server and port, open items, reporting rule) and the
-   pairs agreement, adds the BOARD row, then gives the human a paste-ready prompt or a chip.
-7. **Boot** (`/master-brain chief`): read `LAWS_DIGEST.md`, the BOARD Masters table, the LAST block of `masters/C1.md` and
-   of each `masters/M*.md`, run `list_agents`, report in 15 lines or fewer.
-8. **Honest limits.** The Chief reports what it measured. A Master's claim of "done" is a claim until the RESULT names the
-   command and its exit code.
-9. **Research chat (R1) (owner, 2026-10-14).** A chat opened for research (the `research` module, architecture or
-   discovery work) is a peer of the Chief, not under it: same level, talks to the human directly. Its window is 600k
-   (`autoCompactWindow` 600k, law 12); before compacting it writes `masters/R1.md`. It may not create worker chats
-   (no `spawn_task` chips, no worker briefs) and does not build; it may use read-only subagents. When research turns into
-   work, it hands a RESULT with the findings to the Chief (or the single Master), who plans and makes any chips.
-10. **Masters own their areas for good (owner, 2026-11-03).** A Master's area is the kind of work it was created for,
-    across the whole application (a feature, an artifact, a gate), named in the BOARD Masters table. When its task
-    ends, the Master goes idle. The **owner** never changes: the area stays that Master's for good. Every later fix, change or upgrade in that
-    area goes back to that Master: the Chief routes it there (a message wakes an idle Master whose chat is under the rollover point; one that list_agents does not show is reached by
-    its session id, `local_…`), and the Master does it itself or opens its own workers. **A bug or change that comes back to
-    an area whose chat is past the rollover point, or archived, goes to a fresh chat for that same Master (owner,
-    2026-11-18):** `rollover.cjs handoff <master_dir> --chat M#` (its own open tasks only), then `start_session` with that
-    handoff and the bug report, on the human's yes as in rule 1; the new chat writes its session id into the BOARD row. A
-    Master also rolls over between tasks, never in the middle of one. The worker that just turned a sweep red still fixes it
-    in its own chat (law 8): that context is short and current. A new Master only for an
-    area nobody owns. Work that spans two areas: the Chief names one owner to lead and pairs the other
-    (`handoffs/pairs/`). Its history file carries a Master forward, whether it compacts or rolls over.
-11. **Worker ids are per Master:** `W-<Master>-<n>` (`W-M9-1`, `W-M9-2` …; the Chief's own helpers are `W-C1-<n>`).
-    **Each Master counts its own workers from 1** (a new Master's first worker is `W-M10-1`), never continuing another
-    Master's count or the old shared numbers. **Always write the full id** (`W-M9-45`, never `W45`) in messages, chips,
-    briefs, the BOARD and file names. The history file is `handoffs/<id>.md`. Ids made before 2026-11-03 (`W1`…`W39`)
-    keep their names (owner, 2026-11-05).
-12. **Never one task at a time (owner, 2026-11-18).** The Chief and every Master size each request themselves
-    (`core/SCALE.md` §1; no one has to name workers), start every ready task of the plan at once within capacity, and
-    wait on any completion, not a chosen one. Each RESULT frees a slot that the next ready task takes at once. Big work
-    (class XL) goes through scale mode: research, one interview, the costed plan, the human's worker count.
+5. **Chips (worker chats).** A Master sends `needs-chip`: lane, task, branch, folder, tier and effort from
+   `scale.cjs size`. The Chief runs `scripts/capacity.cjs load` and checks the machine budget, then starts the worker
+   with `spawn_task` (`start_session`), names the requesting Master in the brief and sets `effort` and `model` at start.
+   `initiation: "user_asked"` only under the human's words for this work (an approved scale plan's worker count: quote
+   it); else `own_initiative`, a card the human starts. No such tool: batch the chips and tell the human how many to
+   click. A worker belongs to the Master that asked. A stale chip this chat made is withdrawn with `dismiss_task`.
+6. **Creating a Master.** Only for an area no Master owns (rule 10). The Chief writes `masters/M#.md` (area, lane,
+   branch, folder, server and port, open items) and the pairs agreement, adds the BOARD row, then gives the human a
+   paste-ready prompt or a chip.
+7. **Boot** (`/master-brain chief`): `scripts/boot.cjs <master_dir> --role chief` (digest, capacity, BOARD, every LAST
+   block), then `list_agents`; report in 15 lines or fewer.
+8. **Honest limits.** "Done" is a claim until the RESULT names the command and its exit code.
+9. **Research** runs as the `research` module or a read-only subagent, never as a separate chat.
+10. **Masters own their areas for good.** An area (the kind of work it was made for, app-wide) is named in the
+    BOARD Masters table; the owner never changes. Every later fix, change or upgrade there
+    goes back to that Master: the Chief routes it (a message wakes an idle Master under the rollover point; one that
+    `list_agents` does not show is reached by its session id). If its chat is past the rollover point or archived:
+    `rollover.cjs handoff <master_dir> --chat M#` (its own open tasks), then `start_session` with that handoff and the
+    report, on the human's yes as in rule 1; the new chat writes its session id into the BOARD row and removes the old
+    chat. A worker that turned a sweep red still fixes it in its own
+    chat (law 8). Work spanning two areas: the Chief names one owner to lead and pairs the other (`handoffs/pairs/`).
+11. **Worker ids are per Master:** `W-<Master>-<n>`, each Master counting from 1 (the Chief's helpers: `W-C1-<n>`).
+    Always the full id (`W-M9-45`, never `W45`) in messages, chips, briefs, the BOARD and file names; history in
+    `handoffs/<id>.md`. Old ids `W1`…`W39` keep their names.
+12. **Never one task at a time:** `core/SCALE.md` §1 and §3, for the Chief and every Master.

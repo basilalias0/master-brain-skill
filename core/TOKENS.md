@@ -1,61 +1,46 @@
 # Token rules
 
-The goal is the fewest tokens per task with no loss of quality. Every rule here has a guardrail; do not drop the guardrail to save more.
+Fewest tokens per task, no loss of quality; keep each guardrail. Every step re-reads the whole chat, so in a long chat a
+saved step saves about its length again.
 
 ## 1. Cheapest path first
-script, then T0 scout subagent, then Master directly, then a subagent, then a subagent in its own worktree (`isolation: "worktree"`), then a worker chat. Never two agents on the same files.
-- A script does anything mechanical (locks, test guard, line caps, code map, filtered test run, status).
-- A scout answers "where is X" and returns conclusions, never file dumps.
-- Master edits tiny things itself (one file, a few lines) with lean.
-- **Size every request yourself** (`scripts/scale.cjs size`, `core/SCALE.md`): S stays with the Master; L and XL get workers without anyone asking. A worker chat only when the work is over about 3 files or 15 minutes, or truly parallel: a worker's boot costs more than a small fix.
-- **Any agent that edits files gets its own worktree:** `Agent` with `isolation: "worktree"`, or a worker chat in its worktree. Its prompt carries the `worktree` and `sync` lines of `core/BRIEF.md` word for word, even for a one-line fix. Read-only scouts need none.
-- **Waiting on workers:** start all ready tasks first, then wait on any completion (`wake_when_done`, the completion notice or `Monitor` on `handoffs/`), never `sleep`, status turns or one chosen worker. Overdue, in this order: get_session (metadata), then list_events once per cycle, then message the worker by name (`SendMessage`) asking for its RESULT. No answer after 1 cycle = `blocked`.
-- One subagent per job: never split triage and fix, and never let two agents read the same source (measured: subagents were 55% of one session's cost).
-- Workflow tool: offer it at most once per wave, in one line with a cost estimate; never run it unasked (no opt-in words from the human, no call).
-- Batch same-lane tasks into one worker. Reuse a warm idle worker; clear it when it changes module or its context grows. Cap parallel work by the chat capacity law (`CAPACITY.md`, `scripts/capacity.cjs load`).
+Script, T0 scout, the Master itself, a subagent, a subagent in its own worktree, a worker chat. Never two agents on the same files or sources.
+- Scripts do mechanical work. Scouts return conclusions, never file dumps. The Master edits tiny things itself (lean).
+- Sizing, start-all, wait-on-any: `core/SCALE.md`. A worker chat only for over about 3 files or 15 minutes, or parallel work.
+- An agent that edits files gets its own worktree and the `worktree` and `sync` lines of `core/BRIEF.md` word for word.
+- Overdue RESULT: read the worker's handoff LAST block, then message it by name. No answer after 1 cycle = `blocked`.
+- One subagent per job. Batch same-lane tasks into one worker; reuse a warm idle one. Workflow tool: offer once per wave with a cost, never unasked.
 
 ## 2. Risk tiers (how much pipeline a task gets)
 | Tier | Example | Pipeline |
 |---|---|---|
 | Low | typo, copy, one-file fix | lean + type-check |
 | Medium | one-lane feature or bugfix | + its own flow test |
-| High | auth, data, money, shared contract, LOCK | + analyzer + scoped audit + Master slot run |
+| High | auth, data, money, shared contract, LOCK | + analyzer, phase-2 optimise, scoped audit, the Master's full E2E |
 Never route High work below T1 or default effort.
 
 ## 3. Reading
-- Look in the code map and FEATURE_INDEX first; grep with a few lines of context; Read with offset and limit.
-- Never open a file over about 200 lines whole unless editing most of it. Never re-read after an edit.
-- ACTION_LOG, FEATURE_INDEX, changelogs and handoffs are grep-only, never read whole.
-- Briefs carry file:line targets, not "explore". The worker still greps callers before editing (bug fixes: required).
-- Index entries carry the git hash and expire when it changes. Read the exact lines before editing; never trust an index for content.
-- Reuse a dated verdict (same git hash) instead of re-analysing or re-researching.
+- Code map and FEATURE_INDEX first; grep with context; Read with offset and limit; never re-read after an edit or open a 200-line file whole.
+- ACTION_LOG, FEATURE_INDEX, changelogs and handoffs are grep-only. Briefs carry file:line targets. Reuse a verdict with the same git hash.
 
 ## 4. Output
-- Run tests, build and type-check through `scripts/run-quiet.cjs`: full log to a file, only the verdict, first errors and the path on screen. Read the log file on any failure.
-- Check after each edit batch, not only at the end: run the project's type-check or linter through the same script. Fix or revert a batch that breaks it; never carry a red edit forward. Tests stay the final gate.
-- Edit, never rewrite whole files. Scaffold and codemod before writing by hand. Formatters and linters do formatting.
-- Reports 10 lines or fewer. Paths and line numbers, never pasted code. Diffs, not whole files, for review (read surrounding code for risky changes).
-- **Pages are checked by script, not by eye:** `scripts/page-check.cjs` waits until the page is ready (network quiet, fonts, `--wait-for`, animations off), checks `--text`, and compares an element with an approved baseline image. The model looks only at the `changed.png` crop a failing compare writes, never a full-page screenshot as proof. Without Playwright in the project: page text and the accessibility tree; a screenshot only for a visual change, after the page is ready, of the element, scaled down.
-- Batch independent tool calls into one message. Every extra turn re-reads the whole context.
+- Tests, build and type-check run through `scripts/run-quiet.cjs`. Check each edit batch; never carry a red edit forward.
+- Edit, never rewrite whole files. Reports 10 lines or fewer, paths not pasted code. Batch independent tool calls.
+- Pages: `scripts/page-check.cjs`; look only at a failing `changed.png` crop. Without Playwright: page text and the accessibility tree.
 
 ## 5. Budget and effort
-- Each brief states a budget (files read, tool calls). Two budgets: read-only work (audit, diagnosis, recon) about 25-40 tool calls; a fix or build worker gets a per-task figure sized to its items (measured 2026-10-06: 7 fixes with tests took 60-95 calls, so a flat 25 would cut it off mid-task). Always read file ranges (offset and limit), not whole files. The merged full sweep is never trimmed: it is the quality gate, since workers do not run E2E and each sees only its own part. At the cap the worker stops and returns `needs-master` with partial progress (done items, remaining items, every commit sha); it never extends its own budget. Only the Master extends it, in a new brief.
-- Read-only audits and hunters run on a cheaper model or lower effort (see `MODELS.md`); keep the strong model for fix workers.
-- Effort comes from the task's score (`MODELS.md`, Effort score), not from the tier: 0-2 low, 3-5 medium, 6-7 high, 8-9 xhigh, 10 max. A coordinating Master stays at medium at most. Planning, security, migrations, permission and LOCK changes never go below the floors in `MODELS.md`. After a failure: `MODELS.md` Escalation (effort or tier by diagnosis; a fresh worker over about 120k context).
+- Each brief states a budget: read-only about 25-40 tool calls; a fix worker about 10 per item. At the cap: `needs-master` with done and remaining items and every sha; only the Master extends it.
+- A full sweep that runs is never trimmed. Read-only audits run cheaper. Effort: `MODELS.md` Effort score (`scale.cjs size` prints it).
 
 ## 6. Sessions
-- Check `get_usage` once per cycle and before each wave and apply this table, the only place the numbers live (`MODELS.md`, procedure/05 and law 14 point here; `scripts/decisions.cjs usage-gate` applies it). A missing, failed or non-numeric value counts as 90%.
+- Once per cycle and before each wave: `get_usage`, then `scripts/cycle.cjs` (rollover, this table, capacity). A missing or non-numeric value counts as 90%.
 
 | Window (`get_usage`) | ≥ 70% | ≥ 80% | ≥ 90% |
 |---|---|---|---|
 | 5-hour | non-critical work drops 1 tier; no arena | — | checkpoint, stop launching |
 | weekly | no arena | non-critical work drops 1 tier | stop launching |
 
-- Workers do one task, then clear, unless the next task is in the same lane.
-- Start a fresh chat after each milestone; the state lives in `STATE.md` and the reports, not in the chat (a long chat is re-read every turn).
-- Dev servers: start with `scripts/server.cjs start` (it waits for the port), stop after the sweep and at task end (law 7). A running server costs no tokens but 4 machine points (`CAPACITY.md`); polling one with model turns costs tokens every turn.
-- Waiting: `Monitor` or Bash `run_in_background` with an until-loop, never sleep loops or status turns; at most 1 `PushNotification` per cycle, only when the human is away.
-- Status checks are commands (a detached script that writes a summary file, plus a node watcher), never a model turn that re-reads context.
-- Compact or clear at task boundaries with a short keep-list, not at the context limit. Each step re-reads the whole chat (cache reads were 97.7% of one session's tokens), so a long Chief rolls over to a fresh one built from files (`core/CHIEF.md` rule 1).
-- Keep the Master's session stable: choose model and effort at the start and do not switch them mid-session (a switch re-reads the whole context uncached). Change tier by dispatching, not by switching the Master.
-- Load only the tools a job needs: a worker skips browser, Chrome and other tool groups unless its brief says `tools:` (UI work or a live check), and the Master disables connectors it does not need (the human approves the change). Every unused tool definition is re-read each turn.
+- Workers clear after each task unless the next is in the same lane. Chief and Masters roll over (`core/CHIEF.md` rule 1).
+- Never switch a long chat's model or effort (it re-reads uncached); change tier by dispatching.
+- Wait with `Monitor` or `run_in_background`, never sleep loops or status turns. Sweeps: a detached script writes a summary file (decode Windows UTF-16 logs with node; re-arm a wait at 2 hours).
+- `tools: none` in a brief asks a worker to skip browser and connector tools; whether that drops their definitions is unverified (the host list likely stays).

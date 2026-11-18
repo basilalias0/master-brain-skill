@@ -52,11 +52,23 @@ function laws(text) {
     const m = /^(\d+)\. (.*)$/.exec(l);
     if (m) { cur = { n: m[1], text: m[2] }; out.push(cur); } else if (cur && /^\s+\S/.test(l)) cur.text += ' ' + l.trim();
   }
+  // First sentence: up to a "." that ends a word outside parentheses and backticks.
+  const sentence = (s) => {
+    let depth = 0; let tick = false;
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (c === '`') tick = !tick;
+      else if (!tick && c === '(') depth++;
+      else if (!tick && c === ')') depth = Math.max(0, depth - 1);
+      else if (!tick && !depth && c === '.' && (i + 1 === s.length || /\s/.test(s[i + 1]))) return s.slice(0, i + 1);
+    }
+    return s;
+  };
   return out.map(({ n, text }) => {
     const t = /^\*\*(.+?)\*\*\s*(.*)$/.exec(text);
-    const title = t ? t[1].replace(/[.:]$/, '') : '';
+    const title = t ? t[1].replace(/[.:,]$/, '') : '';
     const rest = (t ? t[2] : text).replace(/^[:.,]\s*/, '');
-    const first = (/^.*?[.;](?=\s|$)/.exec(rest) || [rest])[0];
+    const first = sentence(rest);
     const line = `${n}. ${title ? `**${title}.** ` : ''}${first}`.trim();
     return line.length > 220 ? line.slice(0, 217) + '...' : line;
   });

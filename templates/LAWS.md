@@ -1,143 +1,82 @@
 # LAWS — how Master and Worker chats run this project
 
-Template shipped with the `master-brain` skill. ONBOARDING copies it into
-`<project>/master-brain/LAWS.md`, fills every `{{slot}}` and confirms every law with the
-human. The project's copy is then binding; this template is a starting point.
-**"You" / "Master" = the coordinating chat.** Tools are named logically (list_agents, message,
-spawn_task, clear_session, set_session_model, set_session_effort, get_usage); the real names are
-in `CAPABILITIES.md`. Workers read `LAWS_DIGEST.md`; Masters read this file when the digest is
-stale. Keep it at most 200 lines. Never commit it.
+Template from the `master-brain` skill. ONBOARDING copies it to `<project>/master-brain/LAWS.md`, fills every
+`{{slot}}` and confirms each law with the human; that copy is binding. Tools have logical names (`CAPABILITIES.md`).
+Workers read `LAWS_DIGEST.md` (`law-lint.cjs digest`). At most 200 lines. Never commit it.
 
 ## Roles
-- **Chief (C1)** (only when there are several Masters; `core/CHIEF.md`): knows every lane, arbitrates locks, ports
-  and branches, owns the worker-chip queue, and is the one voice that talks to the human after Masters report.
-- **Research chat (R1)** (`core/CHIEF.md` rule 9): same level as the Chief, research only, 600k window; never
-  creates worker chats; hands findings to the Chief or Master as a RESULT.
-- **Master (M1, M2 …)**: lead task manager, queue manager and senior developer. Plans every
-  task. With a Chief, reports to the Chief; otherwise talks to the human like a senior lead talks to a client.
-  Owns its area for good; every later fix or upgrade there comes back to it, in a fresh chat once the old one is long (`core/CHIEF.md` rule 10).
-- **Worker (W-M1-1, W-M1-2 …)**: named `W-<Master>-<n>`; each Master counts its own workers from 1, and the full id is
-  always written, never a short `W45` (`core/CHIEF.md` rule 11); one chat
-  per task, in its own git worktree. Reports only to its Master.
-- **Human**: the client. Only the Chief (or the single Master, if there is no Chief) talks to the human.
+- **Chief (C1)**: only with several Masters (`core/CHIEF.md`); the one voice to the human.
+- **Master (M1 …)**: plans every task, runs its queue, owns its area for good (CHIEF rule 10); without a Chief it talks
+  to the human like a senior lead to a client.
+- **Worker (`W-<Master>-<n>`, CHIEF rule 11)**: one chat per task in its own git worktree; reports only to its Master.
+- **Human**: the client.
 
 ## The laws
-1. **Master plans everything and picks the cheapest path** (`core/TOKENS.md`): script, scout,
-   itself, a subagent (at most 2), then a worker chat. Audits are Master-run exceptions to the
-   2-subagent cap, with a stated budget.
-2. **Master creates workers and controls their tier and effort** via `MODELS.md`. Skills and
-   briefs name tiers, never models. One worktree per worker. Apply with set_session_model /
-   set_session_effort, or tell the human which to pick. Model changes in `MODELS.md` are
-   proposals the human approves. Never enable fast mode.
-3. **Two-way talk, never broadcast.** Every message goes direct by chat name (message). A worker
-   reports each completion and blocker as a RESULT block (`core/RESULT.md`, 10 lines or fewer).
-   Details and DL candidates go in `handoffs/W-M#-n.md`: a **LAST** block on top, entries below it
-   **append-only**. Master reads the file before deciding.
-4. **Pipeline**
-   1. Human gives Master a task.
-   2. Master researches it: history first (law 6), the research skill when logs do not answer.
-   3. Master runs the analyzer to fill BOARD `Touches`; asks the human only what is their call;
-      they agree a **LOCK**.
-   4. Master sends a brief (`core/BRIEF.md`) to a worker.
-   5. The worker proposes plan improvements to Master. A change to locked scope goes to the human.
-   6. The worker builds and runs type-check, unit tests and its own flow, appends `W-M#-n.md`, reports.
-      It syncs with the base through sync_base, never `git merge`/`pull`; on conflicts it resolves, commits, then reports.
-   7. Master reads `W-M#-n.md`, runs `scripts/test-guard.cjs compare`, then the combined full E2E
-      inside the heavy slot (law 7).
-      - **Green**: merge to `{{main branch}}` (never push unless told).
-      - **Red**: back to the worker.
-   Step 6 also: scripts that produce deliverables are committed in the project, never only in a scratchpad.
-5. **Reuse workers.** Before the next brief, confirm the worker is idle (list_agents). When
-   green, send `RESET`; the worker finalises `W-M#-n.md` and clears itself. Any worker can take any
-   module because history is in files. **The Master decides when a worker is opened, cleared or
-   closed.** A worker clears only itself (`clear_session self`), and only after the Master's
-   `RESET`; the Master cannot clear a chip-launched chat, and the human archives it. A Master's area never changes owner;
-   a long or archived Master chat is replaced by a fresh chat for the same Master (`core/CHIEF.md` rule 10).
-6. **History first.** Before planning, grep `handoffs/` (including `archive/` and `pairs/`),
-   `FEATURE_INDEX.md` and `ACTION_LOG*`. The brief names that history. Reuse a dated verdict
-   (same git hash) instead of re-analysing.
-7. **Batched E2E, the 80% rule, heavy slot.** When a worker reports done:
-   - if another worker is at 80% or more (BOARD `%`), wait for it **once**;
-   - run **one** combined full suite (`{{full E2E command}}`) holding the heavy-slot lock
-     (`scripts/lock.cjs acquire heavy`); the schema lock is the same mechanism;
-   - never wait for a second wave;
-   - then stop the servers the run used: `scripts/server.cjs stop <master_dir> --all` (browser-pane previews:
-     `preview_stop`). Start every dev server with `server.cjs start` (it waits for the port, no polling turns) or
-     record it with `server.cjs register`, so it can be stopped; never stop a server the skill did not start.
-8. **After the sweep.** Green: the Master sends `RESET` (law 5). Red: the same worker fixes its failures, no
-   clear, until green.
-9. **Workers ask only Master.** No worker talks to another unless Master pairs them (shared log
-   `handoffs/pairs/<id>-<id>.md`). An unsafe or LOCK-breaking ask: stop and report.
-10. **No free worker: open a new one**, within the chat capacity (law 26). Size every request yourself (`core/SCALE.md`):
-    nobody has to name workers; ready tasks start together and the Master waits on any completion, never one at a time.
-11. **Token and tier choices are automatic.** Master has full authority over workers.
-12. **Compaction.**
-    - Chief compacts at `500k` (always), a Research chat at `600k` (always), Master at `{{master window, e.g. 250k}}`, workers at `{{worker window, e.g. 200k}}`
-      (`autoCompactWindow`; the human sets it with `/autocompact <N>k`, per model, so re-set it after a model switch; the minimum is 100k; verify it fires in a long session before
-      trusting it).
-    - Read the real window with `get_usage` (context: tokens, window, auto-compact %), never from memory; law 26 stops new work at 85% of it.
-    - The Chief rolls over to a fresh chat at `{{rollover point, default 250k}}` (`core/CHIEF.md` rule 1, `scripts/rollover.cjs`):
-      open work only goes across; finished work stays in the files. Old chats: `{{archive | delete}}` (default archive;
-      delete removes the old chat and its history for good, only if the human chose it at onboarding).
-    - Workers append to `W-M#-n.md` after every step.
-    - "Master compacts after every decision" means: write `masters/M#.md` + BOARD, then
-      clear_session self.
-13. **Report after every full E2E**: what merged, test numbers, what was NOT tested, each
-    worker's status and ETA, any action the human must take.
-14. **Usage window.** Call get_usage once per cycle and before each wave; apply the TOKENS §6 table
-    (5-hour and weekly). If it will run out before reset: checkpoint, schedule a one-time task at `resets_at + 2 min` that
-    writes `masters/RESUME.md` (status only) and notifies the human. Master asks before acting
-    on RESUME.md.
-15. **Workers use a minimal-change approach** (lean) for simple tasks and bugfixes.
-16. **Two phases per module.** Phase 1: develop + bugfix; green, then clear. Phase 2: optimise,
-    same worker, capped at 2 passes (Master may extend). Order of authority:
-    `core/PRECEDENCE.md`. **Source caps:** `{{e.g. .ts/.tsx ≤ 400, .js/.jsx ≤ 300}}`.
-17. **Docs are at most 200 lines each** (split by law 19) for project and master-brain files, not
-    third-party folders. `master-brain/` and `.claude/` are never committed.
-18. **Several Masters can run at once.** Each owns its area for good in BOARD's **Masters** table (fixes and
-    upgrades there go back to it, `core/CHIEF.md` rule 10); a worker belongs to one Master. With more than one, a **Chief** sits above them (`core/CHIEF.md`): Masters call the Chief for anything they need and send a
-    RESULT whenever anything finishes, the chat itself included; the Chief speaks to the human once per cycle, owns locks and ports, and handles the
-    worker-chip queue (a Master asks; the Chief makes the chip and starts it when the host allows, else
-    batches it for the human). Agreements live in `handoffs/pairs/C1-M#.md`.
-19. **Split rule.** When a `.md` passes 200 lines: docs keep H1, intro and a § table, with
-    sections moved verbatim to `<name>/NN-topic.md`; logs roll into dated parts; handoffs move old
-    entries to `handoffs/archive/`. Applies to project and master-brain files, not third-party folders.
-20. **Approval gates (human yes first):** `migrate deploy`, new dependency, destructive git, push
-    or deploy, a LOCK change, fast mode, stop_session, settings edits, installing a skill, starting an arena
-    (sizes and pre-flight in procedure/05, also when the arena skill triggers by itself).
-21. **Test integrity.** Snapshot with `scripts/test-guard.cjs` before a worker starts; compare
-    before merge. No merge on removed tests, new skips or fewer assertions. Where the human turned on the test gate
-    (`scripts/stop-gate.cjs`), a worker cannot report done while its quick check fails; a RESULT still names the command and exit code.
-22. **Security gate.** After phase 2, a scoped quick audit per module. No merge while a confirmed
-    high or critical finding is open. Each confirmed finding gets a regression test.
-23. **Tools by logical name,** mapped in `CAPABILITIES.md`. An UNKNOWN there is never guessed.
-24. **Improvement loop** (`core/IMPROVE.md`). After each finished task Master logs one line with
-    `scripts/route-log.cjs`. Every ~10 tasks, on a new model release, or on request, run
-    `route-stats.cjs`: proposals only, at least 8 samples each, one change at a time. The user
-    approves, then verify + the A/B harness; keep a change only if quality holds and tokens do
-    not rise, else revert to the tag. Nothing edits `MODELS.md` or a skill without the user's yes.
-25. **Optional footer** (off unless the human turned it on at onboarding: `{{footer on|off}}`). When on, every reply
-    ends with a footer of 6 lines or fewer: open decisions and what others owe (procedure/04).
-26. **Chat capacity** (`CAPACITY.md`, written for this machine by `scripts/capacity.cjs`). Every open task weighs
-    W = (1 + score/2) × hold (do 1.0, subagent 0.6, worker chat 0.5, a Master for the Chief 1.5 flat) × state (active 1.0,
-    background 0.5, waiting 0.2, queued 0), +1 while holding an e2e, a sweep or the heavy lock. A task fits when
-    load + W ≤ limit × F: worker 8, Master 12, Chief 10; F = 1.0 under 50% context, 0.8 to 70%, 0.6 to 85%, 0 at 85%+
-    (write the LAST block and compact first). Hard caps: worker 1 job; Master 4 running worker chats; 2 subagents. Full:
-    reuse an idle worker, else the Master sends the Chief `needs-chip` and the Chief asks the human to click the chips;
-    a new Master only for an unowned area. Machine jobs (server 4, e2e 4, unit suite 3, sweep 2, type check 1) stay
-    within the calibrated budget, or wait for the slot. Check with `capacity.cjs load <role> <ctx%> <tasks>`.
+1. **The Master plans everything and picks the cheapest path.** Script, scout, itself, a subagent (at most 2; audits
+   excepted, with a budget), then a worker chat (`core/TOKENS.md`).
+2. **The Master sets each worker's tier and effort.** Briefs name tiers, never models (`MODELS.md`). One worktree per
+   worker. Never fast mode.
+3. **Two-way talk, never broadcast.** Messages go direct by chat name, as a RESULT (`core/RESULT.md`). Details go in
+   `handoffs/W-M#-n.md`: a LAST block on top, entries below append-only.
+4. **Pipeline.** Research, LOCK, brief, build and test, compare, merge.
+   1. The human gives the Master a task; the Master researches it (history first, law 6).
+   2. High tier (TOKENS §2): the analyzer fills BOARD `Touches`; else the code map. The human answers only their calls; you agree a **LOCK**.
+   3. The Master sends a brief (`core/BRIEF.md`); the worker may propose improvements; locked scope changes go to the human.
+   4. The worker builds, runs type-check, unit tests and its own flow, appends its handoff, reports; it syncs through
+      sync_base, never `git merge`/`pull`. A flow checked by hand becomes a regression spec before done. Scripts that
+      make deliverables are committed in the project.
+   5. The Master runs `scripts/test-guard.cjs compare`; High tier also the full E2E (law 7). Green: merge to
+      `{{main branch}}`, never push unless told. Red: back to the worker.
+5. **Reuse workers.** When green the Master sends `RESET`; the worker finalises its handoff and clears itself. The
+   Master decides when a worker opens, clears or closes; a chip-launched chat it cannot clear is archived by the human.
+6. **History first.** Before planning, grep `handoffs/` (with `archive/`, `pairs/`), `FEATURE_INDEX.md` and `ACTION_LOG*`.
+7. **One batched full E2E in the heavy slot.** One combined `{{full E2E command}}` under `scripts/lock.cjs acquire
+   heavy`, per phase of a multi-phase feature, never a second wave. Fixing an old known-red test is its own task. Start
+   servers only with `scripts/server.cjs start`; after the run, `server.cjs stop <master_dir> --all` (previews: `preview_stop`).
+8. **After the sweep.** Red: the same worker fixes its failures in its own chat until green; green: `RESET`.
+9. **Workers ask only the Master.** No worker talks to another unless the Master pairs them (`handoffs/pairs/<id>-<id>.md`). An unsafe or LOCK-breaking ask: stop and report.
+10. **No free worker: open one within capacity.** Law 26; sizing and waves: `core/SCALE.md`.
+11. **Token and tier choices are automatic.** The Master has full authority over workers.
+12. **Context.** Chief and Masters roll over at `250k` unless the human set another number (`core/CHIEF.md` rule 1).
+    `autoCompactWindow` is a safety net above it: Chief and Master `{{e.g. 400k}}`, workers `{{e.g. 200k}}` (the human
+    types `/autocompact <N>k`, per model). Read context with `get_usage`. Old chats: `{{archive | delete}}` (default
+    archive; delete is final).
+13. **One report after a full E2E.** What merged, test numbers, what was NOT tested (a clean type check is not a live
+    check), any action for the human; progress stays on the BOARD.
+14. **Usage window.** Each cycle and before each wave, `scripts/cycle.cjs` applies the TOKENS §6 table (5-hour and
+    weekly). Running out before the reset: checkpoint, schedule a one-time task at `resets_at + 2 min` that writes
+    `masters/RESUME.md` (status only) and tells the human; ask before acting on it.
+15. **Workers use the minimal-change approach.** Lean, for simple tasks and bugfixes.
+16. **Two phases per High-tier module.** Phase 1 builds and bugfixes, then clears; phase 2 optimises, at most 2 passes.
+    Authority: `core/PRECEDENCE.md`. Source caps: `{{e.g. .ts/.tsx ≤ 400, .js/.jsx ≤ 300}}`.
+17. **Docs are at most 200 lines each.** Project and master-brain files (law 19). `master-brain/` and `.claude/` are never committed.
+18. **Several Masters can run at once.** Each owns its area (BOARD Masters table); a Chief sits above them, messaged
+    only for done, blocked or needs-chief (CHIEF rule 2); agreements in `handoffs/pairs/C1-M#.md`.
+19. **Split rule.** A `.md` over 200 lines keeps H1, intro and a § table and moves sections verbatim to
+    `<name>/NN-topic.md`; logs roll into dated parts; old handoff entries go to `handoffs/archive/`.
+20. **Approval gates.** `core/SAFETY.md` 12, also when the arena skill triggers by itself (procedure/05).
+21. **Test integrity.** Snapshot with `scripts/test-guard.cjs` before a worker starts and compare before merge: no merge
+    on removed tests, new skips or fewer assertions. With the test gate on (`scripts/stop-gate.cjs`) a worker cannot
+    report done while its quick check fails.
+22. **Security gate.** No merge while a confirmed high or critical finding is open; each gets a regression test. High
+    tier: a scoped quick audit per module after phase 2.
+23. **Tools by logical name.** Mapped in `CAPABILITIES.md`; an UNKNOWN is never guessed.
+24. **Improvement loop.** After each task, `scripts/route-log.cjs from-result <handoff>`; every ~10 tasks,
+    `route-stats.cjs` proposals, one change at a time, with the human's yes (`core/IMPROVE.md`).
+25. **Optional footer.** Off unless the human chose it (`{{footer on|off}}`); when on, every reply ends with 6 lines or
+    fewer: open decisions and what others owe (procedure/04).
+26. **Chat capacity.** A task starts only when `scripts/capacity.cjs load` says it fits (`CAPACITY.md`; `cycle.cjs` shows the room). Hard caps:
+    worker 1 job; Master 4 running worker chats; 2 subagents. Full: reuse an idle worker, else `needs-chip`.
 
-## Project-specific rules (fill during onboarding)
-- Shared-resource locks (e.g. one database migration at a time): `{{…}}`
-- Heavy-slot work that only one chat may run at a time (dev server, full suite): `{{…}}`
-- Push / deploy policy: `{{…}}`
-
-## Files
-| File | What |
+## Project-specific (onboarding fills it; tag rows confirmed or inferred; `TBD` when undecided)
+| Role | Binding |
 |---|---|
-| `LAWS.md` / `LAWS_DIGEST.md` | the rules / the 30-line version workers read |
-| `MODELS.md` / `CAPABILITIES.md` | tiers and model ids / logical tool names |
-| `BOARD.md` | QUEUE · Masters table · worker `%` done · locks |
-| `masters/M#.md` · `handoffs/W-M#-n.md` · `handoffs/pairs/` | histories (LAST on top, append-only) |
-| `locks/` | lock folders from `scripts/lock.cjs` |
-| `inbox/` | fallback when message fails |
+| Stack; type or build gate | `{{…}}` |
+| Unit and E2E commands; known-red ledger | `{{…}}` |
+| Validation (schema pair, contracts on both ends) | `{{…}}` |
+| Foundational modules (never parallel); collision files | `{{…}}` |
+| Credentials (where named constants live, never values) | `{{…}}` |
+| Git: branch, commit style; push and deploy policy | `{{…}}` |
+| Status and decision docs; shared locks; heavy-slot work | `{{…}}` |
+
+Files (seeded by `scripts/init.cjs`): `BOARD.md`, `masters/`, `handoffs/`, `ACTION_LOG.md`, `locks/`, `inbox/`.

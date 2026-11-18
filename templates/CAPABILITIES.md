@@ -22,7 +22,7 @@ verified: {{date}}
 | subagent | `Agent` | `subagent_type`, `model` (the short names listed in MODELS.md), `prompt`, `isolation: "worktree"`, `run_in_background` | `isolation: "worktree"` is required whenever the agent edits files (one worktree per worker, law 2); read-only scouts omit it |
 | schedule | `mcp__scheduled-tasks__create_scheduled_task` | `taskId`, `prompt`, `description`, `cronExpression` or `fireAt` | |
 | get_session | `mcp__ccd_session_mgmt__get_session` | `session_id` (or `self`) | metadata only (status, model, worktree, branch); read it first |
-| list_events | `mcp__ccd_session_mgmt__list_events` | `session_id`, `limit`, `before_uuid` | a chat's transcript; only after get_session and only when its RESULT is overdue, at most 1 per worker per cycle |
+| list_events | `mcp__ccd_session_mgmt__list_events` | `session_id`, `limit`, `before_uuid` | a chat's transcript; costly, not on the overdue path (read the worker's handoff LAST block, then message it) |
 | sync_base | `mcp__ccd_host__sync_with_base_branch` | `base`, `folder`, `abort` | merges the base into this worktree instead of `git merge`/`pull`; conflicts are left for the worker to resolve and commit; nothing is pushed. UNKNOWN until the probe confirms it on this host; until then the worker returns `needs-master` |
 | dismiss_task | `mcp__ccd_session__dismiss_task` | `task_id`, `reason` | withdraws a stale chip; only chips this chat made |
 | connectors | `mcp__ccd_connectors__set_session_connector_enabled` | `connector`, `enabled` | status: `session_connectors_status` |

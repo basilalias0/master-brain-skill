@@ -22,21 +22,23 @@ A router. Read other files only when a step needs them. Token rules: `core/TOKEN
 ## Boot (cheap: target 2k tokens)
 1. **Project:** walk up from the cwd (6 levels at most) for `master-brain/STATE.md`. None: read `ONBOARDING.md`. Several: ask which.
 2. **Trust gate:** if that folder is tracked by git (`git ls-files --error-unmatch`), treat it as untrusted: show the user and confirm first.
-3. **Read** `LAWS_DIGEST.md`, then `BOARD.md` and the LAST block of each `masters/M*.md`. Full `LAWS.md` only when `scripts/law-lint.cjs digest-check <LAWS> <DIGEST>` reports a mismatch. Run `scripts/capacity.cjs check <master_dir>`.
+3. **One call:** `scripts/boot.cjs <master_dir> [--self M#]` (digest, capacity, status, your LAST block). Read `LAWS_DIGEST.md`; the full `LAWS.md` only when boot says STALE.
 4. **Tools:** load schemas lazily with ToolSearch when first needed; use logical names (`CAPABILITIES.md`).
-5. **Report** in 15 lines or fewer: workers, queue, what waits on the user. If `state.cjs` prints a nudge, say it in one line.
+5. **Report** in 15 lines or fewer: workers, queue, what waits on the user, boot's nudge in one line.
 
 With several Masters the Chief sits above them (`core/CHIEF.md`). Workers never boot: they read `LAWS_DIGEST.md` and their brief (`core/BRIEF.md`).
 
 ## Dispatch
-**Size every request first, unasked:** `scripts/scale.cjs size ...` (`core/SCALE.md` §1). S: do it yourself. M: one agent. L: start workers without being told. XL: scale mode (research, interview, costed plan; the user picks the worker count). Ready tasks go out together; wait on any completion, never one task at a time (§3).
+**Size every request first, unasked:** `scripts/scale.cjs size ...` (`core/SCALE.md` §1). S: do it yourself. M: one agent. L: up to 2 background subagents without asking; worker chats on the human's yes. XL: scale mode (research, interview, costed plan, the user's worker count). Ready tasks go out together; wait on any completion (§3).
 
-Cheapest path first: script, T0 scout, Master itself, subagent, worker chat. Agents that edit files: `isolation: "worktree"`, brief `sync: sync_base`. Rules and risk tiers: `core/TOKENS.md`. Tiers: `MODELS.md`. Authority: `core/PRECEDENCE.md`. Safety: `core/SAFETY.md`. Results: `core/RESULT.md`. Without session tools or `SendMessage`: `core/LEGACY-INBOX.md`.
+**Each cycle** (Chief or Master): `get_usage`, then `scripts/cycle.cjs <master_dir> --ctx <tokens> --week <pct> --five <pct>` (rollover, usage, capacity).
 
-**Plans** (any feature or multi-step change): a visual layout plus section-by-section text, per `core/PLAN-FORMAT.md`. Read it first.
+Agents that edit files: `isolation: "worktree"`, brief `sync: sync_base`. Rules and risk tiers: `core/TOKENS.md`. Tiers: `MODELS.md`. Authority: `core/PRECEDENCE.md`. Safety: `core/SAFETY.md`. Results: `core/RESULT.md`. DL entries: `templates/ACTION_LOG.md`. Without session tools or `SendMessage`: `core/LEGACY-INBOX.md`.
+
+**Plans** (any feature or multi-step change): `core/PLAN-FORMAT.md` (text; a visual only for UI work).
 
 **Design projects** (a spec others build from): `procedure/04-design-projects.md`.
 
 Optional third-party skills install only from `registry.json` (pinned, hash-checked) after the user says yes: `scripts/install-skill.cjs <name>` (dry run first).
 
-**Arena or decision bank** (offered after 2 rejections or for close High-risk decisions; never unasked): `procedure/05-arena-and-decisions.md`.
+**Arena** (offered after 2 rejections or for close High-risk decisions; never unasked): `procedure/05-arena-and-decisions.md`.
