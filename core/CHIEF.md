@@ -11,6 +11,13 @@ analyzer when lanes may collide, and keeps the cheapest path (`core/TOKENS.md`).
 ## Rules
 1. **Window.** The Chief keeps a 500k context (`autoCompactWindow` 500k, set in the project's `LAWS.md` law 12; the human types `/autocompact 500k`, a chat cannot set it). Before it
    compacts it writes `masters/C1.md` and the BOARD, then reads them back.
+   **Roll over instead of growing (owner, 2026-11-18).** Every step re-reads the whole chat, so each cycle the Chief reads
+   its context with `get_usage` and runs `scripts/rollover.cjs due <tokens>` (default point 250k). Due: write the LAST
+   block and BOARD, run `rollover.cjs handoff <master_dir>` (open work only, 60 lines or fewer; finished work stays in the
+   files), and ask the human in the cycle message: "Start a fresh Chief?". On their yes: `start_session` (`user_asked`
+   quoting it, `context: "fresh"`, prompt `/master-brain chief` then read `masters/C1-next.md`). The new Chief tells every
+   Master its session id; the old chat writes nothing more, and the human archives it. Masters do not roll over (rule 10):
+   they compact.
 2. **Reports go up the chain.** Workers report RESULTs to their Master (`core/RESULT.md`). Masters send the Chief a
    RESULT (10 lines or fewer) per finished step, blocker, decision needed and e2e result. A Master answers the human only
    when the human writes in that Master's chat.

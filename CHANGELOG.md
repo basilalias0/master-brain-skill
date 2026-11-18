@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased (2026-11-18, owner request; not A/B tested)
+- Chief rollover (`scripts/rollover.cjs` with tests; CHIEF rule 1, law 12, TOKENS §6, README). Each cycle the Chief checks its context; past the point (default 250k) it writes a handoff of open work only (Masters table, open BOARD rows, open LAST items, locks, running servers; 60 lines or fewer) and, on the human's yes, starts a fresh Chief from it. Finished work is not carried; it stays in ACTION_LOG, handoffs/ and the BOARD. Masters keep compacting (they own their areas). Evidence: this session's usage was 97.7% cache reads, which grow with chat length on every step.
+
 ## Unreleased (2026-11-18, from the A/B pilot; not re-tested, owner: the weekly budget is low)
 - `core/SCALE.md` §2: scale mode sends its questions and the plan built on their defaults in one message, with the worker-count question, instead of questions first and the plan a round trip later (pilot: 3 of 3 runs stopped after the questions alone). Answers that change the plan re-run `plan` and send only what changed.
 - `core/SCALE.md` §1: the reply quotes the `scale.cjs size` output line, so a skipped sizing shows (pilot: 1 of 3 runs judged the class without the script).

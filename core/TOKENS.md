@@ -56,6 +56,6 @@ Never route High work below T1 or default effort.
 - Dev servers: start with `scripts/server.cjs start` (it waits for the port), stop after the sweep and at task end (law 7). A running server costs no tokens but 4 machine points (`CAPACITY.md`); polling one with model turns costs tokens every turn.
 - Waiting: `Monitor` or Bash `run_in_background` with an until-loop, never sleep loops or status turns; at most 1 `PushNotification` per cycle, only when the human is away.
 - Status checks are commands (a detached script that writes a summary file, plus a node watcher), never a model turn that re-reads context.
-- Compact or clear at task boundaries with a short keep-list, not at the context limit.
+- Compact or clear at task boundaries with a short keep-list, not at the context limit. Each step re-reads the whole chat (cache reads were 97.7% of one session's tokens), so a long Chief rolls over to a fresh one built from files (`core/CHIEF.md` rule 1).
 - Keep the Master's session stable: choose model and effort at the start and do not switch them mid-session (a switch re-reads the whole context uncached). Change tier by dispatching, not by switching the Master.
 - Load only the tools a job needs: a worker skips browser, Chrome and other tool groups unless its brief says `tools:` (UI work or a live check), and the Master disables connectors it does not need (the human approves the change). Every unused tool definition is re-read each turn.
