@@ -131,6 +131,9 @@ autonomy rule) that won't automatically re-open to question it.
    size and shouldn't be assumed free.
 6. Create `overlay/` and run `node scripts/overlay.cjs rebase --dir <master_dir>` (writes `overlay/base.json` with the installed skill version). Also seed `routing-log.jsonl` (empty) and `improve/`. These are local to the project and stay out of git.
    Run `node scripts/capacity.cjs calibrate <master_dir>`: it writes `CAPACITY.md` (the machine budget from this machine's RAM and cores; the chat limits). Say the budget in one line.
+   Offer the test gate once: a Stop hook (`scripts/stop-gate.cjs`, setup in its header) that keeps a worker from saying
+   "done" while the project's quick check fails. Only worker worktrees are gated; it lets go after 2 blocks. It is a
+   settings edit, so add it to the project's `.claude/settings.json` only on the human's yes.
    If the human wants the decision bank, create `master-brain/decisions/` (private, procedure/05). If they use the
    arena skill, add `.arena/` to the project `.gitignore` once, with their yes.
 7. Write one `DL-001` entry in the new `ACTION_LOG.md` recording the onboarding itself —

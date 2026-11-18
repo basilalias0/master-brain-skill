@@ -17,7 +17,7 @@ Status becomes `verified` after the first successful dispatch; the picker's ids 
 | Task | Default | Escalate when |
 |---|---|---|
 | Lookups, log digging, recon, sweep running | T0 | never |
-| Single-file fix or a one-to-two-step edit | T0 | multi-file, callers to check, or failed once: T1 |
+| Single-file fix or a one-to-two-step edit | T0 only when tests or the type check catch a wrong fix (score Checking 0); else T1 | multi-file, callers to check, or failed once: T1 |
 | Master planning | T1 | multi-module or a LOCK dispute: T2 |
 | Research | T1 | high stakes or conflicting sources: T2 |
 | Analyzer | T1 | huge graph: T2 |
@@ -46,7 +46,19 @@ Total to effort: 0-2 low, 3-5 medium, 6-7 high, 8-9 xhigh, 10 max (max only with
 - Masters: score the hardest decision they will make, capped at medium for a coordinating Master (a long session multiplies
   every level). A chip-started session inherits its parent's effort: set it with `set_session_effort` as soon as it starts.
 - Workers: the Master scores each brief (`score: N/10` plus the effort) and applies it (Agent `effort`, or `set_session_effort`).
-- Escalate one level after a failed attempt and log one line in `masters/M#.md`. A floor is never lowered.
+- Escalate after a failed attempt by the rules below and log one line in `masters/M#.md`. A floor is never lowered.
+
+## Escalation (owner, 2026-11-18; Anthropic's rule, via the Model Routing Playbook)
+Cheap-first pays only when the check is reliable: a failed cheap run cost over 4x a good one (playbook), and here a failed
+T0 test-writing run cost 126k against 55k for T1 directly (evidence below). So T0 starts only where tests catch mistakes.
+1. **Diagnose the failure.** It skipped a file, did not run the checks, or rushed: raise **effort** one level, same
+   model. It had all the context, ran the checks and was still wrong: one **tier** up. Never both at once.
+2. **Where.** Worker context under about 120k (get_usage; an estimate until measured): change it in place. Over 120k: the
+   worker writes its LAST block (tried, failed, the failing check, next step) and stops; a **fresh worker** at the new
+   level continues from that handoff on the same branch. A cache does not move between models, and a long chat re-read
+   uncached costs about as much as a fresh worker's boot. Never fork the old chat for an escalation.
+3. **Once per task.** A second failure goes back to the Master (`needs-master`), and from there to the human.
+Masters and the Chief never switch their own model or effort (TOKENS §6): hard work goes to a worker at the right level.
 
 ## Cache note
 The older T0 model (Haiku 4.5) did not cache prompts under 4,096 tokens; re-check this for the current T0 before relying on cache for small jobs. Prefer a script for mechanical lookups; use T0 for judgment-light reading.

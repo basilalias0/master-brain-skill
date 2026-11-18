@@ -17,6 +17,11 @@ At intake, before picking a path, estimate from the code map and FEATURE_INDEX, 
 
 The human's words beat the class ("do it yourself", "no workers"). Risk floors (TOKENS §2, `MODELS.md`) still apply.
 
+**Re-size after the first look.** Sizing from the request text alone is a guess (routing from the prompt alone did
+no better than a trivial baseline on coding tasks; routing after the first 2-3 steps did better: SWE-Router, via the
+Model Routing Playbook). After the scout or the first 2-3 steps, run `size` again with what was found and change path
+if the class moved. A worker with no passing check by half its budget stops and is escalated (`MODELS.md` Escalation).
+
 ## 2. Scale mode (XL)
 1. **Research first** (`research` module, `deep` for new ground): the code, the stack, prior art, unknowns. Spend at most
    about 5% of the 5-hour window. Answer what the files answer; do not ask the human those.

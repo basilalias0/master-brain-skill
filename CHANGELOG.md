@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased (2026-11-18, owner request; A/B suite not run): routing fixes from the Model Routing Playbook
+- `templates/MODELS.md` Escalation: diagnose before escalating (skipped a file or the checks: raise effort, same model; had everything and was still wrong: one tier up; never both). Under about 120k context change in place; over it, a fresh worker continues from the LAST block on the same branch, never a fork (a cache does not move between models). Once per task, then `needs-master`. Masters and the Chief never switch themselves.
+- Cheap-first only where the check is reliable: single-file fixes start on T0 only when tests or the type check catch a wrong fix (score Checking 0), else T1. Evidence: the playbook cites failed cheap runs at over 4x a good one and cascades degrading once the checker is wrong more than 20% of the time; here, a failed T0 test-writing run cost 126k against 55k for T1 (2026-10-05 ladder).
+- `core/SCALE.md`: re-size after the scout or the first 2-3 steps (prompt-only routing did no better than a trivial baseline on coding tasks, SWE-Router via the playbook); a worker with no passing check by half its budget is stopped and escalated.
+- Test gate: `scripts/stop-gate.cjs` (tests), an optional Stop hook that keeps a worker from reporting done while its quick check fails. Gates only git worktrees, lets go after 2 blocks in a row, and fails open on any error (a Stop hook that always blocks traps the chat). Offered once at onboarding; installed only on the human's yes (law 21).
+- The 120k cut-over and the "half its budget" stall point are estimates to be measured. Source: the "Model Routing Playbook" (AI LEVELS, checked 2026-10-05); its vendor savings figures are self-reported and were not used.
+
 ## Unreleased (2026-11-18, owner request; A/B suite not run): dev servers stop after use
 - `scripts/server.cjs` (start, register, list, stop; tests): every dev server the skill uses is started through it (it waits for the port, so no model turns poll) or registered, and is stopped after the batched sweep and at task end (law 7, BRIEF `port / slot`, TOKENS §6). Stop takes the whole process tree (`pnpm` and its `vite` child) and checks the port is free. It never stops a process it did not record: the pid and its image name must both still match. Boot (`capacity.cjs check`) names servers left running. Evidence: on 2026-11-18 a project's Vite server had been running for about 16 hours after its tests; a running server costs no tokens but 4 of the machine's 12 points.
 

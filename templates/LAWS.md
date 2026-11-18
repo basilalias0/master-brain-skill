@@ -103,7 +103,8 @@ stale. Keep it at most 200 lines. Never commit it.
     or deploy, a LOCK change, fast mode, stop_session, settings edits, installing a skill, starting an arena
     (sizes and pre-flight in procedure/05, also when the arena skill triggers by itself).
 21. **Test integrity.** Snapshot with `scripts/test-guard.cjs` before a worker starts; compare
-    before merge. No merge on removed tests, new skips or fewer assertions.
+    before merge. No merge on removed tests, new skips or fewer assertions. Where the human turned on the test gate
+    (`scripts/stop-gate.cjs`), a worker cannot report done while its quick check fails; a RESULT still names the command and exit code.
 22. **Security gate.** After phase 2, a scoped quick audit per module. No merge while a confirmed
     high or critical finding is open. Each confirmed finding gets a regression test.
 23. **Tools by logical name,** mapped in `CAPABILITIES.md`. An UNKNOWN there is never guessed.
