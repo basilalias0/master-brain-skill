@@ -75,6 +75,26 @@ test('archive moves the oldest entries verbatim, keeps those under review, and i
   assert.match(run(['archive', f, '--today', '2026-11-19']).stdout, /under the limit; nothing to move/);
 });
 
+test('the older "## DL-NNN · date · title" headings are read by lint, find and archive', () => {
+  const f = path.join(tmp(), 'ACTION_LOG.md');
+  const old = (n, title) => `## DL-00${n} · 2026-11-0${n} · ${title}\n\nFound: ${title} details.\n### Notes\nmore text\n\n`;
+  fs.writeFileSync(f, '# Action log (X)\n\n' + old(1, 'Onboarded') + old(2, 'Attendance researched') + old(3, 'Queue choice'));
+  assert.match(run(['lint', f]).stdout, /ok \(3 DL entries\)/);
+  assert.match(run(['find', f, 'attendance']).stdout, /^DL-002 /);
+  const n = fs.readFileSync(f, 'utf8').split('\n').length;
+  assert.match(run(['archive', f, '--max', String(n - 6), '--today', '2026-11-19', '--write']).stdout, /^archive: moved DL-001 to ACTION_LOG-2026-11\.md/);
+  const live = fs.readFileSync(f, 'utf8');
+  assert.match(live, /^# Action log \(X\)/);
+  assert.doesNotMatch(live, /DL-001 ·/);
+  assert.match(fs.readFileSync(path.join(path.dirname(f), 'ACTION_LOG-2026-11.md'), 'utf8'), /## DL-001 · 2026-11-01 · Onboarded[\s\S]*### Notes\nmore text/);
+});
+
+test('archive says so when a long log has no DL headings it can read', () => {
+  const f = path.join(tmp(), 'ACTION_LOG.md');
+  fs.writeFileSync(f, '# Log\n' + '## DL-1: no separator\nline\n'.repeat(120));
+  assert.match(run(['archive', f]).stdout, /no DL entries found .*nothing moved/);
+});
+
 test('check-private refuses an arena folder inside the skill', () => {
   const skill = tmp();
   const inside = path.join(skill, 'master-brain', 'arena');

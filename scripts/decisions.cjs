@@ -14,6 +14,7 @@
 //                                      the arena pre-flight: items 1-2 before the offer; with --yes (after the
 //                                      owner's yes) items 3-7 too. Stops at the first failed item and names it.
 // A DL entry is a "## DL-NNN — <signature>" heading in ACTION_LOG (templates/ACTION_LOG.md), fields one per line.
+// Older project logs use "## DL-NNN · YYYY-MM-DD · <title>"; both are read (DL_HEAD).
 // Exit: 0 ok, 1 refused or lint errors, 2 unreadable input or usage.
 const fs = require('fs');
 const path = require('path');
@@ -24,6 +25,7 @@ const { secretRes, denyRes } = require('./verify.cjs');
 // TOKENS section 6 usage table: window -> threshold -> actions. A test checks this equals the table in core/TOKENS.md.
 const TABLE = { five: { 70: ['drop', 'no-arena'], 90: ['stop'] }, week: { 70: ['no-arena'], 80: ['drop'], 90: ['stop'] } };
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const DL_HEAD = /^## (DL-\d+) (?:—|·) (.+)$/;
 
 class InputError extends Error {}
 const sha = (s) => crypto.createHash('sha256').update(s).digest('hex');
@@ -33,7 +35,7 @@ function entries(log) {
   if (!log || !fs.existsSync(log) || !fs.statSync(log).isFile()) throw new InputError('not a readable ACTION_LOG: ' + log);
   const out = []; let cur = null;
   for (const l of fs.readFileSync(log, 'utf8').replace(/\r\n/g, '\n').split('\n')) {
-    const h = /^## (DL-\d+) — (.+)$/.exec(l);
+    const h = DL_HEAD.exec(l);
     if (h) { cur = { id: h[1], signature: h[2].trim(), fields: {}, outcome: [] }; out.push(cur); continue; }
     if (/^#{1,2} /.test(l)) { cur = null; continue; }
     if (!cur) continue;
@@ -74,11 +76,11 @@ function archive(log, { max = 200, today = new Date().toISOString().slice(0, 10)
   const all = entries(log);
   const lines = fs.readFileSync(log, 'utf8').replace(/\r\n/g, '\n').split('\n');
   const heads = lines.flatMap((l, i) => (/^#{1,2} /.test(l) ? [i] : []));
-  const blocks = heads.filter((i) => /^## DL-\d+ — /.test(lines[i])).map((i) => ({ id: /DL-\d+/.exec(lines[i])[0], start: i, end: heads.find((h) => h > i) ?? lines.length }));
+  const blocks = heads.filter((i) => DL_HEAD.test(lines[i])).map((i) => ({ id: /DL-\d+/.exec(lines[i])[0], start: i, end: heads.find((h) => h > i) ?? lines.length }));
   const dueIds = new Set(due(log, today).map((l) => l.split(' ')[0]));
   const keep = (id) => { const e = all.find((x) => x.id === id); const r = e && e.fields['Review-by']; return dueIds.has(id) || (DATE.test(r || '') && r > today); };
   const file = path.join(path.dirname(log), `${path.basename(log, '.md')}-${today.slice(0, 7)}.md`);
-  const res = { before: lines.length, after: lines.length, moved: [], kept: [], file };
+  const res = { before: lines.length, after: lines.length, moved: [], kept: [], found: blocks.length, file };
   if (lines.length <= max) return res;
   const out = new Set();
   for (const b of blocks) {
@@ -254,7 +256,9 @@ function main(argv) {
     const write = argv.includes('--write');
     const r = archive(a, { max: Number(flag('--max') || 200), today: flag('--today'), write });
     const f = path.basename(r.file);
-    if (!r.moved.length) console.log(r.before <= Number(flag('--max') || 200) ? `archive: ${r.before} lines, under the limit; nothing to move` : `archive: ${r.before} lines, but every old entry is still under review (${r.kept.join(', ')}); nothing moved`);
+    if (!r.moved.length) console.log(r.before <= Number(flag('--max') || 200) ? `archive: ${r.before} lines, under the limit; nothing to move`
+      : !r.found ? `archive: ${r.before} lines, but no DL entries found (headings "## DL-NNN — ..." or "## DL-NNN · ..."); nothing moved`
+      : `archive: ${r.before} lines, but every old entry is still under review (${r.kept.join(', ')}); nothing moved`);
     else console.log(`archive: ${write ? 'moved' : 'would move'} ${r.moved.join(', ')} to ${f}; live log ${r.before} -> ${r.after} lines${r.kept.length ? `; kept under review: ${r.kept.join(', ')}` : ''}${write ? '' : ' (dry run; add --write)'}`);
     return 0;
   }

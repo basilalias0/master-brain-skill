@@ -63,7 +63,7 @@ On Windows the folder is `%USERPROFILE%\.claude\skills\master-brain`. Update wit
 
 ## Modules are bundled
 
-The six helpers (research, lean, developer, analyzer, tester, decide) ship inside this skill as modules, read only when used. `research` (standard and deep) and `developer` update mode run a **community check** (`core/COMMUNITY.md`): they look for alternatives in issue trackers and community Q&A, then vet each one (date and version, official docs, security, licence, proof) before adopting it. Sites that refuse automated access are reported as not reached, never routed around. Only the optional third-party security-audit skill installs on demand, after you say yes, from `registry.json` at a pinned commit.
+The six helpers (research, lean, developer, analyzer, tester, decide) ship inside this skill as modules, read only when used. `research` (standard and deep) and `developer` update mode run a **community check** (`core/COMMUNITY.md`): they look for alternatives in issue trackers and community Q&A, then vet each one (date and version, official docs, security, licence, proof) before adopting it. Sites that refuse automated access are reported as not reached, never routed around. When a task touches a field that both a form and the server check, the tester compares the two first, and a form looser than the server, or a 500 on blank or missing input, is fixed in the same change with a test rather than left as "out of scope" (A/B on 2026-11-19: 3/3 against 1/6 for 2.4.x and 0/6 with no skill, `plans/ab-2026-11-19.md`). UI and form flows also get `modules/tester/flows.md`: reproduce a blocker before fixing it, replay the steps already passed, and a bounded robustness pass. Only the optional third-party security-audit skill installs on demand, after you say yes, from `registry.json` at a pinned commit.
 
 ## Files
 
@@ -75,7 +75,8 @@ The six helpers (research, lean, developer, analyzer, tester, decide) ship insid
 | `core/` | CHIEF, SCALE, COMMUNITY, TOKENS, PRECEDENCE, SAFETY, BRIEF, RESULT, PLAN-FORMAT, IMPROVE, UPDATE, LEGACY-INBOX |
 | `templates/` | LAWS (with the project-specific section), MODELS, MODELS-evidence, CAPABILITIES, ACTION_LOG (the DL entry format) |
 | `scripts/` | zero-token helpers (Node, no dependencies, each with a test) |
-| `modules/` | research, lean, developer, analyzer, tester, decide (each `MODULE.md` + `HELP.md`) |
+| `modules/` | research, lean, developer, analyzer, tester, decide (each `MODULE.md` + `HELP.md`; tester also `frameworks.md` and `flows.md`) |
+| `plans/` | release plans and A/B reports (rubrics, per-run results, cost) |
 | `budget.json` | size caps; a cap may not rise without a measured gain |
 | `registry.json` | third-party skills it may install (none bundled) |
 | `VERSION`, `CHANGELOG.md`, `RELEASING.md` | versioning and the maintainer release gate |
@@ -84,7 +85,7 @@ Per-project state lives in `<project>/master-brain/`, never in this repo. Keep t
 
 ## Learning from your project
 
-Every finished task is logged in `<project>/master-brain/routing-log.jsonl`. `/master-brain improve` turns the log into proposals (routing, local-rule, generic) with evidence; nothing changes without your yes. Approved project rules go to `<project>/master-brain/overlay/` (capped, one file per module, never able to relax safety or tests). The installed skill is never edited. `/master-brain contribute` writes a sanitized export of rules you mark general; you send it yourself. Only maintainers with write access push this repo; master-brain never does.
+Every finished task is logged in `<project>/master-brain/routing-log.jsonl`, and decisions and mistakes in `<project>/master-brain/ACTION_LOG.md` (searched, never read whole). Past 200 lines, `scripts/decisions.cjs archive` moves the oldest entries that are not under review to `ACTION_LOG-YYYY-MM.md`, verbatim (a dry run unless you add `--write`); it reads both the current `## DL-NNN — signature` headings and the older `## DL-NNN · date · title` ones. `status` nudges a review after 10 logged tasks or 8 new decision entries, and a mistake that comes back a third time after its fix counts as a failed fix. `/master-brain improve` turns the log into proposals (routing, local-rule, generic) with evidence; nothing changes without your yes. Approved project rules go to `<project>/master-brain/overlay/` (capped, one file per module, never able to relax safety or tests). The installed skill is never edited. `/master-brain contribute` writes a sanitized export of rules you mark general; you send it yourself. Only maintainers with write access push this repo; master-brain never does.
 
 ## Languages: verified and not
 

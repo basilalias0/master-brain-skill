@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.5.1 (2026-11-19)
+- **decisions.cjs** reads the older ACTION_LOG headings `## DL-NNN · date · title` as well as `## DL-NNN — signature`, so `lint`, `due`, `find` and
+  `archive` work on project logs started before the current template (found on a live project log: 923 lines, 90 entries,
+  read as 0). `archive` now says when it finds no entries instead of reporting an empty "under review" list. Tests.
+- README: the tester contract rule and its A/B result, the decision-log archive and nudge, and the `plans/` folder.
+- Not A/B tested: a script parsing fix with unit tests, and README text.
+
 ## 2.5.0 (2026-11-19)
 Release gate exception, accepted by the owner on 2026-11-19: the A/B suite (RELEASING step 3) ran only for the two
 entries of 2026-11-19 (see plans/ab-2026-11-19.md). The other entries below say "not A/B tested" or "A/B suite not run"
