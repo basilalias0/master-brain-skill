@@ -53,6 +53,28 @@ test('find returns the top matches by keyword', () => {
   assert.match(run(['find', f, 'nothing']).stdout, /no similar entries/);
 });
 
+test('archive moves the oldest entries verbatim, keeps those under review, and is a dry run without --write', () => {
+  const old = (id) => entry(id, { fields: { 'Review-by': null, Confidence: null, 'Failure-signal': null } });
+  const f = log(old('DL-001'), entry('DL-002', { fields: { 'Review-by': '2026-12-31' } }), old('DL-003'), old('DL-004'),
+    entry('DL-005', { fields: { Supersedes: 'DL-001', 'Review-by': null } }));
+  const before = fs.readFileSync(f, 'utf8');
+  const n = before.split('\n').length;
+  const max = String(n - 12);
+  const dry = run(['archive', f, '--max', max, '--today', '2026-11-19']);
+  assert.strictEqual(dry.status, 0);
+  assert.match(dry.stdout, /would move DL-001, DL-003 to ACTION_LOG-2026-11\.md.*kept under review: DL-002.*dry run/);
+  assert.strictEqual(fs.readFileSync(f, 'utf8'), before);
+  assert.match(run(['archive', f, '--max', max, '--today', '2026-11-19', '--write']).stdout, /^archive: moved DL-001, DL-003/);
+  const live = fs.readFileSync(f, 'utf8');
+  const arch = fs.readFileSync(path.join(path.dirname(f), 'ACTION_LOG-2026-11.md'), 'utf8');
+  assert.ok(live.split('\n').length <= Number(max));
+  assert.doesNotMatch(live, /DL-001 —|DL-003 —/);
+  assert.match(live, /DL-002 —[\s\S]*DL-004 —[\s\S]*DL-005 —/);
+  assert.ok(arch.includes(old('DL-001').trim()) && arch.includes(old('DL-003').trim()));
+  assert.strictEqual(run(['lint', f]).status, 0, 'Supersedes may name an archived entry');
+  assert.match(run(['archive', f, '--today', '2026-11-19']).stdout, /under the limit; nothing to move/);
+});
+
 test('check-private refuses an arena folder inside the skill', () => {
   const skill = tmp();
   const inside = path.join(skill, 'master-brain', 'arena');

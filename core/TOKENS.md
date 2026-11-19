@@ -27,6 +27,7 @@ Never route High work below T1 or default effort.
 - Tests, build and type-check run through `scripts/run-quiet.cjs`. Check each edit batch; never carry a red edit forward.
 - Edit, never rewrite whole files. Reports 10 lines or fewer, paths not pasted code. Batch independent tool calls.
 - Pages: `scripts/page-check.cjs`; look only at a failing `changed.png` crop. Without Playwright: page text and the accessibility tree.
+- A mechanic that already has a passing spec is re-checked by running or adapting that spec, never by clicking through again (cheaper, and less flaky than page references).
 
 ## 5. Budget and effort
 - Each brief states a budget: read-only about 25-40 tool calls; a fix worker about 10 per item. At the cap: `needs-master` with done and remaining items and every sha; only the Master extends it.

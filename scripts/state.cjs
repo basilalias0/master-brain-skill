@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 'use strict';
 // state.cjs <master_dir>: prints a status snapshot of 15 lines or fewer from STATE.md and BOARD.md,
-// plus a nudge when 10 or more tasks were logged since the last improve run. boot.cjs reuses snapshot().
+// plus a nudge when 10 or more tasks, or 8 or more decision-log entries (by highest DL number, so archiving does not
+// reset it), were logged since the last improve run. boot.cjs reuses snapshot().
 const fs = require('fs');
 const path = require('path');
+
+// Highest DL number in an ACTION_LOG (0 when none).
+const maxDl = (s) => Math.max(0, ...[...s.matchAll(/^## DL-(\d+)/gm)].map((m) => Number(m[1])));
 
 function snapshot(dir, max = 15) {
   const read = (f) => { try { return fs.readFileSync(path.join(dir, f), 'utf8').split(/\r?\n/); } catch { return null; } };
@@ -24,9 +28,12 @@ function snapshot(dir, max = 15) {
 
   const count = (f, fn) => { try { return fn(fs.readFileSync(path.join(dir, f), 'utf8')); } catch { return 0; } };
   const logN = count('routing-log.jsonl', (s) => s.split('\n').filter(Boolean).length);
-  const lastN = count(path.join('improve', 'last-run.json'), (s) => JSON.parse(s).entries || 0);
+  const last = count(path.join('improve', 'last-run.json'), (s) => JSON.parse(s)) || {};
+  const lastN = last.entries || 0;
+  const dlN = count('ACTION_LOG.md', maxDl) - (last.dl || 0);
   const res = out.slice(0, max - 1);
-  if (logN - lastN >= 10) res.push(`Nudge: ${logN - lastN} tasks logged since the last review. Run /master-brain improve.`);
+  const why = [logN - lastN >= 10 && `${logN - lastN} tasks`, dlN >= 8 && `${dlN} decision-log entries`].filter(Boolean);
+  if (why.length) res.push(`Nudge: ${why.join(' and ')} logged since the last review. Run /master-brain improve.`);
   else if (out[max - 1]) res.push(out[max - 1]);
   return res;
 }
@@ -37,4 +44,4 @@ if (require.main === module) {
   console.log(snapshot(dir).join('\n'));
 }
 
-module.exports = { snapshot };
+module.exports = { snapshot, maxDl };

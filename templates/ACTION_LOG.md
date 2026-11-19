@@ -1,11 +1,12 @@
 # ACTION_LOG: decisions and mistakes (grep-only, never read whole)
 
 Seeded by `scripts/init.cjs`. Grep by keyword or reuse signature and read only the matching entry. Workers write DL
-candidates in their handoff; the Master folds them in here. Past about 200 lines, older entries roll into
-`ACTION_LOG-YYYY-MM.md` (law 19).
+candidates in their handoff; the Master folds them in here, then runs `decisions.cjs archive <this file> --write`: past
+200 lines it moves the oldest entries not under review to `ACTION_LOG-YYYY-MM.md` (law 19). Grep the archive only
+when asked about older history.
 
 **Log** a failure that needed a real fix, a choice between viable options no rule already forced, an undocumented
-contract mismatch, a new sweep failure, a known-red test turning green, a costly diagnosis (the ruled-out lead is the
+contract mismatch, a new sweep failure, a known-red test turning green (also close its ledger row: an unexplained flip can hide another regression), a costly diagnosis (the ruled-out lead is the
 value). **Do not log** routine pattern-following or a restated rule. A repeat of an existing signature with the same fix
 is one appended line under that entry: `Recurred: YYYY-MM-DD (<task>)`.
 

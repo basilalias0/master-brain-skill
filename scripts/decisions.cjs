@@ -4,6 +4,8 @@
 //   lint <ACTION_LOG>                  DL ids unique; optional Confidence 0-100, Review-by YYYY-MM-DD; Supersedes exists
 //   due <ACTION_LOG> [--today D]       DL entries past Review-by, or with "failure-signal seen" in an Outcome line
 //   find <ACTION_LOG> <keywords...>    top 3 DL entries by keyword overlap (signature, Keywords, Trigger)
+//   archive <ACTION_LOG> [--max N] [--today D] [--write]   past N lines (200, law 19) move the oldest entries not
+//                                      under review to ACTION_LOG-YYYY-MM.md, verbatim; a dry run without --write
 //   check-private <dir> --skill <root> the folder is outside the skill, not under a `skills` folder, not tracked by git
 //   scan-task <arena dir>              task.md (+ baseline.md) hold no secrets or denied words (MB_DENY)
 //   usage-gate --five <pct> --week <pct> [--wave]       the TOKENS section 6 table; a missing value counts as 90
@@ -55,8 +57,43 @@ function lint(log) {
     const r = e.fields['Review-by'];
     if (r !== undefined && !DATE.test(r)) say('Review-by must be YYYY-MM-DD');
   }
-  for (const e of all) { const s = e.fields.Supersedes; if (s && s !== 'none' && !ids.has(s)) errors.push(`${e.id}: Supersedes names an entry that does not exist: ${s}`); }
+  const archived = new Set(archives(log).flatMap((f) => entries(f).map((e) => e.id)));
+  for (const e of all) { const s = e.fields.Supersedes; if (s && s !== 'none' && !ids.has(s) && !archived.has(s)) errors.push(`${e.id}: Supersedes names an entry that does not exist: ${s}`); }
   return { errors, count: all.length };
+}
+
+// The dated archives next to a log: ACTION_LOG.md -> ACTION_LOG-YYYY-MM.md (law 19).
+function archives(log) {
+  const dir = path.dirname(log), base = path.basename(log, '.md');
+  return fs.readdirSync(dir).filter((f) => new RegExp('^' + base + '-\\d{4}-\\d{2}\\.md$').test(f)).map((f) => path.join(dir, f));
+}
+
+// Past `max` lines, move the oldest DL entries verbatim to <log>-YYYY-MM.md next to it. An entry still under review
+// (Review-by ahead) or due stays live, so `due` keeps seeing it. Dry run unless `write`.
+function archive(log, { max = 200, today = new Date().toISOString().slice(0, 10), write = false } = {}) {
+  const all = entries(log);
+  const lines = fs.readFileSync(log, 'utf8').replace(/\r\n/g, '\n').split('\n');
+  const heads = lines.flatMap((l, i) => (/^#{1,2} /.test(l) ? [i] : []));
+  const blocks = heads.filter((i) => /^## DL-\d+ — /.test(lines[i])).map((i) => ({ id: /DL-\d+/.exec(lines[i])[0], start: i, end: heads.find((h) => h > i) ?? lines.length }));
+  const dueIds = new Set(due(log, today).map((l) => l.split(' ')[0]));
+  const keep = (id) => { const e = all.find((x) => x.id === id); const r = e && e.fields['Review-by']; return dueIds.has(id) || (DATE.test(r || '') && r > today); };
+  const file = path.join(path.dirname(log), `${path.basename(log, '.md')}-${today.slice(0, 7)}.md`);
+  const res = { before: lines.length, after: lines.length, moved: [], kept: [], file };
+  if (lines.length <= max) return res;
+  const out = new Set();
+  for (const b of blocks) {
+    if (res.after <= max) break;
+    if (keep(b.id)) { res.kept.push(b.id); continue; }
+    res.moved.push(b.id); res.after -= b.end - b.start;
+    for (let i = b.start; i < b.end; i++) out.add(i);
+  }
+  if (write && res.moved.length) {
+    const moved = lines.filter((_, i) => out.has(i)).join('\n').replace(/\n*$/, '\n');
+    const head = fs.existsSync(file) ? '' : `# ${path.basename(file, '.md')}: archived DL entries (grep-only; moved verbatim by decisions.cjs archive)\n\n`;
+    fs.appendFileSync(file, head + moved);
+    fs.writeFileSync(log, lines.filter((_, i) => !out.has(i)).join('\n'));
+  }
+  return res;
 }
 
 function due(log, today = new Date().toISOString().slice(0, 10)) {
@@ -213,6 +250,14 @@ function main(argv) {
   }
   if (cmd === 'due') { say(due(a, flag('--today')), 'no decisions due'); return 0; }
   if (cmd === 'find') { say(find(a, argv.slice(2)), 'no similar entries'); return 0; }
+  if (cmd === 'archive') {
+    const write = argv.includes('--write');
+    const r = archive(a, { max: Number(flag('--max') || 200), today: flag('--today'), write });
+    const f = path.basename(r.file);
+    if (!r.moved.length) console.log(r.before <= Number(flag('--max') || 200) ? `archive: ${r.before} lines, under the limit; nothing to move` : `archive: ${r.before} lines, but every old entry is still under review (${r.kept.join(', ')}); nothing moved`);
+    else console.log(`archive: ${write ? 'moved' : 'would move'} ${r.moved.join(', ')} to ${f}; live log ${r.before} -> ${r.after} lines${r.kept.length ? `; kept under review: ${r.kept.join(', ')}` : ''}${write ? '' : ' (dry run; add --write)'}`);
+    return 0;
+  }
   if (cmd === 'check-private') {
     const p = checkPrivate(a, flag('--skill'));
     if (p.length) { console.log(`check-private: REFUSED ${a}: ${p.join('; ')}`); return 1; }
@@ -229,7 +274,7 @@ function main(argv) {
     const r = preflight(a, { five: flag('--five'), week: flag('--week'), yes: argv.includes('--yes'), project: flag('--project'), skillsDir: flag('--skills-dir') });
     console.log(r.lines.join('\n')); return r.ok ? 0 : 1;
   }
-  console.error('usage: decisions.cjs lint|due|find|check-private|scan-task|usage-gate|tree-hash|preflight ... (see the header)');
+  console.error('usage: decisions.cjs lint|due|find|archive|check-private|scan-task|usage-gate|tree-hash|preflight ... (see the header)');
   return 2;
 }
 
@@ -238,4 +283,4 @@ if (require.main === module) {
   catch (e) { console.error('decisions: ' + e.message); process.exit(e instanceof InputError || e.code === 'ENOENT' ? 2 : 1); }
 }
 
-module.exports = { lint, due, find, entries, checkPrivate, scanTask, usageGate, treeHash, preflight, TABLE };
+module.exports = { lint, due, find, archive, archives, entries, checkPrivate, scanTask, usageGate, treeHash, preflight, TABLE };

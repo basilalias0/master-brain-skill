@@ -10,14 +10,14 @@ Work without a RESULT: `route-log.cjs append` with `--result pass|fail` and the 
 - `rework` = the worker came back needing the Master or the merge went red. `correction` = the user corrected Master.
 - A real mistake that happened twice: `node <skill_dir>/scripts/failure-case.cjs add --dir <master_dir>/improve/cases ...` writes a case card to become a regression test.
 
-## 2. Review (every ~10 tasks, on a new model release, or when you ask: `/master-brain improve`)
+## 2. Review (every ~10 tasks or 8 new DL entries, on a new model release, or when you ask: `/master-brain improve`)
 `node <skill_dir>/scripts/route-stats.cjs report <master_dir>/routing-log.jsonl --default <task=Tier,...from MODELS.md> --write <master_dir>/improve/proposals`
 - Proposals appear only with at least 8 samples per task. Fewer: it says "still collecting".
 - Rules: lower a default when a cheaper tier passes first try at 90% or better; raise it when the default passes under 70%; flag a brief when rework is over 30%; flag a rule when corrections are over 20%.
-- Each proposal has a type: **routing** (a MODELS.md row), **local-rule** (an overlay rule for this project) or **generic** (also worth contributing). The run writes `improve/last-run.json`; `state.cjs` nudges once 10 or more tasks are logged after it.
+- Each proposal has a type: **routing** (a MODELS.md row), **local-rule** (an overlay rule for this project) or **generic** (also worth contributing). The run writes `improve/last-run.json`; `state.cjs` nudges once 10 or more tasks, or 8 or more DL entries, are logged after it.
 - Master shows the proposals and the evidence. It never applies them.
 - Also run `node <skill_dir>/scripts/decisions.cjs due <master_dir>/ACTION_LOG.md` and show the due decisions with their evidence; the owner keeps, updates (an Outcome line) or supersedes each.
-- Group ACTION_LOG reuse signatures seen twice or more (an entry plus a Recurred line) and propose one fix each. The only claim tracked: does that signature recur after the fix.
+- Group ACTION_LOG reuse signatures seen twice or more (an entry plus a Recurred line) and propose one fix each. The only claim tracked: does that signature recur after the fix. A 3rd occurrence after the fix shipped means the fix failed: an ordinary new DL entry, not a crisis.
 
 ## 3. Decide and apply (one change at a time)
 1. You approve or reject each proposal. Master sets its status line to approved or rejected.

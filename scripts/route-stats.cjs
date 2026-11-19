@@ -15,6 +15,9 @@ function load(file) {
   return fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter((e) => e && TIERS.includes(e.start));
 }
 
+// The decision-log marker for state.cjs: the highest DL number now in ACTION_LOG (0 when there is none).
+const dlMarker = (f) => { try { return require('./state.cjs').maxDl(fs.readFileSync(f, 'utf8')); } catch { return 0; } };
+
 function analyse(entries, { min = 8, defaults = {} } = {}) {
   const byTask = {};
   for (const e of entries) {
@@ -71,7 +74,7 @@ if (require.main === module) {
   const dir = flag('--write', null);
   if (dir) {
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, '..', 'last-run.json'), JSON.stringify({ date: new Date().toISOString().slice(0, 10), entries: load(argv[1]).length }) + '\n');
+    fs.writeFileSync(path.join(dir, '..', 'last-run.json'), JSON.stringify({ date: new Date().toISOString().slice(0, 10), entries: load(argv[1]).length, dl: dlMarker(path.join(dir, '..', '..', 'ACTION_LOG.md')) }) + '\n');
   }
   if (dir && res.proposals.length) {
     const f = path.join(dir, new Date().toISOString().slice(0, 10) + '-routing.md');

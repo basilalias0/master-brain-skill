@@ -24,7 +24,7 @@ Write the tests for the chosen items.
 - Test accounts only. Destructive tests only on seeded fixtures. Confirm the database host matches the project's allowlist before any write.
 - Security tests only against our own app in a test environment. Each confirmed audit finding gets a regression test.
 - Workers run type-check, unit tests and their own flow. Full end-to-end runs belong to the Master's slot (one heavy run at a time).
-- Test-only shortcuts: `core/SAFETY.md` 11. Client validation looser than the server's is one bug, not one per field.
+- Test-only shortcuts: `core/SAFETY.md` 11.
 - No snapshot-everything, no `assert true`, no sleeps, no testing private internals. A test must fail when behavior breaks and pass when only the implementation changes.
 
-For the run command and file patterns of a stack, read `modules/tester/frameworks.md` (that stack only). Note anything you could not test and why.
+For the run command and file patterns of a stack, read `modules/tester/frameworks.md` (that stack only); for a UI or form flow or a schema pair, `modules/tester/flows.md`. Note anything you could not test and why.
