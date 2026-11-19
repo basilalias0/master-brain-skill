@@ -6,7 +6,8 @@
   `flows.md` says the same. Four integrity lines reworded to fit the cap, no rule dropped (2,721 chars, cap 2,729).
 - Evidence (`plans/ab-2026-11-19.md`, mid tier): with `flows.md` alone, t10 passed 0/3 against 1/3 for 79e3757 (the
   file was read in 1 run of 3). With the rule inline, 3/3 against 1/6, and median turns 10 vs 12, tools 10 vs 17.5,
-  fresh tokens 70.4k vs 102.9k. t5 and t8 held on 536b241 and were not re-run on this commit.
+  fresh tokens 70.4k vs 102.9k. On t5 and t8 this commit holds pass rate, turns and tokens; median tool calls are
+  1-2 higher (owner exception needed, see the report).
 
 ## Unreleased (2026-11-19, owner request; A/B run, see the entry above): rules restored from unify-v2
 Why: the token-audit refactor removed `procedure/01-03`; a check of each removed rule against main found these with no home.
