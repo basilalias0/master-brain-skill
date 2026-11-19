@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased (2026-11-19, owner request; A/B suite not run): rules restored from unify-v2
+## Unreleased (2026-11-19, owner choice after the A/B): the contract rule moves where it is always read
+- **tester:** the `Contract:` line now says a field the task touches that form and server both check is diffed first,
+  and a looser form or a 500 on blank or missing input is fixed in this change with a test, never left out of scope.
+  `flows.md` says the same. Four integrity lines reworded to fit the cap, no rule dropped (2,721 chars, cap 2,729).
+- Evidence (`plans/ab-2026-11-19.md`, mid tier): with `flows.md` alone, t10 passed 0/3 against 1/3 for 79e3757 (the
+  file was read in 1 run of 3). With the rule inline, 3/3 against 1/6, and median turns 10 vs 12, tools 10 vs 17.5,
+  fresh tokens 70.4k vs 102.9k. t5 and t8 held on 536b241 and were not re-run on this commit.
+
+## Unreleased (2026-11-19, owner request; A/B run, see the entry above): rules restored from unify-v2
 Why: the token-audit refactor removed `procedure/01-03`; a check of each removed rule against main found these with no home.
 - **tester:** new `modules/tester/flows.md`, read only for a UI or form flow or a schema-pair task: the contract diff before the live run (client looser than server is one real bug; server looser is dead code), reproduce a blocker in the browser before fixing and replay the passed steps, and the bounded robustness pass (off-script interaction; blank required fields give an inline message and a 4xx, never a 500). `MODULE.md` points to it; its "client looser" line moved there (2,712 -> 2,705 chars, cap 2,729).
 - **decisions.cjs archive** (tests): enforces law 19 for ACTION_LOG. Past 200 lines it moves the oldest entries verbatim to `ACTION_LOG-YYYY-MM.md`; entries with a Review-by ahead, or due, stay live. A dry run without `--write`. `lint` accepts a `Supersedes` that names an archived entry.
