@@ -29,6 +29,13 @@ test('mark needs the handoff and a valid chat', () => {
   assert.deepStrictEqual(Object.keys(JSON.parse(fs.readFileSync(f, 'utf8'))), ['chat', 'session', 'at']);
 });
 
+test('mark takes this chat\'s id from the host when --session is not given', () => {
+  const p = project();
+  const res = cp.spawnSync('node', [S, 'mark', p.m, '--chat', 'C1'], { encoding: 'utf8', env: { ...process.env, CLAUDE_CODE_HOST_SESSION_ID: 'local_self' } });
+  assert.strictEqual(res.status, 0);
+  assert.strictEqual(JSON.parse(fs.readFileSync(path.join(p.m, 'masters', '.reboot'), 'utf8')).session, 'local_self');
+});
+
 test('the app restart after a clear (source startup) boots the marked chat once, then a later start is normal', () => {
   const p = project();
   r.mark(p.m, { session: 'local_a' });
@@ -57,7 +64,7 @@ test('the hook says nothing for other chats, other start kinds, stale markers or
 
 test('an unnamed marker fires only on a startup within 5 minutes, or on a /clear within 30', () => {
   const p = project();
-  r.mark(p.m);
+  r.mark(p.m, { session: null });
   const start = JSON.stringify({ source: 'startup', cwd: p.sub });
   assert.strictEqual(r.hook(start, { now: Date.now() + 6 * 60e3, hostId: 'local_x' }), '', 'a chat opened later is not the Chief');
   assert.notStrictEqual(r.hook(JSON.stringify({ source: 'clear', cwd: p.sub }), { now: Date.now() + 6 * 60e3, hostId: 'local_x' }), '');

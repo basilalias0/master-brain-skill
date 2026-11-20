@@ -50,7 +50,7 @@ changelog doc to bind, not a new one.
   while the quick check fails. It is a settings edit: add it to `.claude/settings.json` only on their yes.
 - Rollover in the same chat (law 12 `clear in place`): a SessionStart hook (`scripts/reboot.cjs`, setup in its
   header) that tells a cleared Chief or Master who it is and hands it its handoff, so it keeps its session id. A
-  settings edit: add it only on their yes, and set law 12 to match.
+  settings edit: add it only on their yes. Law 12 `rollover: auto` (the default) then picks the cheaper method each time.
 - If they use the arena skill: add `.arena/` to the project `.gitignore`, with their yes.
 
 ## Step 6: close

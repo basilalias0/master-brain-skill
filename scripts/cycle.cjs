@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 'use strict';
-// cycle.cjs <master_dir> --ctx <tokens> --week <pct> [--five <pct>] [--role chief|master] [--at N] [--window N]
-//           [--tasks score:hold:state,...]
+// cycle.cjs <master_dir> --ctx <tokens> --week <pct> [--five <pct>] [--role chief|master] [--self M3] [--at N]
+//           [--window N] [--tasks score:hold:state,...] [--mode auto|default|...]
 // The once-per-cycle check for a Chief or Master, 8 lines or fewer, zero model tokens. Feed it get_usage numbers.
-//   rollover: due or not (rollover.cjs; point = --at, else "roll over at <N>k" in LAWS.md law 12, else 250k)
+//   rollover: due or not (rollover.cjs; point = --at, else "roll over at <N>k" in LAWS.md law 12, else 250k); when due,
+//             also the method law 12 picks (rollover.cjs choose: the fewer tokens, a tie to clear in place). --mode is
+//             this chat's permission mode (get_session self at boot); omitted = auto, which counts one more step.
 //   usage:    the TOKENS section 6 table (decisions.cjs usage-gate; --five omitted = weekly only)
 //   capacity: load and room for the open tasks (capacity.cjs load; context % = ctx / --window, default 500k)
 // Exit: 0 always, 2 bad input.
 const fs = require('fs');
 const path = require('path');
-const { due } = require('./rollover.cjs');
+const { due, choose } = require('./rollover.cjs');
 const { usageGate } = require('./decisions.cjs');
 const { load } = require('./capacity.cjs');
 
@@ -32,9 +34,11 @@ function cycle(dir, o) {
   if (!['chief', 'master'].includes(role)) throw new Error(`bad role "${role}" (chief|master)`);
   const at = o.at ? Number(o.at) : point(dir);
   const out = [];
-  out.push(due(ctx, at)
-    ? `rollover: DUE (context ${k(ctx)} >= ${k(at)}): finish the step, write the LAST block and BOARD, run rollover.cjs handoff, ask the human`
-    : `rollover: not due (context ${k(ctx)} < ${k(at)})`);
+  if (due(ctx, at)) {
+    const chat = role === 'chief' ? 'C1' : (o.self || 'M#');
+    out.push(`rollover: DUE (context ${k(ctx)} >= ${k(at)}): finish the step, write the LAST block and BOARD, ask the human`);
+    out.push('rollover ' + choose(dir, { ctx, chat, mode: o.mode || 'auto' }).line);
+  } else out.push(`rollover: not due (context ${k(ctx)} < ${k(at)})`);
   const five = o.five === undefined ? 0 : o.five;
   out.push(usageGate(five, o.week).line + (o.five === undefined ? ' (5-hour not given)' : ''));
   const window = Number(o.window || 500000);

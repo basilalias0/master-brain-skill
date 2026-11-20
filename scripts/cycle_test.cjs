@@ -38,3 +38,18 @@ test('bad input exits 2', () => {
   assert.strictEqual(run([dir(), '--ctx', '5', '--week', '5', '--role', 'worker']).status, 2);
   assert.strictEqual(run([dir(), '--ctx', '5', '--week', '5', '--tasks', 'x:y:z']).status, 2);
 });
+
+test('when rollover is due, cycle names the method law 12 picks', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mb-cyc-p-'));
+  const md = path.join(root, 'master-brain');
+  fs.mkdirSync(md);
+  fs.writeFileSync(path.join(md, 'BOARD.md'), '# BOARD\n## Masters\n| Master | Area |\n|---|---|\n| M1 | a |\n| M2 | b |\n| M3 | c |\n');
+  const run = (...a) => cp.spawnSync('node', [path.join(__dirname, 'cycle.cjs'), md, ...a], { encoding: 'utf8' }).stdout;
+  assert.match(run('--ctx', '260000', '--week', '10', '--role', 'chief'), /rollover method: new chat \(the reboot hook is not installed/);
+  fs.mkdirSync(path.join(root, '.claude'));
+  fs.writeFileSync(path.join(root, '.claude', 'settings.json'), '{"hooks":{"SessionStart":[{"matcher":"startup|clear","hooks":[{"type":"command","command":"node reboot.cjs hook"}]}]}}');
+  const out = run('--ctx', '260000', '--week', '10', '--role', 'chief');
+  assert.match(out, /rollover method: clear in place \(not more tokens;.*3 peers.*handoff <master_dir> --chat C1 --mark/);
+  assert.ok(out.trim().split('\n').length <= 8);
+  assert.match(run('--ctx', '100000', '--week', '10', '--role', 'chief'), /rollover: not due/);
+});

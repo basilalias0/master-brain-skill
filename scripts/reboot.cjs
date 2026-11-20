@@ -36,7 +36,9 @@ function findMaster(cwd) {
   return null;
 }
 
-function mark(master, { chat = 'C1', session, now = Date.now() } = {}) {
+// session defaults to this chat's own id, which the desktop app puts in CLAUDE_CODE_HOST_SESSION_ID for every
+// process it starts (tools and hooks alike), so the Chief needs no get_session step.
+function mark(master, { chat = 'C1', session = process.env.CLAUDE_CODE_HOST_SESSION_ID, now = Date.now() } = {}) {
   if (!CHAT.test(chat)) throw new Error('--chat must be C1 or M<n>: ' + chat);
   const handoff = path.join(master, 'masters', `${chat}-next.md`);
   if (!fs.existsSync(handoff)) throw new Error(`no handoff at ${handoff}; run rollover.cjs handoff first`);

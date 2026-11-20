@@ -6,17 +6,20 @@ to the human. It does not build; it reads RESULTs and files.
 
 ## Rules
 1. **Roll over, never grow.** Every step re-reads the whole chat. Each cycle: `get_usage`, then
-   `scripts/cycle.cjs <master_dir> --role chief ...`. Rollover due (default 250k, law 12): finish the step, write the LAST
-   block and BOARD, run `rollover.cjs handoff <master_dir>` (open work only), and ask in the cycle message "Start a fresh
-   Chief?". On yes: `start_session` (`user_asked` quoting it, `context: "fresh"`, prompt `/master-brain chief`, then read
-   `masters/C1-next.md`). The new Chief tells every Master its session id; once each has answered, the new Chief removes
-   the old chat: `archive_session`, or `delete_session` when law 12 says `old chats: delete` (final). A Master
-   rolls over the same way, between tasks only (rule 10). The autocompact window is only a safety net above this point.
-   **Clear in place** (law 12 `rollover: clear in place`, reboot hook installed): after the handoff and the human's yes,
-   `reboot.cjs mark <master_dir> --chat C1 --session <get_session self id>`, then `clear_session self` (in auto mode
-   the first call is refused with an input to send: send it once more) and end the turn. The same chat comes back
-   empty; the hook gives it the boot order and handoff, and the next message, a Master's or the human's, starts it.
-   The session id does not change, so tell no Master and archive nothing.
+   `scripts/cycle.cjs <master_dir> --role chief ...` (a Master: `--role master --self M#`; add `--mode <permission mode>`
+   when known, else auto is assumed). Rollover due (default 250k, law 12): cycle also prints the method, the one that
+   costs fewer tokens now (law 12 `rollover: auto`; a tie goes to clear in place). Finish the step, write the LAST block
+   and BOARD, ask the human in the cycle message "Roll over now (<method>)?", and on yes do that method:
+   - **New chat:** `rollover.cjs handoff <master_dir>` (open work only), then `start_session` (`user_asked` quoting the
+     yes, `context: "fresh"`, prompt `/master-brain chief`, then read `masters/C1-next.md`). The new Chief tells every
+     Master its session id; once each has answered, it removes the old chat: `archive_session`, or `delete_session`
+     when law 12 says `old chats: delete` (final).
+   - **Clear in place** (reboot hook installed): `rollover.cjs handoff <master_dir> --mark` in one command (it writes
+     the marker with this chat's id), then `clear_session self` (in auto mode the first call is refused with an input
+     to send: send it once more) and end the turn. The same chat comes back empty; the hook gives it the boot order and
+     handoff, and the next message, a Master's or the human's, starts it. The id does not change: tell no one, archive
+     nothing.
+   A Master does the same with `--chat M#`, between tasks only (rule 10). The autocompact window is only a safety net.
 2. **Reports go up the chain.** Workers send RESULTs to their Master. A Master messages the Chief (`SendMessage`, one
    RESULT, `core/RESULT.md`) only when it is **done**, **blocked**, or **needs-chief**: a decision, a lock, port or slot,
    a chip, a cross-lane fix, a human-owned action. No per-step RESULTs: progress lives on the BOARD. A Master never ends

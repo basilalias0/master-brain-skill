@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.6.1 (2026-11-20)
+- **Rollover picks the cheaper method** (owner request): law 12 `rollover: auto | new chat | clear in place`, default
+  auto. `rollover.cjs choose` counts the steps each method needs (each step re-reads the chat: an old-chat step costs
+  its context, a fresh-chat step about 60k): new chat = 2 old steps + 2 per peer + 1 fresh steps; clear in place = 2
+  old steps, 3 in auto mode. Peers = the Masters on the BOARD for the Chief, the Chief for a Master. A tie goes to
+  clear in place; without the reboot hook it is always new chat. `cycle.cjs` prints the method when rollover is due.
+  At 250k: the Chief clears in place with 2+ Masters (auto mode) or any count (other modes); a Master opens a new
+  chat in auto mode (0.68M vs 0.75M) and clears otherwise. These are step-count estimates, not measurements.
+- Clear in place is cheaper: `rollover.cjs handoff --mark` writes the handoff and the marker in one command, and
+  `reboot.cjs mark` takes this chat's id from `CLAUDE_CODE_HOST_SESSION_ID`, so no `get_session` step. A same-chat
+  handoff says the id is unchanged (no new-id messages, no archive).
+- The hook check reads settings with a quoted script path (`reboot.cjs\" hook`). Tests for all of it.
+- Not A/B tested: an opt-in rollover choice with unit tests.
+
 ## 2.6.0 (2026-11-20)
 Release gate exception, accepted by the owner on 2026-11-20: the A/B suite (RELEASING step 3) was not run; the
 feature is opt-in (law 12 default stays `new chat`) and was trialled on the desktop app. Unit tests, verify, budget and
