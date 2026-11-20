@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased (2026-11-20, owner request; trialled on the desktop app, A/B suite not run): roll over in the same chat
+## 2.6.0 (2026-11-20)
+Release gate exception, accepted by the owner on 2026-11-20: the A/B suite (RELEASING step 3) was not run; the
+feature is opt-in (law 12 default stays `new chat`) and was trialled on the desktop app. Unit tests, verify, budget and
+law caps pass.
+
+### (2026-11-20, owner request; trialled on the desktop app): roll over in the same chat
 - **scripts/reboot.cjs** (tests): `mark` writes `masters/.reboot` before `clear_session self`; `hook`, a SessionStart hook
   offered at onboarding and installed only on the owner's yes, gives the cleared chat its boot order and the
   `rollover.cjs handoff` file. The session id stays, so no Master needs a new id and no old chat is archived. Law 12
@@ -11,6 +16,7 @@
   `clear_session` call is refused (the app adds a `session` label after review); resending the quoted input worked.
   Third run: the cleared chat quoted the handoff token, knew it was C1 and saw no old conversation. Not tried: a real
   Chief boot end to end, a chat open on screen, the plain CLI `/clear`.
+- README: the same-chat rollover.
 
 ## 2.5.1 (2026-11-19)
 - **decisions.cjs** reads the older ACTION_LOG headings `## DL-NNN · date · title` as well as `## DL-NNN — signature`, so `lint`, `due`, `find` and
