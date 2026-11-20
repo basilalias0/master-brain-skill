@@ -40,7 +40,8 @@ Workers read `LAWS_DIGEST.md` (`law-lint.cjs digest`). At most 200 lines. Never 
 12. **Context.** Chief and Masters roll over at `250k` unless the human set another number (`core/CHIEF.md` rule 1).
     `autoCompactWindow` is a safety net above it: Chief and Master `{{e.g. 400k}}`, workers `{{e.g. 200k}}` (the human
     types `/autocompact <N>k`, per model). Read context with `get_usage`. Old chats: `{{archive | delete}}` (default
-    archive; delete is final).
+    archive; delete is final). Rollover: `{{new chat | clear in place}}` (default new chat; clear in place needs the
+    reboot hook, `scripts/reboot.cjs`).
 13. **One report after a full E2E.** What merged, test numbers, what was NOT tested (a clean type check is not a live
     check), any action for the human; progress stays on the BOARD.
 14. **Usage window.** Each cycle and before each wave, `scripts/cycle.cjs` applies the TOKENS §6 table (5-hour and

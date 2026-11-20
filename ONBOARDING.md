@@ -48,6 +48,9 @@ changelog doc to bind, not a new one.
 - Existing project: a full first-pass `FEATURE_INDEX.md` now, or as features come up (it scales with size).
 - The test gate: a Stop hook (`scripts/stop-gate.cjs`, setup in its header) that keeps a worker from saying "done"
   while the quick check fails. It is a settings edit: add it to `.claude/settings.json` only on their yes.
+- Rollover in the same chat (law 12 `clear in place`): a SessionStart hook (`scripts/reboot.cjs`, setup in its
+  header) that tells a cleared Chief or Master who it is and hands it its handoff, so it keeps its session id. A
+  settings edit: add it only on their yes, and set law 12 to match.
 - If they use the arena skill: add `.arena/` to the project `.gitignore`, with their yes.
 
 ## Step 6: close

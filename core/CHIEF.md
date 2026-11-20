@@ -12,6 +12,11 @@ to the human. It does not build; it reads RESULTs and files.
    `masters/C1-next.md`). The new Chief tells every Master its session id; once each has answered, the new Chief removes
    the old chat: `archive_session`, or `delete_session` when law 12 says `old chats: delete` (final). A Master
    rolls over the same way, between tasks only (rule 10). The autocompact window is only a safety net above this point.
+   **Clear in place** (law 12 `rollover: clear in place`, reboot hook installed): after the handoff and the human's yes,
+   `reboot.cjs mark <master_dir> --chat C1 --session <get_session self id>`, then `clear_session self` (in auto mode
+   the first call is refused with an input to send: send it once more) and end the turn. The same chat comes back
+   empty; the hook gives it the boot order and handoff, and the next message, a Master's or the human's, starts it.
+   The session id does not change, so tell no Master and archive nothing.
 2. **Reports go up the chain.** Workers send RESULTs to their Master. A Master messages the Chief (`SendMessage`, one
    RESULT, `core/RESULT.md`) only when it is **done**, **blocked**, or **needs-chief**: a decision, a lock, port or slot,
    a chip, a cross-lane fix, a human-owned action. No per-step RESULTs: progress lives on the BOARD. A Master never ends
