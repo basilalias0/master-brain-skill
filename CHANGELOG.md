@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.7.1 (2026-11-20)
+- `rollover.cjs` counts each live Master once: distinct `M#` ids in the BOARD's Masters tables, leaving out any id marked
+  archived, the Chief row and lane tables. On a real BOARD (13 Masters, 4 archived, three tables under the heading) it
+  counted 25 peers and priced a new chat at 3.56M; now 9. Test added. Not A/B tested: a script fix.
+
 ## 2.7.0 (2026-11-20)
 - **Rollover learns its real cost:** `rollover.cjs measure <master_dir> --fresh N` logs the context a rolled-over chat
   starts with to `improve/rollover.jsonl`; every handoff's first steps say to run it. `choose` (and so `cycle.cjs`)

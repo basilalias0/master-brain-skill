@@ -83,10 +83,20 @@ function handoff(md, chat, { inPlace = false } = {}) {
   return [...lines.slice(0, Math.min(k, 60 - steps.length)), ...steps].join('\n') + '\n';
 }
 
-// Masters listed in the BOARD's Masters table (rows of a table whose heading names masters).
+// Live Masters on the BOARD: distinct M# ids in the first cell of rows under a heading that names masters. An id
+// marked archived in any row is left out (an archived Master is told nothing), and so are the Chief and lane rows.
 function mastersOnBoard(md) {
   const board = read(path.join(md, 'BOARD.md'));
-  return board ? tables(board).filter((t) => /master/i.test(t.heading)).reduce((n, t) => n + t.rows.length, 0) : 0;
+  if (!board) return 0;
+  const live = new Set(); const gone = new Set();
+  for (const t of tables(board).filter((x) => /master/i.test(x.heading))) {
+    for (const r of t.rows) {
+      const id = (/^\|\s*\**(M\d+)\**\s*\|/.exec(r) || [])[1];
+      if (!id) continue;
+      (/\barchived\b/i.test(r) ? gone : live).add(id);
+    }
+  }
+  return [...live].filter((id) => !gone.has(id)).length;
 }
 
 // The reboot hook is in the project's .claude settings (reboot.cjs hook under SessionStart).

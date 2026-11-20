@@ -142,3 +142,14 @@ test('handoff: the first steps survive a long BOARD, and say to record the fresh
     assert.match(h, new RegExp(`rollover\.cjs measure <master_dir> --chat C1 --method ${inPlace ? 'clear' : 'new'}`));
   }
 });
+
+test('mastersOnBoard: each live Master once; archived ones, the Chief row and lane tables do not count', () => {
+  const md = nested({ masters: 0 });
+  fs.writeFileSync(path.join(md, 'BOARD.md'), [
+    '# BOARD', '## MASTERS (law 18)', '| Master | Area | Chat |', '|---|---|---|',
+    '| M4 | Local DB | archived; unarchive on need |', '| M5 | Feature map | idle |', '| **M6** | Dashboard | active |',
+    '| M2, M3 | Old lanes, archived 2026-10-30 | - |', '',
+    '| Id | Chat | History |', '|---|---|---|', '| C1 | Chief | live |', '| M4 | local database lane | done |', '| M6 | dashboard | merged |', '',
+    '| Lane | Now | Next |', '|---|---|---|', '| Core platform | plan | - |', ''].join('\n'));
+  assert.strictEqual(r.mastersOnBoard(md), 2, 'M5 and M6');
+});
