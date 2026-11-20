@@ -4,6 +4,7 @@
 //   lint <ACTION_LOG>                  DL ids unique; optional Confidence 0-100, Review-by YYYY-MM-DD; Supersedes exists
 //   due <ACTION_LOG> [--today D]       DL entries past Review-by, or with "failure-signal seen" in an Outcome line
 //   find <ACTION_LOG> <keywords...>    top 3 DL entries by keyword overlap (signature, Keywords, Trigger)
+//   next-id <ACTION_LOG>               the next free DL id, counting the dated archives next to the log too
 //   archive <ACTION_LOG> [--max N] [--today D] [--write]   past N lines (200, law 19) move the oldest entries not
 //                                      under review to ACTION_LOG-YYYY-MM.md, verbatim; a dry run without --write
 //   check-private <dir> --skill <root> the folder is outside the skill, not under a `skills` folder, not tracked by git
@@ -109,6 +110,12 @@ function due(log, today = new Date().toISOString().slice(0, 10)) {
     else if (DATE.test(e.fields['Review-by'] || '') && e.fields['Review-by'] <= today) out.push(`${e.id} review due ${e.fields['Review-by']}: ${e.signature}`);
   }
   return out;
+}
+
+// The next free id: one past the highest DL number in the log and its ACTION_LOG-YYYY-MM.md archives, 3 digits.
+function nextId(log) {
+  const nums = [log, ...archives(log)].flatMap((f) => entries(f).map((e) => Number(e.id.slice(3))));
+  return `DL-${String(Math.max(0, ...nums) + 1).padStart(3, "0")}`;
 }
 
 function find(log, keywords) {
@@ -251,6 +258,7 @@ function main(argv) {
     console.log(`decisions lint: ok (${r.count} DL entries)`); return 0;
   }
   if (cmd === 'due') { say(due(a, flag('--today')), 'no decisions due'); return 0; }
+  if (cmd === 'next-id') { console.log(nextId(a)); return 0; }
   if (cmd === 'find') { say(find(a, argv.slice(2)), 'no similar entries'); return 0; }
   if (cmd === 'archive') {
     const write = argv.includes('--write');
@@ -278,7 +286,7 @@ function main(argv) {
     const r = preflight(a, { five: flag('--five'), week: flag('--week'), yes: argv.includes('--yes'), project: flag('--project'), skillsDir: flag('--skills-dir') });
     console.log(r.lines.join('\n')); return r.ok ? 0 : 1;
   }
-  console.error('usage: decisions.cjs lint|due|find|archive|check-private|scan-task|usage-gate|tree-hash|preflight ... (see the header)');
+  console.error('usage: decisions.cjs lint|due|find|next-id|archive|check-private|scan-task|usage-gate|tree-hash|preflight ... (see the header)');
   return 2;
 }
 
@@ -287,4 +295,4 @@ if (require.main === module) {
   catch (e) { console.error('decisions: ' + e.message); process.exit(e instanceof InputError || e.code === 'ENOENT' ? 2 : 1); }
 }
 
-module.exports = { lint, due, find, archive, archives, entries, checkPrivate, scanTask, usageGate, treeHash, preflight, TABLE };
+module.exports = { lint, due, find, nextId, archive, archives, entries, checkPrivate, scanTask, usageGate, treeHash, preflight, TABLE };

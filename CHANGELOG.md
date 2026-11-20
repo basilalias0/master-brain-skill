@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.7.0 (2026-11-20)
+- **Rollover learns its real cost:** `rollover.cjs measure <master_dir> --fresh N` logs the context a rolled-over chat
+  starts with to `improve/rollover.jsonl`; every handoff's first steps say to run it. `choose` (and so `cycle.cjs`)
+  uses the median of those once there are 3, and its line says `calibrated (n)` or `uncalibrated` (60k default).
+- A handoff's first steps always fit: past 60 lines the BOARD and LAST rows are cut, never the steps (before, a long
+  BOARD could push them off the end).
+- `decisions.cjs next-id <ACTION_LOG>`: the next free DL id, counting the dated archives, so an id is never reused
+  after an archive move. The ACTION_LOG template says to use it.
+- `init.cjs` no longer makes an unused top-level `archive/` folder (ACTION_LOG archives sit next to the log;
+  handoff archives in `handoffs/archive/`).
+- **The A/B suite is in the repo:** `ab/` (fixtures, hidden tests and mutants, `ab.cjs prepare` and `score`,
+  `ab/README.md`), linked from RELEASING step 3. Cells come from git refs (`git archive`) or the working tree; work
+  folders and transcripts go to the OS temp folder, never the skill. The signup fixture's test script is plain
+  `node --test` (the quoted glob ran no tests on Windows). Tests: `scripts/ab_test.cjs`.
+- Not A/B tested: no rule a model reads changed meaning, only scripts, a template line and the maintainer suite.
+
 ## 2.6.1 (2026-11-20)
 - **Rollover picks the cheaper method** (owner request): law 12 `rollover: auto | new chat | clear in place`, default
   auto. `rollover.cjs choose` counts the steps each method needs (each step re-reads the chat: an old-chat step costs

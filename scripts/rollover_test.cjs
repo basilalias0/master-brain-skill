@@ -116,3 +116,29 @@ test('handoff --mark writes the same-chat first steps and the reboot marker with
   assert.strictEqual(JSON.parse(fs.readFileSync(path.join(md, 'masters', '.reboot'), 'utf8')).session, 'local_chief');
   assert.match(res.stdout, /reboot: marked .*now clear_session self/);
 });
+
+test('measure: choose stays uncalibrated until 3 fresh starts, then uses their median', () => {
+  const md = nested({ masters: 3, hook: true });
+  assert.match(r.choose(md, { ctx: 250000 }).line, /fresh 60k uncalibrated/);
+  r.measure(md, { fresh: 90000 }); r.measure(md, { fresh: 120000, method: 'clear' });
+  assert.strictEqual(r.calibrated(md), null);
+  r.measure(md, { fresh: 100000 });
+  assert.deepStrictEqual(r.calibrated(md), { fresh: 100000, n: 3 });
+  const c = r.choose(md, { ctx: 250000 });
+  assert.strictEqual(c.fresh, 100000);
+  assert.match(c.line, /fresh 100k calibrated \(3\)/);
+  assert.strictEqual(r.choose(md, { ctx: 250000, fresh: 50000 }).basis, 'fresh start given');
+  assert.throws(() => r.measure(md, {}), /--fresh N/);
+});
+
+test('handoff: the first steps survive a long BOARD, and say to record the fresh start', () => {
+  const md = nested({ masters: 1, hook: true });
+  const rows = Array.from({ length: 80 }, (_, i) => `| T${i} | open | W-M1-${i} |`).join('\n');
+  for (let t = 0; t < 4; t++) fs.appendFileSync(path.join(md, 'BOARD.md'), `\n## Tasks ${t}\n| Task | Status | Worker |\n|---|---|---|\n${rows}\n`);
+  for (const inPlace of [false, true]) {
+    const h = r.handoff(md, 'C1', { inPlace });
+    assert.ok(h.trim().split('\n').length <= 60);
+    assert.match(h, /## First steps/);
+    assert.match(h, new RegExp(`rollover\.cjs measure <master_dir> --chat C1 --method ${inPlace ? 'clear' : 'new'}`));
+  }
+});

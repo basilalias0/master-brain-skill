@@ -2,8 +2,9 @@
 
 Seeded by `scripts/init.cjs`. Grep by keyword or reuse signature and read only the matching entry. Workers write DL
 candidates in their handoff; the Master folds them in here, then runs `decisions.cjs archive <this file> --write`: past
-200 lines it moves the oldest entries not under review to `ACTION_LOG-YYYY-MM.md` (law 19). Grep the archive only
-when asked about older history.
+200 lines it moves the oldest entries not under review to `ACTION_LOG-YYYY-MM.md` next to this file, where law 6's
+`ACTION_LOG*` grep finds it (law 19). Grep the archive only when asked about older history. New entry ids come from
+`decisions.cjs next-id <this file>`, which counts the archives too, so no id is used twice.
 
 **Log** a failure that needed a real fix, a choice between viable options no rule already forced, an undocumented
 contract mismatch, a new sweep failure, a known-red test turning green (also close its ledger row: an unexplained flip can hide another regression), a costly diagnosis (the ruled-out lead is the

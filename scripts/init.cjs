@@ -2,7 +2,7 @@
 'use strict';
 // init.cjs <master_dir>: seed a project's master-brain folder (ONBOARDING step 4). Idempotent: never overwrites a file.
 // Creates STATE, ACTION_LOG (from templates/ACTION_LOG.md), FEATURE_INDEX, BOARD (QUEUE, Masters, Locks tables),
-// inbox/, archive/, masters/, handoffs/ (archive/, pairs/, README.md), locks/, overlay/ (+ base.json via
+// inbox/, masters/, handoffs/ (archive/, pairs/, README.md), locks/, overlay/ (+ base.json via
 // overlay.cjs rebase), improve/, routing-log.jsonl, and MODELS.md and CAPABILITIES.md copied from templates/.
 // LAWS.md is not seeded: onboarding fills it with the human, then runs law-lint.cjs digest.
 // Exit: 0 ok, 2 bad input.
@@ -12,7 +12,7 @@ const path = require('path');
 const SKILL = path.join(__dirname, '..');
 const tpl = (f) => fs.readFileSync(path.join(SKILL, 'templates', f), 'utf8');
 
-const DIRS = ['inbox', 'archive', 'masters', 'handoffs/archive', 'handoffs/pairs', 'locks', 'overlay', 'improve'];
+const DIRS = ['inbox', 'masters', 'handoffs/archive', 'handoffs/pairs', 'locks', 'overlay', 'improve'];
 const FILES = {
   'STATE.md': () => '# STATE (rewritten in place: what is in flight now, never history)\n\nstatus: onboarding\n\n' +
     '## Handover\n- current step: onboarding\n- last decision: none\n- open decisions: none\n- others owe: none\n- next action: finish onboarding\n',

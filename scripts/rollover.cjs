@@ -8,6 +8,10 @@
 //                                        reboot marker is written too (reboot.cjs mark; this chat's id from the host).
 //   choose <master_dir> --ctx N [--chat C1|M3] [--mode auto|default|...] [--fresh N]
 //                                        which rollover costs fewer tokens now (law 12 `rollover: auto`): see cost().
+//                                        Without --fresh it uses the median measured fresh start once there are 3.
+//   measure <master_dir> --fresh N [--chat C1|M3] [--method new|clear]
+//                                        log the context a rolled-over chat starts with (get_usage after boot) to
+//                                        improve/rollover.jsonl, so choose() learns this project's real fresh start.
 // Why: every step re-reads the whole chat, so a long Chief pays its full length on each step (cache reads were 97.7% of
 // one session's tokens). A fresh Chief built from files starts small, and the rules come from LAWS_DIGEST.md word for
 // word instead of a model's summary. Finished work is NOT copied: it stays in ACTION_LOG, handoffs/ and the BOARD's
@@ -64,14 +68,19 @@ function handoff(md, chat, { inPlace = false } = {}) {
   if (servers.length) lines.push('## Servers running', ...servers.map((s) => `- ${s.name}${s.port ? ' :' + s.port : ''} (pid ${s.pid})`), '');
   if (inPlace) lines.push('## First steps (same chat, cleared in place)',
     '1. Your session id is unchanged: tell no one a new id, update no BOARD id, archive nothing.',
-    `2. ${master ? 'Then take the task that brought you here (the message from the Chief, or the bug report).' : 'Tell the human in one line that the Chief rolled over in place and what is open; then handle the waiting message.'}`);
+    `2. ${master ? 'Then take the task that brought you here (the message from the Chief, or the bug report).' : 'Tell the human in one line that the Chief rolled over in place and what is open; then handle the waiting message.'}`,
+    `3. Record this chat's start: \`rollover.cjs measure <master_dir> --chat ${chat} --method clear --fresh <get_usage context now>\`.`);
   else lines.push('## First steps', master
     ? `1. Write this session id into the BOARD Masters row for ${chat}, and tell the Chief: "${chat} is now <this session id>".`
     : '1. Message each Master in the table: "Chief is now <this session id>; send RESULTs here."',
     `2. ${master ? 'Then take the task that brought you here (the message from the Chief, or the bug report).' : 'Tell the human in one line that the Chief rolled over and what is open.'}`,
     '3. Once every Master has answered with the new id, remove the old chat: `archive_session` on its id, or `delete_session`',
-    '   when LAWS.md law 12 says `old chats: delete`. Never before the answers, never any other chat.');
-  return lines.slice(0, 60).join('\n') + '\n';
+    '   when LAWS.md law 12 says `old chats: delete`. Never before the answers, never any other chat.',
+    `4. Record this chat's start once booted: \`rollover.cjs measure <master_dir> --chat ${chat} --method new --fresh <get_usage context>\`.`);
+  // The first steps always fit: past 60 lines the BOARD and LAST rows are cut, never the steps.
+  const k = lines.findIndex((l) => l.startsWith('## First steps'));
+  const steps = lines.slice(k);
+  return [...lines.slice(0, Math.min(k, 60 - steps.length)), ...steps].join('\n') + '\n';
 }
 
 // Masters listed in the BOARD's Masters table (rows of a table whose heading names masters).
@@ -105,12 +114,15 @@ function cost({ ctx, fresh = 60000, peers = 0, auto = true }) {
   return { newChat: 2 * ctx + (2 * peers + 1) * fresh, inPlace: (auto ? 3 : 2) * ctx };
 }
 
-function choose(md, { ctx, chat = 'C1', mode = 'auto', fresh = 60000 } = {}) {
+function choose(md, { ctx, chat = 'C1', mode = 'auto', fresh } = {}) {
   const peers = /^M/.test(chat) ? 1 : mastersOnBoard(md);
+  const cal = fresh == null ? calibrated(md) : null;
+  const basis = fresh != null ? 'fresh start given' : cal ? `calibrated (${cal.n})` : 'uncalibrated';
+  fresh = fresh != null ? fresh : cal ? cal.fresh : 60000;
   const c = cost({ ctx: Number(ctx), fresh: Number(fresh), peers, auto: mode === 'auto' });
   const set = setting(md); const hook = hookInstalled(md);
   const M = (n) => `${(n / 1e6).toFixed(2)}M`;
-  const est = `clear in place ≈${M(c.inPlace)}, new chat ≈${M(c.newChat)} (${peers} peer${peers === 1 ? '' : 's'}, ${mode} mode)`;
+  const est = `clear in place ≈${M(c.inPlace)}, new chat ≈${M(c.newChat)} (${peers} peer${peers === 1 ? '' : 's'}, ${mode} mode, fresh ${Math.round(fresh / 1000)}k ${basis})`;
   let method; let why;
   if (set === 'new chat') { method = 'new chat'; why = 'law 12 says new chat'; }
   else if (!hook) { method = 'new chat'; why = 'the reboot hook is not installed'; }
@@ -119,7 +131,25 @@ function choose(md, { ctx, chat = 'C1', mode = 'auto', fresh = 60000 } = {}) {
   const next = method === 'clear in place'
     ? `rollover.cjs handoff <master_dir> --chat ${chat} --mark, then clear_session self`
     : `rollover.cjs handoff <master_dir> --chat ${chat}, then start_session`;
-  return { method, ...c, peers, hook, setting: set, line: `method: ${method} (${why}; ${est}): ${next}` };
+  return { method, ...c, peers, hook, setting: set, fresh: Number(fresh), basis, line: `method: ${method} (${why}; ${est}): ${next}` };
+}
+
+// Measured fresh starts (improve/rollover.jsonl). calibrated() = the median once there are at least 3, else null.
+const LOG = (md) => path.join(md, 'improve', 'rollover.jsonl');
+function samples(md) {
+  return (read(LOG(md)) || '').split('\n').map((l) => { try { return JSON.parse(l); } catch { return null; } })
+    .filter((e) => e && Number(e.fresh) > 0).map((e) => Number(e.fresh));
+}
+function calibrated(md, min = 3) {
+  const s = samples(md).sort((a, b) => a - b);
+  if (s.length < min) return null;
+  return { fresh: s.length % 2 ? s[(s.length - 1) / 2] : Math.round((s[s.length / 2 - 1] + s[s.length / 2]) / 2), n: s.length };
+}
+function measure(md, { fresh, chat = 'C1', method = 'new', now = new Date() }) {
+  if (!(Number(fresh) > 0)) throw new Error('--fresh N (context tokens after boot) is required');
+  fs.mkdirSync(path.dirname(LOG(md)), { recursive: true });
+  fs.appendFileSync(LOG(md), JSON.stringify({ at: now.toISOString(), chat, method, fresh: Number(fresh) }) + '\n');
+  return samples(md).length;
 }
 
 // Due at or past the rollover point (default 250k context tokens).
@@ -150,11 +180,16 @@ if (require.main === module) {
   if (cmd === 'choose' && a) {
     const ctx = Number(flag('--ctx'));
     if (!(ctx >= 0)) { console.error('usage: rollover.cjs choose <master_dir> --ctx N [--chat C1|M3] [--mode auto|default] [--fresh N]'); process.exit(2); }
-    console.log(choose(a, { ctx, chat: flag('--chat', 'C1'), mode: flag('--mode', 'auto'), fresh: flag('--fresh', 60000) }).line);
+    console.log(choose(a, { ctx, chat: flag('--chat', 'C1'), mode: flag('--mode', 'auto'), fresh: flag('--fresh') }).line);
     process.exit(0);
   }
-  console.error('usage: rollover.cjs due <context_tokens> [--at N] | handoff <master_dir> [--chat C1] [--mark] | choose <master_dir> --ctx N ...');
+  if (cmd === 'measure' && a) {
+    try { const n = measure(a, { fresh: flag('--fresh'), chat: flag('--chat', 'C1'), method: flag('--method', 'new') }); const c = calibrated(a); console.log(`measured: ${n} sample${n === 1 ? '' : 's'}; ${c ? 'calibrated fresh start ' + c.fresh : 'uncalibrated until 3'}`); }
+    catch (e) { console.error('measure: ' + e.message); process.exit(2); }
+    process.exit(0);
+  }
+  console.error('usage: rollover.cjs due <context_tokens> [--at N] | handoff <master_dir> [--chat C1] [--mark] | choose <master_dir> --ctx N ... | measure <master_dir> --fresh N');
   process.exit(2);
 }
 
-module.exports = { handoff, tables, lastBlock, due, cost, choose, mastersOnBoard, hookInstalled, setting };
+module.exports = { handoff, tables, lastBlock, due, cost, choose, mastersOnBoard, hookInstalled, setting, measure, calibrated };

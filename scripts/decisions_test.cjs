@@ -227,3 +227,14 @@ test('usage numbers agree in TOKENS, law 14 and usage-gate', () => {
   assert.match(law14, /weekly/);
   assert.doesNotMatch(law14, /\d+\s*%/);
 });
+
+test('next-id counts the archives, so a rolled-over id is never reused', () => {
+  const d = tmp();
+  const f = path.join(d, 'ACTION_LOG.md');
+  fs.writeFileSync(f, '# Log\n## DL-078 · 2026-11-16 · live\nx\n');
+  fs.writeFileSync(path.join(d, 'ACTION_LOG-2026-11.md'), '# archive\n## DL-090 — older but higher\nx\n');
+  assert.strictEqual(run(['next-id', f]).stdout.trim(), 'DL-091');
+  const empty = path.join(tmp(), 'ACTION_LOG.md');
+  fs.writeFileSync(empty, '# Log\n');
+  assert.strictEqual(run(['next-id', empty]).stdout.trim(), 'DL-001');
+});
