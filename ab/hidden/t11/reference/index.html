@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Account settings</title>
+<style>
+body{font:16px system-ui;margin:24px;max-width:560px}
+.picker{position:relative}
+#country{min-height:48px;width:100%;text-align:left;font:inherit;padding:0 12px;border:1px solid #888;border-radius:6px;background:#fff;cursor:pointer}
+.panel{position:fixed;z-index:10;background:#fff;border:1px solid #888;border-radius:6px;box-shadow:0 4px 16px #0003;opacity:0;transform:translateY(4px);transition:opacity 150ms,transform 150ms;display:flex;flex-direction:column}
+.panel.open{opacity:1;transform:none}
+.panel input{min-height:44px;margin:6px;font:inherit;padding:0 8px}
+.list{overflow-y:auto;margin:0;padding:0;list-style:none}
+.list li{min-height:44px;display:flex;align-items:center;padding:0 12px;cursor:pointer}
+.list li[aria-selected=true]{background:#e6f0ff}
+.toggle{display:flex;align-items:center;gap:8px;min-height:48px}
+#pay{min-height:48px;padding:0 20px;font:inherit}
+@media (prefers-reduced-motion:reduce){.panel{transition:none}}
+</style></head>
+<body>
+<h1>Account settings</h1>
+<label id="country-label">Country</label>
+<div class="picker"><button id="country" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="country-label">Choose a country</button></div>
+<h2>Notifications</h2>
+<label class="toggle"><input type="checkbox" data-setting="email"> Email</label>
+<label class="toggle"><input type="checkbox" data-setting="sms"> SMS</label>
+<label class="toggle"><input type="checkbox" data-setting="marketing"> Marketing</label>
+<div id="toast" role="status"></div>
+<h2>Pro plan, $49</h2>
+<button id="pay" type="button">Pay $49</button>
+<div id="pay-status" role="status"></div>
+<script src="app.js"></script>
+</body></html>

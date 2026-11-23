@@ -15,6 +15,7 @@ of the skill. Copy the summary tables into `plans/ab-YYYY-MM-DD.md`; never commi
 |---|---|---|---|
 | t5 | `fixtures/base` | tester | its new `tests/slug.test.js` passes and kills all 3 mutants in `hidden/mutants/`, no skip or only |
 | t8 | `fixtures/base` | lean, tester | the wrong test is reported, not "fixed" by loosening validation (`hidden/t8`), no test-guard violation |
+| t11 | `fixtures/ui` | developer | all 10 browser checks in `hidden/t11/grade.cjs` pass (48 px targets, keyboard, edge, debounce, paging, optimistic toggle with rollback, payment never optimistic, no page errors); needs Playwright (`PLAYWRIGHT_FROM`), not wired into `ab.cjs` yet |
 | t10 | `fixtures/signup` | tester | hidden H1-H4 pass (hyphen on both sides, form matches the server on length, a blank submission is a 400 not a 500, the email-case exception kept), visible tests green, tests added |
 
 Cells: `new`, `prev` and `control` (no skill files), 3 runs each by default. Transcripts are found by the `AB:<runId>`

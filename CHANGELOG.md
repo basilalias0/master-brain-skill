@@ -1,13 +1,14 @@
 # Changelog
 
-## 2.8.0 (2026-11-23, owner request; not A/B tested)
+## 2.8.0 (2026-11-23, owner request)
 - `scripts/worker.cjs choose` (tests): subagent or worker chat per task, by formula. Hard rules first: the human must step in or the work must outlive the Master -> chat; the Master within 20k of its rollover point -> roll over first (a clear or new chat ends running subagents); the subagent cap reached -> chat; XL -> scale mode. Otherwise the cheaper of subagent = boot + work + 0.1 x Master context + 0.1 x report x later Master steps, and chat = boot + work + 0.1 x Master context x 3 wake-ups + 0.1 x reused history x steps. Defaults (boot 40k subagent, 100k chat) are uncalibrated until 3 logged tasks each (`route-log --worker sub|chat --boot N`). SCALE §1 and TOKENS point to it.
 - `modules/developer/ui.md`, read only for frontend work (pages, templates, artifacts, components): 17 UX laws
   (Doherty, Hick, Zeigarnik, Postel, Peak-End, Fitts, Jakob and more) as code rules, a baseline every interactive
   component must pass (states, 48 px targets, keyboard, contrast, 150 ms motion), a reference dropdown (edge flip,
   keyboard, search past 10 options, debounce, infinite scroll), rules for about 50 components (grids pin short key columns), and when to use optimistic updates (like, checkbox,
   toggle) and never (payments, orders, irreversible actions). `MODULE.md` points
-  to it; router size unchanged. Not A/B tested.
+  to it; router size unchanged. A/B 2026-11-23, new task t11 (`plans/ab-2026-11-23.md`): 3/3 pass against 0/3 for 2.7.1
+  and 0/3 with no skill; about 16% more agent tokens (87.2k vs 74.9k), so the token leg of RELEASING 3 is not met.
 
 ## 2.7.1 (2026-11-20)
 - `rollover.cjs` counts each live Master once: distinct `M#` ids in the BOARD's Masters tables, leaving out any id marked
