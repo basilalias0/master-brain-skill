@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 // route-log.cjs append --log FILE --task TYPE --start T1 --result pass|fail [--final T2] [--tokens N]
-//                      [--rework yes|no] [--correction yes|no] [--size S|M|L|XL] [--pct N] [--note TEXT]
+//                      [--rework yes|no] [--correction yes|no] [--size S|M|L|XL] [--pct N] [--worker sub|chat --boot N] [--note TEXT]
 // route-log.cjs from-result <RESULT file> --log FILE --task TYPE --start T1 [--size S] [--pct N] [any append flag]
 //   Reads the first RESULT block in the file (core/RESULT.md; a handoff's LAST block is on top): status done = pass,
 //   else fail; needs-master or test-guard violations = rework yes; the note is the commit and gates. Flags win.
@@ -26,11 +26,14 @@ function build(o) {
   const rework = yn(o.rework); const correction = yn(o.correction);
   if (rework === null || correction === null) err('--rework and --correction must be yes or no');
   if (o.size !== undefined && !['S', 'M', 'L', 'XL'].includes(o.size)) err('--size must be S, M, L or XL');
+  if (o.worker !== undefined && !['sub', 'chat'].includes(o.worker)) err('--worker must be sub or chat');
+  const boot = o.boot === undefined ? null : Number(o.boot);
+  if (boot !== null && !(boot >= 0)) err('--boot must be a token count');
   const pct = o.pct === undefined ? null : Number(o.pct);
   if (pct !== null && !(pct >= 0 && pct <= 100)) err('--pct must be 0-100');
   return {
     ts: new Date().toISOString(), task: o.task, start: o.start, final, result: o.result,
-    escalated: final !== o.start, tokens, rework, correction, size: o.size || null, pct,
+    escalated: final !== o.start, tokens, rework, correction, size: o.size || null, pct, worker: o.worker || null, boot,
     note: String(o.note || '').replace(/[\r\n]+/g, ' ').slice(0, 200),
   };
 }

@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased (2026-11-23, owner request; not A/B tested)
+- `scripts/worker.cjs choose` (tests): subagent or worker chat per task, by formula. Hard rules first: the human must step in or the work must outlive the Master -> chat; the Master within 20k of its rollover point -> roll over first (a clear or new chat ends running subagents); the subagent cap reached -> chat; XL -> scale mode. Otherwise the cheaper of subagent = boot + work + 0.1 x Master context + 0.1 x report x later Master steps, and chat = boot + work + 0.1 x Master context x 3 wake-ups + 0.1 x reused history x steps. Defaults (boot 40k subagent, 100k chat) are uncalibrated until 3 logged tasks each (`route-log --worker sub|chat --boot N`). SCALE §1 and TOKENS point to it.
+
 ## 2.7.1 (2026-11-20)
 - `rollover.cjs` counts each live Master once: distinct `M#` ids in the BOARD's Masters tables, leaving out any id marked
   archived, the Chief row and lane tables. On a real BOARD (13 Masters, 4 archived, three tables under the heading) it

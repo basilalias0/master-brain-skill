@@ -6,7 +6,7 @@ saved step saves about its length again.
 ## 1. Cheapest path first
 Script, T0 scout, the Master itself, a subagent, a subagent in its own worktree, a worker chat. Never two agents on the same files or sources.
 - Scripts do mechanical work. Scouts return conclusions, never file dumps. The Master edits tiny things itself (lean).
-- Sizing, start-all, wait-on-any: `core/SCALE.md`. A worker chat only for over about 3 files or 15 minutes, or parallel work.
+- Sizing, start-all, wait-on-any: `core/SCALE.md`. Subagent or worker chat per task: `scripts/worker.cjs choose` (a subagent unless the human must step in or the work must outlive the Master).
 - An agent that edits files gets its own worktree and the `worktree` and `sync` lines of `core/BRIEF.md` word for word.
 - Overdue RESULT: read the worker's handoff LAST block, then message it by name. No answer after 1 cycle = `blocked`.
 - One subagent per job. Batch same-lane tasks into one worker; reuse a warm idle one. Workflow tool: offer once per wave with a cost, never unasked.

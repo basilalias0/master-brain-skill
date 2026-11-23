@@ -12,9 +12,15 @@ skipped. Follow the class:
 | Class | Path |
 |---|---|
 | S | the Master does it itself (lean). Never a worker. |
-| M | one subagent or one worker. No question to the human. |
-| L | start now, without being asked: up to 2 background subagents (`Agent`, `isolation: "worktree"`, `run_in_background`), one line to the human ("3 parts: starting 2 workers, then the third"). Want more at once: offer worker chats in that line; their yes starts them. |
+| M | one worker, no question to the human. Subagent or worker chat: `worker.cjs choose` (below). |
+| L | start now, without being asked, one line to the human ("3 parts: starting 3 workers"). Each part: `worker.cjs choose`. Subagents start unasked (`Agent`, `isolation: "worktree"`, `run_in_background`); worker chats need the human's yes. |
 | XL | scale mode, §2. |
+
+**Subagent or worker chat:** `node <skill_dir>/scripts/worker.cjs choose --size S|M|L --master-ctx <tokens> [--steer]
+[--outlive] [--running K] [--warm H] --log <master_dir>/routing-log.jsonl`. A worker chat only when the human must step in
+(`--steer`), the work must outlive the Master (`--outlive`), the subagent cap is reached, or it costs less; near its
+rollover point the Master rolls over first. Otherwise a subagent: it starts cleaner and never grows a long chat. Log
+each worker with `route-log --worker sub|chat --boot <start tokens>` so the costs calibrate.
 
 The human's words beat the class ("do it yourself", "no workers"). Risk floors (TOKENS §2, `MODELS.md`) still apply.
 
