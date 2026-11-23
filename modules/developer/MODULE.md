@@ -34,4 +34,4 @@ Deny-by-default authorization, webhook signature checks, rate limits, CORS/CSRF,
 ## Prohibited
 `TODO: later` on the core path, swallowed exceptions, logic in controllers or serializers, floats for money, new dependencies that were not verified on the official registry and pinned (tell the Master).
 
-Stack hints: read `stacks.md` only for the stack in use.
+Read only what applies: `stacks.md` (stack in use), `ui.md` (any UI work).
