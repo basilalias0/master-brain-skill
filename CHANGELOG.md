@@ -4,7 +4,8 @@
 - `modules/developer/ui.md`, read only for frontend work (pages, templates, artifacts, components): 17 UX laws
   (Doherty, Hick, Zeigarnik, Postel, Peak-End, Fitts, Jakob and more) as code rules, a baseline every interactive
   component must pass (states, 48 px targets, keyboard, contrast, 150 ms motion), a reference dropdown (edge flip,
-  keyboard, search past 10 options, debounce, infinite scroll), and rules for about 50 components. `MODULE.md` points
+  keyboard, search past 10 options, debounce, infinite scroll), rules for about 50 components (grids pin short key columns), and when to use optimistic updates (like, checkbox,
+  toggle) and never (payments, orders, irreversible actions). `MODULE.md` points
   to it; router size unchanged. Not A/B tested.
 
 ## 2.7.1 (2026-11-20)

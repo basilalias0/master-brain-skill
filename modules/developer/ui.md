@@ -3,25 +3,13 @@
 Apply while building, then report only the items that failed or were not checked. A native element beats a custom one; a custom widget follows its WAI-ARIA APG pattern.
 
 ## UX laws as code rules
-1. **Doherty (<400 ms):**
-   - Feedback in 100 ms (press state, optimistic update).
-   - Skeleton after 300 ms, spinner after 1 s.
-   - Progress bar with an estimate after 10 s.
-2. **Hick:**
-   - Max 7 top nav items, one primary action per view.
-   - Mark the recommended option.
-   - Over 10 options: add search. Advanced settings go behind "More".
-3. **Zeigarnik:**
-   - Show progress ("Step 2 of 5", "Profile 60%").
-   - Autosave drafts and say so.
-   - Resume where the user left off.
+1. **Doherty (<400 ms):** feedback in 100 ms (press state; optimistic update where allowed, below); skeleton after 300 ms, spinner after 1 s, progress bar with an estimate after 10 s.
+2. **Hick:** max 7 top nav items, one primary action per view, the recommended option marked; over 10 options add search; advanced settings behind "More".
+3. **Zeigarnik:** show progress ("Step 2 of 5", "Profile 60%"); autosave drafts and say so; resume where the user left off.
 4. **Postel:**
    - Accept loose input: trim spaces, lowercase emails, accept phone numbers with spaces, dashes or +, and pasted dates.
    - Normalize before saving. Never reject what you can fix.
-5. **Peak-End:**
-   - The success screen says what happened and what is next.
-   - Errors are calm and offer a fix.
-   - No flow ends on a dead end.
+5. **Peak-End:** the success screen says what happened and what is next; errors are calm and offer a fix; no flow ends on a dead end.
 6. **Fitts:**
    - 48 px touch targets (WCAG AA minimum 24, AAA 44).
    - Primary action near the thumb or cursor; destructive actions apart.
@@ -36,6 +24,17 @@ Apply while building, then report only the items that failed or were not checked
 15. **Cognitive load:** fewest fields possible; cut what is not needed.
 16. **Active user:** help in context (hints, empty states), not upfront tours.
 17. **Parkinson:** autofill and one-click paths.
+
+## Optimistic updates (show the result before the server answers)
+- **Use for** frequent, low-stakes, easily undone actions that almost always succeed: like, star, bookmark, follow, checkbox, toggle, mark read, reorder, rename, adding a comment or todo.
+- **Never for** money or the irreversible: payments, refunds, transfers, orders, checkout, delete account, cancel subscription, sending email or invites, role or permission changes, or any action the server often rejects (stock, quota, validation). Show a pending state ("Processing...", button disabled) until the server confirms; only the rest of the page stays usable.
+- **How:**
+  - Snapshot the old value, cancel in-flight refetches, then write the new value.
+  - On error, restore the snapshot and show a non-blocking toast with Retry.
+  - On settle, refetch from the server (TanStack Query: `onMutate` / `onError` / `onSettled`; React 19: `useOptimistic`).
+  - New items get a temporary id, swapped for the server's.
+  - Rapid toggles: send only the last state (debounce or a serial queue), and use an idempotency key on writes.
+  - Never show "Saved" until the server says so.
 
 ## Baseline for every interactive component
 - **States:** default, hover, focus-visible, active, disabled, loading, error, empty, read-only, selected.
