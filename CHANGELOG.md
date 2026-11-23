@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased (2026-11-23, UI rules)
+- `modules/developer/ui.md`, read only for frontend work (pages, templates, artifacts, components): 17 UX laws
+  (Doherty, Hick, Zeigarnik, Postel, Peak-End, Fitts, Jakob and more) as code rules, a baseline every interactive
+  component must pass (states, 48 px targets, keyboard, contrast, 150 ms motion), a reference dropdown (edge flip,
+  keyboard, search past 10 options, debounce, infinite scroll), and rules for about 50 components. `MODULE.md` points
+  to it; router size unchanged. Not A/B tested.
+
 ## 2.7.1 (2026-11-20)
 - `rollover.cjs` counts each live Master once: distinct `M#` ids in the BOARD's Masters tables, leaving out any id marked
   archived, the Chief row and lane tables. On a real BOARD (13 Masters, 4 archived, three tables under the heading) it
