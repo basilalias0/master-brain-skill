@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// test-guard.cjs snapshot <root> --out FILE | compare <root> --snap FILE
+// test-guard.cjs snapshot <root> --out FILE | compare <root> --snap FILE [--expect-new]
 // Fails on removed tests, new skip/only markers, fewer assertions. Exit 1 on violations.
 const fs = require('fs');
 const path = require('path');
@@ -53,9 +53,12 @@ function snapshot(root) {
   return snap;
 }
 
-function compare(root, snap) {
+// expectNew (--expect-new, for build and bugfix tasks): no test added anywhere is a violation too.
+function compare(root, snap, { expectNew = false } = {}) {
   const now = snapshot(root);
   const v = [];
+  const total = (s) => Object.values(s).reduce((n, x) => n + x.tests, 0);
+  if (expectNew && total(now) <= total(snap)) v.push(`no new tests (${total(snap)} -> ${total(now)}): a build or bugfix adds at least one`);
   for (const [f, a] of Object.entries(snap)) {
     const b = now[f];
     if (!b) { v.push(`${f}: test file removed`); continue; }
@@ -80,10 +83,10 @@ if (require.main === module) {
   } else if (cmd === 'compare') {
     const sf = flag('--snap');
     if (!sf) { console.error('--snap FILE required'); process.exit(2); }
-    const v = compare(root, JSON.parse(fs.readFileSync(sf, 'utf8')));
+    const v = compare(root, JSON.parse(fs.readFileSync(sf, 'utf8')), { expectNew: process.argv.includes('--expect-new') });
     if (v.length) { console.log('test-guard: VIOLATIONS\n' + v.join('\n')); process.exit(1); }
     console.log('test-guard: ok');
-  } else { console.error('usage: test-guard.cjs snapshot|compare <root> --out|--snap FILE'); process.exit(2); }
+  } else { console.error('usage: test-guard.cjs snapshot|compare <root> --out|--snap FILE [--expect-new]'); process.exit(2); }
 }
 
 module.exports = { snapshot, compare, scan };

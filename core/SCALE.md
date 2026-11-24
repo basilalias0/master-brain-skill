@@ -61,6 +61,8 @@ if the class moved. A worker with no passing check by half its budget stops and 
 - A dependency upgrade gets its own worktree, branch and install (a worktree's `node_modules` may be a junction to
   main's: detach the link, never its target), merges after the other workers, then the top chat's full sweep (it is `scope: wide`, law 7).
 - A migration runs before any sweep that reads its new columns (`core/SAFETY.md` 4).
+- Merge in finish order, one branch at a time on top of the last. First compare the shared contracts the wave touched
+  (types, API shapes, routes, config, registries): conflicting choices that both compile go back as one fix task.
 - With several Masters: one Master per area (CHIEF rule 10) runs its own waves; the Chief waits only on cross-area deps.
 
 ## 4. Honest numbers

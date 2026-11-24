@@ -1,7 +1,8 @@
 # LAWS — how Master and Worker chats run this project
 
 Template from the `master-brain` skill. ONBOARDING copies it to `<project>/master-brain/LAWS.md`, fills every
-`{{slot}}` and confirms each law with the human; that copy is binding. Tools have logical names (`CAPABILITIES.md`).
+`{{slot}}` and confirms each law with the human; that copy is binding. A law the human never edited follows the
+skill: `boot.cjs` updates it with this project's values (old copy `LAWS.prev.md`); an edited one is only reported. Tools have logical names (`CAPABILITIES.md`).
 Workers read `LAWS_DIGEST.md` (`law-lint.cjs digest`). At most 200 lines. Never commit it.
 
 ## Roles
@@ -29,12 +30,14 @@ Workers read `LAWS_DIGEST.md` (`law-lint.cjs digest`). At most 200 lines. Never 
       `{{main branch}}`, never push unless told. Red: back to the worker.
 5. **Reuse workers.** When green the Master sends `RESET`; the worker finalises its handoff and clears itself. The
    Master decides when a worker opens, clears or closes; a chip-launched chat it cannot clear is archived by the human.
+   Once a worker closes, its merged worktree and branch are removed (`git worktree remove`, `git branch -d`); never
+   one with unmerged commits.
 6. **History first.** Before planning, grep `handoffs/` (with `archive/`, `pairs/`), `FEATURE_INDEX.md` and `ACTION_LOG*`.
 7. **Each chat tests only its own scope; the top chat tests the whole.** A worker or subagent: type-check, the tests
    its change affects and its own flow, never the full suite. A Master: at merge, its module's tests and flows (its
    area), once per wave, never other areas. The Chief, or a single Master with no Chief: one combined
    `{{full E2E command}}` for the whole app under `scripts/lock.cjs acquire heavy`, after the Masters' merges, once per
-   phase, and always before {{main branch}} is pushed or released. A change to shared files (dependencies, lockfile,
+   phase, and always before the main branch is pushed or released. A change to shared files (dependencies, lockfile,
    build or test config, shared types or contracts, migrations, env) is marked `scope: wide` in the RESULT, and the
    next level up tests it before that merge, not in its batch. A red full run is split by Master merge to find the
    cause, which goes back to that Master and its worker (law 8). Fixing an old known-red test is its own task. Start
@@ -63,7 +66,8 @@ Workers read `LAWS_DIGEST.md` (`law-lint.cjs digest`). At most 200 lines. Never 
     `<name>/NN-topic.md`; logs roll into dated parts; old handoff entries go to `handoffs/archive/`.
 20. **Approval gates.** `core/SAFETY.md` 12, also when the arena skill triggers by itself (procedure/05).
 21. **Test integrity.** Snapshot with `scripts/test-guard.cjs` before a worker starts and compare before merge: no merge
-    on removed tests, new skips or fewer assertions. With the test gate on (`scripts/stop-gate.cjs`) a worker cannot
+    on removed tests, new skips or fewer assertions, and for a build or bugfix none without a new test (`compare
+    --expect-new`). With the test gate on (`scripts/stop-gate.cjs`) a worker cannot
     report done while its quick check fails.
 22. **Security gate.** No merge while a confirmed high or critical finding is open; each gets a regression test. High
     tier: a scoped quick audit per module after phase 2.

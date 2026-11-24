@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 'use strict';
 // boot.cjs <master_dir> [--role chief|master|worker] [--self M3]: the whole boot bookkeeping in one call, 25 lines or
-// fewer, zero model tokens. In order: LAWS digest check (law-lint.cjs), capacity check with leftover servers
+// fewer, zero model tokens. In order: LAWS sync (outdated laws updated from the skill) and digest check, capacity check with leftover servers
 // (capacity.cjs), the status snapshot with its improve nudge (state.cjs), then LAST blocks (rollover.cjs):
 //   master: masters/<self>.md (self defaults to the only masters/M*.md)   chief: masters/C1.md and every masters/M*.md
 //   worker: handoffs/<self>.md only (no snapshot: a worker reads its brief).
 // Exit: 0 ok, 1 digest stale (read the full LAWS.md), 2 bad input.
 const fs = require('fs');
 const path = require('path');
-const { digestHash, sha } = require('./law-lint.cjs');
+const { digestHash, sha, sync } = require('./law-lint.cjs');
 const { check } = require('./capacity.cjs');
 const { snapshot } = require('./state.cjs');
 const { lastBlock } = require('./rollover.cjs');
@@ -21,6 +21,17 @@ function lawsLine(dir) {
   const laws = path.join(dir, 'LAWS.md');
   const dig = path.join(dir, 'LAWS_DIGEST.md');
   if (!fs.existsSync(laws)) return { ok: true, line: 'laws: no LAWS.md (skill defaults apply)' };
+  // Every project follows the skill's current laws: a law the human never edited is updated here, at zero model tokens.
+  const sk = path.join(__dirname, '..', 'templates');
+  let up = '';
+  try {
+    const r = sync(laws, path.join(sk, 'LAWS.md'), path.join(sk, 'laws-history.json'), { apply: true });
+    const ch = r.outdated.concat(r.missing);
+    if (ch.length) up = `laws: updated ${ch.join(', ')} to the skill's current text (old copy LAWS.prev.md${r.unfilled.length ? '; fill ' + r.unfilled.join(', ') : ''}): tell the human`;
+    if (r.custom.length) up += (up ? '; ' : 'laws: ') + `edited by the human, not updated: ${r.custom.join(', ')} (compare with templates/LAWS.md, ask the human)`;
+  } catch (e) { up = 'laws: sync skipped (' + String(e.message || e).slice(0, 80) + ')'; }
+  const fresh = fs.existsSync(dig) && digestHash(dig) === sha(laws);
+  if (up) return { ok: fresh, line: up + (fresh ? '' : '; digest STALE: read the full LAWS.md, then law-lint.cjs digest <LAWS> <DIGEST>') };
   if (fs.existsSync(dig) && digestHash(dig) === sha(laws)) return { ok: true, line: 'laws: digest ok (read LAWS_DIGEST.md)' };
   return { ok: false, line: 'laws: digest STALE: read the full LAWS.md, then law-lint.cjs digest <LAWS> <DIGEST>' };
 }

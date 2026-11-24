@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 // law-lint.cjs caps <root> [--exempt FILE] | digest <LAWS> <DIGEST> | stamp <LAWS> <DIGEST> | digest-check <LAWS> <DIGEST>
+//   | sync <project LAWS> [--apply] | history-add <old template LAWS> <history.json>
 // caps: .md 200 lines, .ts/.tsx 400, .js/.jsx/.cjs/.mjs 300. Exempt file: one path prefix per line.
 // digest: GENERATES LAWS_DIGEST.md (30 lines or fewer: each law's number, bold title and first sentence) and stamps
 //   it, so no model writes the digest by hand. stamp: only rewrites the source_hash line of an existing digest.
@@ -82,6 +83,92 @@ function digest(lawsFile, digestFile) {
   return ls.length;
 }
 
+// sync: brings a project's LAWS.md up to the skill's template, law by law. A project law that equals an earlier
+// template version (placeholders filled any way) is outdated: --apply rewrites it from the current template with the
+// project's own placeholder values and regenerates the digest; the old file is kept as LAWS.prev.md. A law that matches
+// neither the current nor an earlier version was edited by the human: reported, never touched. A missing law is added
+// at the end of the laws section. Earlier versions live in templates/laws-history.json (history-add at release).
+function blocks(text) {
+  const L = text.replace(/\r\n/g, '\n').split('\n'); const list = []; let on = false; let cur = null;
+  for (let i = 0; i < L.length; i++) {
+    const l = L[i];
+    if (/^## /.test(l)) { if (cur) { cur.end = i; cur = null; } on = /^## The laws/i.test(l); continue; }
+    if (!on) continue;
+    const m = /^(\d+)\. (?:\*\*(.+?)\*\*)?/.exec(l);
+    if (m) { if (cur) cur.end = i; cur = { n: m[1], title: (m[2] || '').replace(/[.:,]$/, ''), start: i }; list.push(cur); }
+    else if (cur && !/^\s+\S/.test(l)) { cur.end = i; cur = null; }
+  }
+  if (cur) cur.end = L.length;
+  for (const b of list) { while (b.end > b.start + 1 && !L[b.end - 1].trim()) b.end--; b.raw = L.slice(b.start, b.end).join('\n'); }
+  return { L, list };
+}
+const norm = (s) => s.replace(/\s+/g, ' ').trim();
+const PH = /`?\{\{([^}]+)\}\}`?/g;
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, (c) => '\\' + c).replace(/ /g, '\\s+');
+function pattern(t) {
+  const names = []; let re = ''; let last = 0; const s = norm(t);
+  for (const m of s.matchAll(PH)) { re += esc(s.slice(last, m.index)) + '([\\s\\S]*?)'; names.push(m[1].trim()); last = m.index + m[0].length; }
+  return { re: new RegExp('^' + re + esc(s.slice(last)) + '$'), names };
+}
+function capture(t, p) {
+  const P = pattern(t); const m = P.re.exec(norm(p)); if (!m) return null;
+  const v = {}; P.names.forEach((n, i) => { v[n] = m[i + 1]; }); return v;
+}
+function fill(t, vals) {
+  const miss = [];
+  const text = t.replace(PH, (all, n) => { n = n.trim(); if (vals[n] != null) return vals[n]; miss.push(n); return all; });
+  return { text, miss };
+}
+function sync(projectFile, templateFile, historyFile, { apply = false } = {}) {
+  const P = blocks(fs.readFileSync(projectFile, 'utf8')); const T = blocks(fs.readFileSync(templateFile, 'utf8'));
+  const H = historyFile && fs.existsSync(historyFile) ? JSON.parse(fs.readFileSync(historyFile, 'utf8')).laws || {} : {};
+  const vals = {}; const res = { ok: [], outdated: [], custom: [], missing: [], unfilled: [] }; const plan = [];
+  for (const t of T.list) {
+    const p = P.list.find((b) => b.n === t.n);
+    if (!p) { res.missing.push(t.n); plan.push({ t, p: null }); continue; }
+    const now = capture(t.raw, p.raw);
+    if (now) { Object.assign(vals, now); res.ok.push(t.n); continue; }
+    const old = (H[t.n] || []).map((o) => capture(o, p.raw)).find(Boolean);
+    if (old) { Object.assign(vals, old); res.outdated.push(t.n); plan.push({ t, p }); } else res.custom.push(t.n);
+  }
+  // Only a file shaped like the template is synced: at least half its laws recognised. Missing laws are added only
+  // past the project's last law (new laws go at the end); anything else is left to the human.
+  if (res.ok.length + res.outdated.length < Math.ceil(T.list.length / 2)) return { ok: [], outdated: [], custom: [], missing: [], unfilled: [], skipped: true };
+  const top = Math.max(0, ...P.list.map((b) => +b.n));
+  res.missing = res.missing.filter((n) => +n > top);
+  for (let i = plan.length - 1; i >= 0; i--) if (!plan[i].p && +plan[i].t.n <= top) plan.splice(i, 1);
+  if (apply && plan.length) {
+    const L = P.L.slice(); const adds = [];
+    for (const { t, p } of plan.sort((a, b) => (b.p ? b.p.start : -1) - (a.p ? a.p.start : -1))) {
+      const f = fill(t.raw, vals); res.unfilled.push(...f.miss.map((m) => `${t.n}: {{${m}}}`));
+      if (p) L.splice(p.start, p.end - p.start, ...f.text.split('\n')); else adds.unshift(...f.text.split('\n'));
+    }
+    if (adds.length) { const at = blocks(L.join('\n')).list; L.splice(at.length ? at[at.length - 1].end : L.length, 0, ...adds); }
+    fs.copyFileSync(projectFile, path.join(path.dirname(projectFile), 'LAWS.prev.md'));
+    fs.writeFileSync(projectFile, L.join('\n'));
+    digest(projectFile, path.join(path.dirname(projectFile), 'LAWS_DIGEST.md'));
+  }
+  return res;
+}
+// history-add: records each law of an older template that differs from the current one under the same number (and
+// title, unless only that law was renamed), so a project still on that text is recognised as outdated. Run at release with the previous templates/LAWS.md.
+function historyAdd(oldFile, templateFile, historyFile) {
+  const h = fs.existsSync(historyFile) ? JSON.parse(fs.readFileSync(historyFile, 'utf8')) : { laws: {} };
+  const T = blocks(fs.readFileSync(templateFile, 'utf8')).list; let n = 0;
+  const O = blocks(fs.readFileSync(oldFile, 'utf8')).list;
+  const title = (list, n) => (list.find((x) => x.n === String(n)) || {}).title;
+  for (const o of O) {
+    const t = T.find((x) => x.n === o.n);
+    if (!t || norm(t.raw) === norm(o.raw)) continue;
+    // A renamed law counts only while its neighbours keep their titles: a shift means the laws were renumbered.
+    if (t.title !== o.title && [-1, 1].some((d) => title(T, +o.n + d) !== title(O, +o.n + d))) continue;
+    const arr = h.laws[o.n] || (h.laws[o.n] = []);
+    if (!arr.some((x) => norm(x) === norm(o.raw))) { arr.push(o.raw); n++; }
+  }
+  fs.writeFileSync(historyFile, JSON.stringify(h, null, 1) + '\n');
+  return n;
+}
+
 if (require.main === module) {
   const [cmd, a, b] = process.argv.slice(2);
   if (cmd === 'caps') {
@@ -95,7 +182,18 @@ if (require.main === module) {
     const h = fs.existsSync(b) ? digestHash(b) : null;
     if (h !== sha(a)) { console.log('digest STALE: read the full LAWS.md, then run law-lint.cjs digest <LAWS> <DIGEST>'); process.exit(1); }
     console.log('digest ok');
-  } else { console.error('usage: law-lint.cjs caps <root> [--exempt FILE] | digest|stamp|digest-check <LAWS> <DIGEST>'); process.exit(2); }
+  } else if (cmd === 'sync' && a) {
+    const root = path.join(__dirname, '..');
+    const ap = process.argv.includes('--apply');
+    const r = sync(a, path.join(root, 'templates', 'LAWS.md'), path.join(root, 'templates', 'laws-history.json'), { apply: ap });
+    const j = (x) => (x.length ? x.join(', ') : 'none');
+    const changed = r.outdated.length + r.missing.length;
+    console.log(`laws sync: ${r.ok.length} current; outdated ${j(r.outdated)}; missing ${j(r.missing)}; edited by the human ${j(r.custom)}` +
+      (ap && changed ? `; updated, old copy in LAWS.prev.md${r.unfilled.length ? '; fill ' + r.unfilled.join(', ') : ''}` : ''));
+    process.exit(!ap && changed ? 1 : 0);
+  } else if (cmd === 'history-add' && a && b) {
+    console.log(`history: ${historyAdd(a, path.join(__dirname, '..', 'templates', 'LAWS.md'), b)} law texts added`);
+  } else { console.error('usage: law-lint.cjs caps <root> [--exempt FILE] | digest|stamp|digest-check <LAWS> <DIGEST> | sync <project LAWS> [--apply] | history-add <old LAWS> <history.json>'); process.exit(2); }
 }
 
-module.exports = { caps, stamp, digest, laws, digestHash, sha };
+module.exports = { caps, stamp, digest, laws, digestHash, sha, sync, historyAdd, blocks };

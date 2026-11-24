@@ -6,7 +6,16 @@
   with no Chief, runs the one full-app E2E after the Masters' merges and always before main is pushed. Shared-file changes
   are `scope: wide` in the RESULT and get tested one level up before that merge. A red full run is split by Master merge
   (bisection) and goes back to its owner. Laws 4 and 13, RESULT, TOKENS, SCALE, CHIEF, tester and developer updated.
-  Existing projects keep their own LAWS.md: re-copy law 7 from the template.
+- **Every project follows the current laws.** `law-lint.cjs sync <LAWS> [--apply]` and `templates/laws-history.json`
+  (every earlier template text, from git): a project law equal to an earlier template text is outdated and is rewritten
+  with the project's own placeholder values; one the human edited is reported, never changed; new laws past the last are
+  added. `boot.cjs` runs it on every boot (old copy `LAWS.prev.md`, digest regenerated) and says what changed. On a
+  real project copy: laws 4, 5, 7, 13 and 21 updated, commands and branch kept, nothing else touched. A file with
+  fewer than half the laws recognised is skipped. RELEASING 4 runs `history-add` when the template changes.
+- `test-guard.cjs compare --expect-new`: a build or bugfix that adds no test is a violation (law 21). In the 2026-11-23
+  A/B none of 9 runs added tests.
+- Law 5: a closed worker's merged worktree and branch are removed. SCALE §3: merge in finish order, one branch at a
+  time, after comparing the shared contracts the wave touched (conflicting choices that both compile).
 
 ## 2.8.0 (2026-11-23, owner request)
 - `scripts/worker.cjs choose` (tests): subagent or worker chat per task, by formula. Hard rules first: the human must step in or the work must outlive the Master -> chat; the Master within 20k of its rollover point -> roll over first (a clear or new chat ends running subagents); the subagent cap reached -> chat; XL -> scale mode. Otherwise the cheaper of subagent = boot + work + 0.1 x Master context + 0.1 x report x later Master steps, and chat = boot + work + 0.1 x Master context x 3 wake-ups + 0.1 x reused history x steps. Defaults (boot 40k subagent, 100k chat) are uncalibrated until 3 logged tasks each (`route-log --worker sub|chat --boot N`). SCALE §1 and TOKENS point to it.
