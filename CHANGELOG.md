@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (2026-11-24, owner request; not A/B tested)
+## 2.9.0 (2026-11-24, owner request; not A/B tested)
 - **Each chat tests only its own scope** (law 7, rewritten). A worker or subagent tests only its change (type-check, affected
   tests, own flow), never the full suite. A Master tests its module at merge, once per wave. The Chief, or a single Master
   with no Chief, runs the one full-app E2E after the Masters' merges and always before main is pushed. Shared-file changes
