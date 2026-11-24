@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased (2026-11-24, owner request; not A/B tested)
+- **Each chat tests only its own scope** (law 7, rewritten). A worker or subagent tests only its change (type-check, affected
+  tests, own flow), never the full suite. A Master tests its module at merge, once per wave. The Chief, or a single Master
+  with no Chief, runs the one full-app E2E after the Masters' merges and always before main is pushed. Shared-file changes
+  are `scope: wide` in the RESULT and get tested one level up before that merge. A red full run is split by Master merge
+  (bisection) and goes back to its owner. Laws 4 and 13, RESULT, TOKENS, SCALE, CHIEF, tester and developer updated.
+  Existing projects keep their own LAWS.md: re-copy law 7 from the template.
+
 ## 2.8.0 (2026-11-23, owner request)
 - `scripts/worker.cjs choose` (tests): subagent or worker chat per task, by formula. Hard rules first: the human must step in or the work must outlive the Master -> chat; the Master within 20k of its rollover point -> roll over first (a clear or new chat ends running subagents); the subagent cap reached -> chat; XL -> scale mode. Otherwise the cheaper of subagent = boot + work + 0.1 x Master context + 0.1 x report x later Master steps, and chat = boot + work + 0.1 x Master context x 3 wake-ups + 0.1 x reused history x steps. Defaults (boot 40k subagent, 100k chat) are uncalibrated until 3 logged tasks each (`route-log --worker sub|chat --boot N`). SCALE §1 and TOKENS point to it.
 - `modules/developer/ui.md`, read only for frontend work (pages, templates, artifacts, components): 17 UX laws

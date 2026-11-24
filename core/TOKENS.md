@@ -16,7 +16,7 @@ Script, T0 scout, the Master itself, a subagent, a subagent in its own worktree,
 |---|---|---|
 | Low | typo, copy, one-file fix | lean + type-check |
 | Medium | one-lane feature or bugfix | + its own flow test |
-| High | auth, data, money, shared contract, LOCK | + analyzer, phase-2 optimise, scoped audit, the Master's full E2E |
+| High | auth, data, money, shared contract, LOCK | + analyzer, phase-2 optimise, scoped audit; module tests by the Master, the full E2E by the top chat (law 7) |
 Never route High work below T1 or default effort.
 
 ## 3. Reading

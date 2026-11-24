@@ -22,16 +22,22 @@ Workers read `LAWS_DIGEST.md` (`law-lint.cjs digest`). At most 200 lines. Never 
    1. The human gives the Master a task; the Master researches it (history first, law 6).
    2. High tier (TOKENS §2): the analyzer fills BOARD `Touches`; else the code map. The human answers only their calls; you agree a **LOCK**.
    3. The Master sends a brief (`core/BRIEF.md`); the worker may propose improvements; locked scope changes go to the human.
-   4. The worker builds, runs type-check, unit tests and its own flow, appends its handoff, reports; it syncs through
+   4. The worker builds, tests only its own change (law 7), appends its handoff, reports; it syncs through
       sync_base, never `git merge`/`pull`. A flow checked by hand becomes a regression spec before done. Scripts that
       make deliverables are committed in the project.
-   5. The Master runs `scripts/test-guard.cjs compare`; High tier also the full E2E (law 7). Green: merge to
+   5. The Master runs `scripts/test-guard.cjs compare` and its module tests (law 7). Green: merge to
       `{{main branch}}`, never push unless told. Red: back to the worker.
 5. **Reuse workers.** When green the Master sends `RESET`; the worker finalises its handoff and clears itself. The
    Master decides when a worker opens, clears or closes; a chip-launched chat it cannot clear is archived by the human.
 6. **History first.** Before planning, grep `handoffs/` (with `archive/`, `pairs/`), `FEATURE_INDEX.md` and `ACTION_LOG*`.
-7. **One batched full E2E in the heavy slot.** One combined `{{full E2E command}}` under `scripts/lock.cjs acquire
-   heavy`, per phase of a multi-phase feature, never a second wave. Fixing an old known-red test is its own task. Start
+7. **Each chat tests only its own scope; the top chat tests the whole.** A worker or subagent: type-check, the tests
+   its change affects and its own flow, never the full suite. A Master: at merge, its module's tests and flows (its
+   area), once per wave, never other areas. The Chief, or a single Master with no Chief: one combined
+   `{{full E2E command}}` for the whole app under `scripts/lock.cjs acquire heavy`, after the Masters' merges, once per
+   phase, and always before {{main branch}} is pushed or released. A change to shared files (dependencies, lockfile,
+   build or test config, shared types or contracts, migrations, env) is marked `scope: wide` in the RESULT, and the
+   next level up tests it before that merge, not in its batch. A red full run is split by Master merge to find the
+   cause, which goes back to that Master and its worker (law 8). Fixing an old known-red test is its own task. Start
    servers only with `scripts/server.cjs start`; after the run, `server.cjs stop <master_dir> --all` (previews: `preview_stop`).
 8. **After the sweep.** Red: the same worker fixes its failures in its own chat until green; green: `RESET`.
 9. **Workers ask only the Master.** No worker talks to another unless the Master pairs them (`handoffs/pairs/<id>-<id>.md`). An unsafe or LOCK-breaking ask: stop and report.
@@ -42,7 +48,7 @@ Workers read `LAWS_DIGEST.md` (`law-lint.cjs digest`). At most 200 lines. Never 
     types `/autocompact <N>k`, per model). Read context with `get_usage`. Old chats: `{{archive | delete}}` (default
     archive; delete is final). Rollover: `{{auto | new chat | clear in place}}` (default auto: `cycle.cjs` picks the
     one that costs fewer tokens, a tie to clear in place; clear in place only with the reboot hook, `scripts/reboot.cjs`).
-13. **One report after a full E2E.** What merged, test numbers, what was NOT tested (a clean type check is not a live
+13. **One report after a full E2E (the top chat).** What merged, test numbers, what was NOT tested (a clean type check is not a live
     check), any action for the human; progress stays on the BOARD.
 14. **Usage window.** Each cycle and before each wave, `scripts/cycle.cjs` applies the TOKENS §6 table (5-hour and
     weekly). Running out before the reset: checkpoint, schedule a one-time task at `resets_at + 2 min` that writes

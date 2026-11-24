@@ -23,7 +23,7 @@ Write the tests for the chosen items.
 - No literal secrets in specs: import named credential constants; check generated files for literal passwords or tokens.
 - Test accounts only; destructive tests on seeded fixtures only; confirm the database host is on the project's allowlist before any write.
 - Security tests only against our own app in a test environment. Each confirmed audit finding gets a regression test.
-- Workers run type-check, unit tests and their own flow; full E2E is the Master's slot. Test-only shortcuts: `core/SAFETY.md` 11.
+- Scope (law 7): a worker tests only its change, a Master its module, the top chat the app. Test-only shortcuts: `core/SAFETY.md` 11.
 - No snapshot-everything, no `assert true`, no sleeps, no private internals. A test must fail when behavior breaks and pass when only the implementation changes.
 
 For a stack's run command and file patterns, read `modules/tester/frameworks.md` (that stack only); for a UI or form flow, `modules/tester/flows.md`. Note anything you could not test and why.

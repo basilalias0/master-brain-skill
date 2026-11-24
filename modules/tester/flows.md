@@ -14,7 +14,7 @@ type on client and server, a duplicated enum), diff both sides for that field fi
 - Reproduce it in the browser before fixing. Never fix from the stack trace alone.
 - After the fix, replay the steps this flow already passed, then continue from the next one.
 - A failing test, new or old, is an edge case nobody mapped, not a flaky test: reproduce it, fix the code, make the
-  spec capture the case, and the sweep runs again (law 7).
+  spec capture the case, and the top chat's full sweep runs again (law 7).
 
 ## 3. Robustness pass (bounded, after the happy path passes)
 - Off-script at a few points: back and forward, another tab, a second click on a submitted control, a modal opened

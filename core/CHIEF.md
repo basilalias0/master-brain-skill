@@ -2,7 +2,7 @@
 
 Human → **Chief (C1)** → **Masters (M1, M2 …)** → **Workers (W-M1-1 …)**. Only with more than one Master; a single
 Master is the top. The Chief plans across lanes, arbitrates shared resources, owns the chip queue and is the only voice
-to the human. It does not build; it reads RESULTs and files.
+to the human. It does not build; it runs the full-app test (law 7) and reads RESULTs and files.
 
 ## Rules
 1. **Roll over, never grow.** Every step re-reads the whole chat. Each cycle: `get_usage`, then
