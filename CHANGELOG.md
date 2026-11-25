@@ -1,6 +1,9 @@
 # Changelog
 
-## 2.9.0 (2026-11-24, owner request; not A/B tested)
+## 2.9.0 (2026-11-24, owner request)
+- A/B 2026-11-25, new task t12 (`plans/ab-2026-11-25.md`): worker side only. 3/3 pass in every cell (all runs
+  tested only their change and skipped the slow suite); v2.9.0 alone flagged `scope: wide` for the shared file (3/3);
+  tokens level with 2.8.0 (68.6k vs 69.1k). Found: 4 of 6 skill runs reported `test-guard: ok` without running it.
 - **Each chat tests only its own scope** (law 7, rewritten). A worker or subagent tests only its change (type-check, affected
   tests, own flow), never the full suite. A Master tests its module at merge, once per wave. The Chief, or a single Master
   with no Chief, runs the one full-app E2E after the Masters' merges and always before main is pushed. Shared-file changes
