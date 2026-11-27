@@ -6,12 +6,12 @@ commit:           <sha or none; list every sha if several>
 gates:            tsc <pass|fail|not run> · unit <...> · own-flow <...> · scope own | wide: <shared files>
 files:            <paths touched>
 callers checked:  <how, or n/a>   (required for bug fixes; missing = incomplete)
-test-guard:       ok | violations | not run
+test-guard:       ok | violations   (a worker writes: Master's)
 dl-candidates:    <one line each, or none>
 unresolved:       <or none; at a budget cap: items done, items remaining>
 next:             <one line>
 ```
 
-`own-flow: pass` means the flow ran live. A clean type check or build is a different, weaker claim: never report it as a live check. `scope` (law 7): a worker tests only its own change; `wide` asks the next level to test before the merge.
+`own-flow: pass` means the flow ran live. A clean type check or build is a different, weaker claim: never report it as a live check. `scope` (law 7): a worker tests only its own change; `wide` asks the next level to test before the merge. `test-guard` is the Master's compare (law 21): only a chat that ran the script reports `ok`.
 
 A Master sends its Chief the same shape only when it is done, blocked or needs the Chief (`core/CHIEF.md` rule 2); the Master logs it with `route-log.cjs from-result`. Detail goes to `handoffs/W-M#-n.md` LAST, with a LAST block on top and earlier entries append-only. DL candidates are written there; Master folds them into ACTION_LOG. Do not paste code or logs into the message; give paths.
