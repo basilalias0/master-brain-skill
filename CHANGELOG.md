@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.11.0 (2026-11-27, owner request; not A/B tested)
+- **Extra skills are offered, not hidden.** The human cannot know they exist.
+  - `boot.cjs` now lists every registry skill for the Master and Chief, as installed, not installed or declined.
+  - When a task matches one that is not installed (a dashboard or any UI: unslop; a security review: security-audit;
+    a close decision: arena), the Master shows `install-skill.cjs --offer <name>` unasked. The offer says the skill is
+    not part of master-brain and lists its features, size, author, licence and pinned source. It explains the scan and
+    that threats are removed into a local copy that is never uploaded. It ends with "Shall I download it?".
+  - **Yes:** `--yes --clean`.
+  - **No:** `--decline`, and it is not offered again in that project.
+  - `--if-needed` prints the offer and exits 5 when the skill is missing. unslop is no longer auto-installed.
+- **security-audit** (cloudflare/security-audit-skill, MIT) is now in the registry, pinned at c1c8a8c with 20 file
+  hashes. It scanned with 0 high findings; its only subprocess and delete calls are in its own tests.
+  Every entry now has `features`, `when`, `short` and `sizeKB`.
+- **Hash check:** a copy with CRLF line endings still matches its pin.
+- **Scanner:** a reference file counts as used when any file of the skill names it, linked or not.
+
 ## 2.10.0 (2026-11-27, owner request; not A/B tested)
 - **unslop runs alongside the UI rules.** `registry.json` lists heydamir/unslop (CC BY 4.0, credited) pinned at
   620163e with all 16 file hashes and `auto: true`. `ui.md` has the developer run `install-skill.cjs unslop --if-needed`

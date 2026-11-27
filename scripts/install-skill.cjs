@@ -3,13 +3,17 @@
 // install-skill.cjs <name> [--yes] [--force] [--clean] [--if-needed] [--registry FILE] [--skills-dir DIR] [--local-dir DIR]
 // install-skill.cjs --check <name>: sha256 of every file in the entry's `fileSha256` map against the installed copy.
 // install-skill.cjs --latest <name> [--write-pin]: scan the tip of the entry's `ref`; print (or write) the new pin.
+// install-skill.cjs --offer <name>: the message to show the human (not part of master-brain, features, the scan,
+//   the local clean copy) ending in the yes/no question. --list: one status line for every registry skill.
+// install-skill.cjs --decline <name> --master-dir DIR: the human said no; boot stops listing it for this project.
 // Installs a registry skill at its pinned commit after a full scan (skill-scan.cjs). Without --yes it only prints
-// the plan (dry run). `auto: true` in the entry: --if-needed installs without a separate yes (tell the human).
-// A high scan finding stops the install (exit 4): tell the human. --clean then writes a copy without the findings to
-// <master-brain>/local/<name> (git-ignored: this machine only, never pushed) instead of the skills folder.
-// --if-needed: exit 0 with `path:` when a copy is already there (pin ok, or changed but rescanned clean).
+// the plan (dry run). A high scan finding stops the install (exit 4). With --clean (the offer's yes covers it) a
+// copy without the findings goes to <master-brain>/local/<name> (git-ignored: this machine only, never pushed).
+// --if-needed: exit 0 with `path:` when a copy is already there (pin ok, or changed but rescanned clean);
+//   otherwise print the offer and exit 5 (ask the human, then --yes --clean).
 // Env: MB_SKILLS_DIR (destination), MB_ALLOW_FILE=1 (tests only: allow file:// repos).
-// Exit: 0 ok or dry run, 1 refused (hash/pin/policy), 2 usage or unknown skill, 3 already installed, 4 threats found.
+// Exit: 0 ok or dry run, 1 refused (hash/pin/policy), 2 usage or unknown skill, 3 already installed, 4 threats found,
+// 5 not installed (the offer was printed).
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -50,7 +54,11 @@ function mismatches(e, dir) {
   for (const [rel, hex] of Object.entries(e.fileSha256 || {})) {
     const f = path.join(dir, ...rel.split('/'));
     if (!fs.existsSync(f)) bad.push(`${rel}: missing`);
-    else if (sha256(fs.readFileSync(f)) !== hex) bad.push(`${rel}: hash differs`);
+    else {
+      // A copy made on Windows may carry CRLF line endings; the same text with LF endings still matches the pin.
+      const b = fs.readFileSync(f);
+      if (sha256(b) !== hex && sha256(Buffer.from(b.toString('latin1').replace(/\r\n/g, '\n'), 'latin1')) !== hex) bad.push(`${rel}: hash differs`);
+    }
   }
   return bad;
 }
@@ -82,13 +90,64 @@ function pinOf(repo, sha, sub) {
   const prefix = sub ? sub + '/' : '';
   const list = git(['ls-tree', '-r', '--name-only', sha, '--', sub || '.'], repo).split('\n').filter(Boolean);
   const fileSha256 = {};
-  for (const f of list) fileSha256[f.slice(prefix.length)] = sha256(blob(repo, `${sha}:${f}`));
-  return { sha, skillSha256: fileSha256['SKILL.md'], fileSha256 };
+  let bytes = 0;
+  for (const f of list) { const b = blob(repo, `${sha}:${f}`); bytes += b.length; fileSha256[f.slice(prefix.length)] = sha256(b); }
+  return { sha, skillSha256: fileSha256['SKILL.md'], sizeKB: Math.round(bytes / 1024), fileSha256 };
+}
+
+const defaults = () => ({
+  registry: path.join(__dirname, '..', 'registry.json'),
+  skillsDir: process.env.MB_SKILLS_DIR || path.join(os.homedir(), '.claude', 'skills'),
+  localDir: path.join(__dirname, '..', 'local'),
+});
+
+function installedAt(name, { skillsDir, localDir } = defaults()) {
+  for (const d of [path.join(skillsDir, name), path.join(localDir, name)]) if (fs.existsSync(path.join(d, 'SKILL.md'))) return d;
+  return null;
+}
+
+const declined = (masterDir) => {
+  try { return new Set(fs.readFileSync(path.join(masterDir, 'skills-declined.txt'), 'utf8').split(/\r?\n/).map((s) => s.trim()).filter(Boolean)); } catch { return new Set(); }
+};
+
+// The words the Master shows the human before any download. The human cannot know these skills exist otherwise.
+function offerText(name, e, opts = defaults()) {
+  const at = installedAt(name, opts);
+  const size = e.sizeKB ? `${e.sizeKB >= 1024 ? (e.sizeKB / 1024).toFixed(1) + ' MB' : e.sizeKB + ' KB'}, ${Object.keys(e.fileSha256 || {}).length} files` : 'size unknown';
+  return [
+    `Optional skill: ${name}, by ${e.author || 'its author'} (${e.license || 'licence not stated'}).`,
+    `It does not come with master-brain: it is a separate download (${size}) from ${e.repo}, pinned at ${String(e.sha || '').slice(0, 7)}.`,
+    `Useful for: ${e.when || 'see its README'}.`,
+    'What it does:',
+    ...(e.features || []).map((f) => '- ' + f),
+    'Before it is used, every file is scanned for threats (secret or data reading, data sent out, hidden instructions,',
+    'hidden or encoded code, auto-run hooks). If anything is found, it is removed and the cleaned copy stays inside',
+    'master-brain on this machine only: nothing is uploaded and the original repo is not changed. You see the scan result.',
+    at ? `Status: already installed at ${at}.` : 'Shall I download it? (yes / no)',
+  ].join('\n');
+}
+
+// One line for boot: which optional skills exist, which are installed, which the human declined.
+function listLine(masterDir, opts = defaults()) {
+  let reg;
+  try { reg = JSON.parse(fs.readFileSync(opts.registry, 'utf8')); } catch { return null; }
+  const no = masterDir ? declined(masterDir) : new Set();
+  const items = Object.entries(reg.skills || {}).map(([n, e]) => `${n} (${e.short || e.when || ''}): ${no.has(n) ? 'declined' : installedAt(n, opts) ? 'installed' : 'not installed'}`);
+  if (!items.length) return null;
+  return 'extra skills, not part of master-brain (task matches one not installed: show `install-skill.cjs --offer <name>`, ask): ' + items.join('; ');
 }
 
 function main() {
   const argv = process.argv.slice(2);
-  const VALUED = ['--registry', '--skills-dir', '--local-dir'];
+  const VALUED = ['--registry', '--skills-dir', '--local-dir', '--master-dir'];
+  if (argv.includes('--list')) {
+    const get = (n) => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : null; };
+    const o = defaults();
+    if (get('--registry')) o.registry = get('--registry');
+    if (get('--skills-dir')) o.skillsDir = get('--skills-dir');
+    console.log(listLine(get('--master-dir'), o) || 'no registry skills');
+    return;
+  }
   const flag = (n) => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : null; };
   const has = (n) => argv.includes(n);
   const name = argv.find((a, i) => !a.startsWith('--') && !VALUED.includes(argv[i - 1]));
@@ -100,8 +159,18 @@ function main() {
   const skillsDir = flag('--skills-dir') || process.env.MB_SKILLS_DIR || path.join(os.homedir(), '.claude', 'skills');
   const dest = path.join(skillsDir, name);
   const localDest = path.join(flag('--local-dir') || path.join(__dirname, '..', 'local'), name);
+  const opts = { registry: regFile, skillsDir, localDir: path.dirname(localDest) };
   if (has('--check')) return check(name, e, skillsDir);
+  if (has('--offer')) { console.log(offerText(name, e, opts)); return; }
+  if (has('--decline')) {
+    const md = flag('--master-dir');
+    if (!md || !fs.existsSync(md)) die(2, '--decline needs --master-dir DIR');
+    if (!declined(md).has(name)) fs.appendFileSync(path.join(md, 'skills-declined.txt'), name + '\n');
+    console.log(`${name}: declined for this project; not offered again`);
+    return;
+  }
   if (has('--if-needed') && existing(name, e, dest, localDest)) return;
+  if (has('--if-needed') && !has('--yes')) { console.log(offerText(name, e, opts)); process.exit(5); }
   const latest = has('--latest');
   if (!latest && (!/^[0-9a-f]{40}$/.test(e.sha || '') || !/^[0-9a-f]{64}$/.test(e.skillSha256 || ''))) die(1, `"${name}" is not pinned yet (no commit/hash in the registry)`);
   const gh = /^https:\/\/github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?$/.exec(e.repo || '');
@@ -150,8 +219,7 @@ function main() {
     const target = clean ? localDest : dest;
     console.log(`skill:       ${name}\nrepo:        ${e.repo}\npinned:      ${sha.slice(0, 12)} (${e.ref})\nsize:        ${(bytes / 1024).toFixed(1)} KB, ${list.length} files\ndescription: ${fm.description}\ndestination: ${target}${clean ? ' (local only)' : ''}\n` + scanner.report(r));
     if (threats && !clean) die(4, `${threats} high finding(s): not installed. Tell the human; with their yes, --clean installs a local copy without them`);
-    const go = has('--yes') || (has('--if-needed') && e.auto === true);
-    if (!go) { console.log('DRY RUN: show this to the human; re-run with --yes only after a clear yes.'); return; }
+    if (!has('--yes')) { console.log('DRY RUN: show this to the human; re-run with --yes only after a clear yes.'); return; }
     if (fs.existsSync(target) && !has('--force') && !clean) die(3, 'already installed (use --force to replace)');
     if (clean) {
       const c = scanner.clean(root, target);
@@ -168,4 +236,6 @@ function main() {
   }
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = { offerText, listLine, installedAt };

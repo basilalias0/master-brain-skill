@@ -2,7 +2,8 @@
   "allowedOwners": [
     "basilalias0",
     "Jakeschincariol",
-    "heydamir"
+    "heydamir",
+    "cloudflare"
   ],
   "skills": {
     "arena": {
@@ -17,14 +18,24 @@
         "rubric.md": "3296801e01035f3ad8dc2b57f0c47d84d296bbc716bf8b36bdb02b426c2735a5",
         "strategies.json": "30517505dd84dba84e94c0a92ee7aaa48b5aee7817dd465fb04856b6b0d8ca40"
       },
-      "note": "owner choice 2026-10-19; MIT; bracket.py stdlib only, no network or subprocess at this commit"
+      "note": "owner choice 2026-10-19; MIT; bracket.py stdlib only, no network or subprocess at this commit",
+      "author": "Jake Schincariol",
+      "license": "MIT",
+      "short": "close decisions",
+      "when": "a close or high-risk decision, or after two rejected answers",
+      "features": [
+        "Runs many sub-agents on the same task (100 by default, 16 with --quick), each with a different strategy card",
+        "A single-elimination bracket: they attack each other's answers, defend and revise",
+        "A judge scores every match on a written rubric until one answer is left",
+        "Costly: many sub-agent calls, so master-brain only offers it and checks your usage first"
+      ],
+      "sizeKB": 80
     },
     "unslop": {
       "repo": "https://github.com/heydamir/unslop",
       "ref": "main",
       "path": "skills/unslop",
-      "auto": true,
-      "when": "UI look: a new screen, or one that looks AI-made",
+      "when": "a dashboard, landing page, app screen or any UI people will see, or a screen that looks AI-made",
       "license": "CC-BY-4.0",
       "credit": "unslop by Damir Sokolovsky (@heydamir), CC BY 4.0",
       "note": "scanned 2026-11-27: 0 high; network only inside snapshot.mjs for the page the user names; story.mjs serves files on 127.0.0.1 with a path guard and runs ffmpeg",
@@ -47,6 +58,60 @@
         "scripts/snapshot.mjs": "4b0c3639bd1c052fa1968c4bbe1b17acb5b108fd22ec70518628d9a4dbd5d6fa",
         "scripts/story-path.mjs": "319600e594fca2f94cbfef8706b6f1c9f5151ad56d7a27e7f7d28f82f5756c9c",
         "scripts/story.mjs": "349610ab1d829eb727b5033353e0ecc0e3272a50c6f1d9eea94b74dcc6daa517"
+      },
+      "author": "Damir Sokolovsky (@heydamir)",
+      "short": "UI look",
+      "features": [
+        "Audits a screen for the usual signs of AI-made UI: purple gradients, glows, emoji icons, uppercase labels, uneven spacing, hype copy",
+        "Writes a five-line design direction from the product itself and asks you before changing anything",
+        "Fixes the screen in nine passes: spacing, color, icons, copy, type, layout, details, visuals, motion",
+        "Exact values: a 4 px spacing scale, neutral color ramps, a type scale, corner radii and motion timings",
+        "Right-to-left rules for Arabic, Persian, Urdu and Hebrew",
+        "Optional: saves a live page to work on (needs Playwright) and makes a 10-second before/after video (Playwright and ffmpeg)",
+        "Optional: writes hero image prompts, or generates the image if you have an image tool (asks before spending)"
+      ],
+      "sizeKB": 1413
+    },
+    "security-audit": {
+      "repo": "https://github.com/cloudflare/security-audit-skill",
+      "ref": "main",
+      "path": "skills/security-audit",
+      "author": "Cloudflare",
+      "license": "MIT",
+      "short": "security review",
+      "when": "a security review, audit or pen test, or a release that touches auth, payments or user data",
+      "features": [
+        "Source-first security review of codebases, APIs, services, CLI tools, libraries and daemons",
+        "Quick, standard and deep modes; only vulnerabilities that cross a real trust boundary count",
+        "Guides for web auth and protocols, client side, cloud and deploy, AI and LLM, supply chain, memory safety, data isolation, denial of service and local IPC",
+        "Each finding comes with source evidence, a safe reproduction, a priority and the smallest fix",
+        "Node validators for the findings report and the coverage ledger"
+      ],
+      "note": "scanned 2026-11-27: 0 high; the only subprocess and delete calls are in its own tests (temp folders)",
+      "sha": "c1c8a8c1471069fb0e188eeaff69b8e8db6564a8",
+      "skillSha256": "5e3e96a1e438d8f35fef0a1e38f02d4f00e2bdf910401b7dfe00e6779c6dac85",
+      "sizeKB": 307,
+      "fileSha256": {
+        "AI-AND-LLM.md": "7335a95c43554eadefcf03ece639291bb0e038c398a179299e3887ffe06bd2ef",
+        "ATTACK-CLASSES.md": "3ee4f00c6e8c9dcf6dd02dd5ac2a4ceb322e2085f3e9fbe79cf0c6330bc7ef83",
+        "CLIENT-SIDE.md": "613f6b98f86083e045525c5b60154ffdab122bac35f1e05eb17488e6e453370c",
+        "CLOUD-AND-DEPLOYMENT.md": "3c80f3088be22345e07b057c056d6ed99fe2b0304f794398964f7ccd5a496ca3",
+        "DATA-ISOLATION-AND-LIFECYCLE.md": "307dcb3e24d292715c4a041190e7bb135646a37eb6187619ae01d000a634a4ad",
+        "DESKTOP-MOBILE-AND-LOCAL-IPC.md": "58eae8ee0ca6a46611c501ec5a3ab47fdff88dd7db0d8d74789bbf8bb19d8cb2",
+        "HUNTING.md": "71c121decea1322c47c718f6e110f1a892980bb4266bd7ac55ef043a213ade09",
+        "MEMORY-SAFETY-AND-BINARY.md": "7c8b0dccfb35315cca2455509674d49632b2fe37e1f3aac16c1a496a7e9924a7",
+        "PROTOCOLS-RPC-AND-MESSAGING.md": "8b73816fa5b3697c9c40977f0c836b40f01d6e81929ff2720fe83ce089e9a619",
+        "RECONNAISSANCE.md": "02ca887aca84de8ae137f1891bd2f0a54f28d3fa6da92a27f54734382b3381a2",
+        "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md": "4326fab5c92a0b4c420a70196254040105cd794026562130b59bf1a6db3e4baa",
+        "SKILL.md": "5e3e96a1e438d8f35fef0a1e38f02d4f00e2bdf910401b7dfe00e6779c6dac85",
+        "SUPPLY-CHAIN-AND-RELEASE.md": "f372e919940e335468ba1ae09f99026c3986a345f7fe26f8068f132e199f52a5",
+        "VALIDATION-AND-REPORTING.md": "b892470cb89bb31f33403e050d4bdfbe2cdaef940ade1496fa65e32b2e129449",
+        "WEB-PROTOCOL-AND-AUTH.md": "4f3066dffa23c5635859187be9b96c32f2aff29a688186b91ff0c63e47d62b5c",
+        "report-schema.json": "6575c9de4a62255699ea052ebf9a49ebfb373a32891bcd89af6f55cc84b35519",
+        "validate-coverage-ledger.cjs": "2eb280bd2e33c002916f86db9b29f9edfedb6454e5db973c766290465b868ac8",
+        "validate-coverage-ledger.test.cjs": "cfb9df26b03469a4279a70e7664a2a5434dd6f8c2c204e91f9b0aeb9dd71e648",
+        "validate-findings.cjs": "e85f232e36bfac0f866f244da50376692d6b45c690beadcb00608b0e6c8b5283",
+        "validate-findings.test.cjs": "b92001117a92c4161d43777a0ba2fa182a8a4d97f2304cc8c0cee5331497b73b"
       }
     }
   }

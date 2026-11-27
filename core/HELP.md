@@ -39,5 +39,5 @@ Writes a sanitized export (rule text and aggregate stats, no raw logs or paths) 
 Use: `/master-brain contribute`
 
 ## audit
-Optional third-party security audit skill. Master-run only, never installed automatically. See its own help once installed.
+Optional third-party security audit skill (Cloudflare, MIT), not part of master-brain. Master-run only. Not installed: the Master shows what it does and asks before downloading; the download is scanned (SAFETY 9). See its own help once installed.
 Use: `/master-brain audit [quick|standard|deep] [scope]`

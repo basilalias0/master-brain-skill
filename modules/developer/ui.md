@@ -3,7 +3,7 @@
 Apply while building, then report only the items that failed or were not checked. A native element beats a custom one; a custom widget follows its WAI-ARIA APG pattern.
 
 ## Look: the unslop skill runs alongside
-- Any screen people see: `node <master-brain>/scripts/install-skill.cjs unslop --if-needed`. It installs once (pinned, hash-checked, scanned) and prints `path:`. Exit 4 = threats: stop and tell the human.
+- Any screen people see: `node <master-brain>/scripts/install-skill.cjs unslop --if-needed`. Installed: it prints `path:`. Exit 5 = not installed: the Master shows the printed offer to the human and asks (SAFETY 9); a worker reports it. Declined: build from this file alone.
 - New screen: apply its `references/signs.md` and `references/tokens.md` (about 4k tokens). Redesign, or a screen that looks AI-made: its full `SKILL.md`. The Master writes the five-line direction and gets the human's OK once; workers take it from the brief.
 - This file wins on behaviour and access (48 px targets, keyboard, timings); unslop wins on looks. Credit: unslop by Damir Sokolovsky (@heydamir), CC BY 4.0.
 

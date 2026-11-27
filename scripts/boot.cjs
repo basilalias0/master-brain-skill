@@ -2,7 +2,8 @@
 'use strict';
 // boot.cjs <master_dir> [--role chief|master|worker] [--self M3]: the whole boot bookkeeping in one call, 25 lines or
 // fewer, zero model tokens. In order: LAWS sync (outdated laws updated from the skill) and digest check, capacity check with leftover servers
-// (capacity.cjs), the status snapshot with its improve nudge (state.cjs), then LAST blocks (rollover.cjs):
+// (capacity.cjs), the extra skills line (install-skill.cjs), the status snapshot with its improve nudge (state.cjs),
+// then LAST blocks (rollover.cjs):
 //   master: masters/<self>.md (self defaults to the only masters/M*.md)   chief: masters/C1.md and every masters/M*.md
 //   worker: handoffs/<self>.md only (no snapshot: a worker reads its brief).
 // Exit: 0 ok, 1 digest stale (read the full LAWS.md), 2 bad input.
@@ -12,6 +13,7 @@ const { digestHash, sha, sync } = require('./law-lint.cjs');
 const { check } = require('./capacity.cjs');
 const { snapshot } = require('./state.cjs');
 const { lastBlock } = require('./rollover.cjs');
+const { listLine } = require('./install-skill.cjs');
 
 const MAX = 25;
 const read = (f) => { try { return fs.readFileSync(f, 'utf8').replace(/\r\n/g, '\n'); } catch { return null; } };
@@ -53,7 +55,13 @@ function boot(dir, { role = 'master', self } = {}) {
   if (!['chief', 'master', 'worker'].includes(role)) throw new Error(`bad role "${role}" (chief|master|worker)`);
   const laws = lawsLine(dir);
   const head = [laws.line, ...check(dir)];
-  if (role !== 'worker') head.push(...snapshot(dir, role === 'chief' ? 8 : 10));
+  if (role !== 'worker') {
+    // The human cannot know these skills exist: the Master offers one when a task matches (SAFETY 9).
+    let skills = null;
+    try { skills = listLine(dir); } catch { /* no registry: nothing to offer */ }
+    if (skills) head.push(skills);
+    head.push(...snapshot(dir, role === 'chief' ? 8 : 10));
+  }
   const hs = histories(dir, role, self);
   const room = Math.max(2, MAX - head.length);
   const per = Math.max(1, Math.floor(room / Math.max(1, hs.length)) - 1);

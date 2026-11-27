@@ -17,7 +17,7 @@ A router. Read other files only when a step needs them. Token rules: `core/TOKEN
 - `onboard`: `ONBOARDING.md`. `models`: show the project's `MODELS.md`
 - `improve`: `core/IMPROVE.md`. `update`, `overlay`, `contribute`: `core/UPDATE.md`
 - `research <q> [quick|standard|deep]`, `lean [lite|full|ultra]`, `developer [build|update]`, `analyze <target>`, `test [report|implement]`, `decide <question>`: read `modules/<name>/MODULE.md` (analyze = analyzer, test = tester), then `<master_dir>/overlay/<name>.md` if it exists, and follow both. `lean` stays on until the user says "stop lean"; re-read it after a compaction.
-- `audit`: the third-party security-audit skill, if installed. Master-run only; never auto-installed.
+- `audit`: the third-party security-audit skill; not installed: offer it (SAFETY 9). Master-run only.
 
 ## Boot (cheap: target 2k tokens)
 1. **Project:** walk up from the cwd (6 levels at most) for `master-brain/STATE.md`. None: read `ONBOARDING.md`. Several: ask which.
@@ -39,6 +39,6 @@ Agents that edit files: `isolation: "worktree"`, brief `sync: sync_base`. Rules 
 
 **Design projects** (a spec others build from): `procedure/04-design-projects.md`.
 
-Third-party skills: `registry.json` only, pinned and scanned (`scripts/install-skill.cjs <name>`, SAFETY 9).
+Extra skills (boot lists them; the human cannot know they exist): a task matches one not installed, show `install-skill.cjs --offer <name>` and ask (SAFETY 9).
 
 **Arena** (offered after 2 rejections or for close High-risk decisions; never unasked): `procedure/05-arena-and-decisions.md`.

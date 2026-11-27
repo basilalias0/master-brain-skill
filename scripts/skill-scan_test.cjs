@@ -57,7 +57,38 @@ test('optimize notes: long description, big file, unlinked reference', () => {
   const n = scan(d).optimize.notes.join('\n');
   assert.match(n, /description 6\d\d chars/);
   assert.match(n, /big\.webp 210 KB/);
-  assert.match(n, /references\/a\.md: not linked/);
+  assert.match(n, /references\/a\.md: not named/);
+});
+
+test('offer: not installed prints the offer and exits 5; decline hides it from boot; a CRLF copy matches the pin', () => {
+  const { offerText, listLine } = require('./install-skill.cjs');
+  const h = (s) => crypto.createHash('sha256').update(s).digest('hex');
+  const reg = path.join(tmp(), 'registry.json');
+  const e = { repo: 'https://github.com/o/demo', sha: 'a'.repeat(40), author: 'A', license: 'MIT', short: 'UI look', when: 'any UI', sizeKB: 12, features: ['Fixes spacing'], fileSha256: { 'SKILL.md': h(SKILL) } };
+  fs.writeFileSync(reg, JSON.stringify({ allowedOwners: ['o'], skills: { demo: e } }));
+  const skillsDir = tmp(); const md = tmp();
+  const opts = { registry: reg, skillsDir, localDir: tmp() };
+  const t = offerText('demo', e, opts);
+  for (const want of [/does not come with master-brain/, /12 KB, 1 files/, /- Fixes spacing/, /scanned for threats/, /nothing is uploaded/, /Shall I download it\? \(yes \/ no\)/]) assert.match(t, want);
+  const run = (a) => cp.spawnSync('node', [path.join(__dirname, 'install-skill.cjs'), ...a, '--registry', reg, '--skills-dir', skillsDir], { encoding: 'utf8' });
+  const r = run(['demo', '--if-needed']);
+  assert.strictEqual(r.status, 5, r.stderr);
+  assert.match(r.stdout, /Shall I download it/);
+  assert.match(listLine(md, opts), /demo \(UI look\): not installed/);
+  assert.strictEqual(run(['demo', '--decline', '--master-dir', md]).status, 0);
+  assert.match(listLine(md, opts), /demo \(UI look\): declined/);
+  fs.mkdirSync(path.join(skillsDir, 'demo'));
+  fs.writeFileSync(path.join(skillsDir, 'demo', 'SKILL.md'), SKILL.replace(/\n/g, '\r\n'));
+  const ok = run(['--check', 'demo']);
+  assert.strictEqual(ok.status, 0, ok.stderr);
+  assert.match(offerText('demo', e, opts), /already installed/);
+});
+
+test('boot lists the extra skills for a Master, not for a worker', () => {
+  const { boot } = require('./boot.cjs');
+  const d = tmp();
+  assert.ok(boot(d).lines.some((l) => /^extra skills, not part of master-brain/.test(l)));
+  assert.ok(!boot(d, { role: 'worker', self: 'W-M1-1' }).lines.some((l) => /^extra skills/.test(l)));
 });
 
 test('install-skill: a threat stops the install (exit 4); --clean --yes installs a local copy only', () => {

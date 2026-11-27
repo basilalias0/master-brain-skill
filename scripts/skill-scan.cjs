@@ -125,10 +125,12 @@ function optimize(root, sizes) {
   if (lines > 500) notes.push(`SKILL.md ${lines} lines: move detail to references/`);
   if (out.skillTokens > 5000) notes.push(`SKILL.md ~${out.skillTokens} tokens on every use: load only the parts a task needs`);
   for (const x of sizes) if (x.bytes > 200 * 1024) notes.push(`${x.rel} ${(x.bytes / 1024).toFixed(0)} KB: large; read only when needed`);
-  const linked = new Set([...s.matchAll(/\]\(([^)#\s]+)/g)].map((m) => path.normalize(m[1]).replace(/\\/g, '/')));
+  // A reference counts as reached when any markdown file in the skill names it (a link or a plain mention).
+  const allMd = sizes.filter((x) => /\.md$/.test(x.rel)).map((x) => fs.readFileSync(path.join(root, x.rel), 'utf8')).join('\n');
   for (const x of sizes) {
     if (!/\.md$/.test(x.rel) || x.rel === 'SKILL.md') continue;
-    if (![...linked].some((l) => l === x.rel || x.rel.endsWith('/' + l) || l.endsWith(x.rel))) notes.push(`${x.rel}: not linked from SKILL.md (may be dead or reached only through another file)`);
+    const own = fs.readFileSync(path.join(root, x.rel), 'utf8');
+    if (!allMd.replace(own, '').includes(path.basename(x.rel))) notes.push(`${x.rel}: not named in any other file of the skill (may be dead)`);
   }
   return out;
 }
