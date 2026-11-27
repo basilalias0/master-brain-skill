@@ -39,6 +39,6 @@ Agents that edit files: `isolation: "worktree"`, brief `sync: sync_base`. Rules 
 
 **Design projects** (a spec others build from): `procedure/04-design-projects.md`.
 
-Optional third-party skills install only from `registry.json` (pinned, hash-checked) after the user says yes: `scripts/install-skill.cjs <name>` (dry run first).
+Third-party skills: `registry.json` only, pinned and scanned (`scripts/install-skill.cjs <name>`, SAFETY 9).
 
 **Arena** (offered after 2 rejections or for close High-risk decisions; never unasked): `procedure/05-arena-and-decisions.md`.

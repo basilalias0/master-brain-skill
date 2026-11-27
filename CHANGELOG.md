@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.10.0 (2026-11-27, owner request; not A/B tested)
+- **unslop runs alongside the UI rules.** `registry.json` lists heydamir/unslop (CC BY 4.0, credited) pinned at
+  620163e with all 16 file hashes and `auto: true`. `ui.md` has the developer run `install-skill.cjs unslop --if-needed`
+  on any screen people see. It installs once, then reuses the copy. A new screen uses `signs.md` and `tokens.md`
+  (about 4k tokens) instead of the full 8k-token SKILL.md. ui.md wins on behaviour and access, unslop on looks.
+- **Every third-party skill is scanned** on download, update and local change (`scripts/skill-scan.cjs`).
+  - **High findings block the install:** secret reading, a network call next to a secret read, obfuscated code,
+    npm lifecycle scripts, hooks, settings or skill edits, start-up persistence, prompt injection, hidden characters,
+    executables, and files whose content does not match their extension.
+  - **Medium findings are shown:** network calls, subprocesses and deletes.
+  - **Optimization notes:** tokens per use, description length, big files and unlinked references.
+  - **A threat stops the install** (exit 4) and the human is told. Only with their yes, `--clean` writes a copy
+    without the threats to `local/<name>`, which is git-ignored, never pushed, and never touches the upstream repo.
+  - `--latest` scans a new upstream commit before the pin moves.
+  - The installer now checks every pinned file hash, not only SKILL.md.
+- **unslop scan:** 0 high findings. The network calls are in `snapshot.mjs` and fetch only the page the user names.
+  `story.mjs` serves files on 127.0.0.1 with a path guard and runs ffmpeg. Arena also rescanned clean.
+- RESULT: a worker writes `test-guard: Master's`; only a chat that ran the script reports `ok` (found by A/B t12).
+
 ## 2.9.0 (2026-11-24, owner request)
 - A/B 2026-11-25, new task t12 (`plans/ab-2026-11-25.md`): worker side only. 3/3 pass in every cell (all runs
   tested only their change and skipped the slow suite); v2.9.0 alone flagged `scope: wide` for the shared file (3/3);

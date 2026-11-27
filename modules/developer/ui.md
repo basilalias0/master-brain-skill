@@ -2,6 +2,11 @@
 
 Apply while building, then report only the items that failed or were not checked. A native element beats a custom one; a custom widget follows its WAI-ARIA APG pattern.
 
+## Look: the unslop skill runs alongside
+- Any screen people see: `node <master-brain>/scripts/install-skill.cjs unslop --if-needed`. It installs once (pinned, hash-checked, scanned) and prints `path:`. Exit 4 = threats: stop and tell the human.
+- New screen: apply its `references/signs.md` and `references/tokens.md` (about 4k tokens). Redesign, or a screen that looks AI-made: its full `SKILL.md`. The Master writes the five-line direction and gets the human's OK once; workers take it from the brief.
+- This file wins on behaviour and access (48 px targets, keyboard, timings); unslop wins on looks. Credit: unslop by Damir Sokolovsky (@heydamir), CC BY 4.0.
+
 ## UX laws as code rules
 1. **Doherty (<400 ms):** feedback in 100 ms (press state; optimistic update where allowed, below); skeleton after 300 ms, spinner after 1 s, progress bar with an estimate after 10 s.
 2. **Hick:** max 7 top nav items, one primary action per view, the recommended option marked; over 10 options add search; advanced settings behind "More".
@@ -176,18 +181,13 @@ Apply while building, then report only the items that failed or were not checked
 - **Spinner:** over 1 s; inside the button for button actions.
 - **Progress bar:** over 10 s or for uploads; percent and an estimate.
 - **Empty state:** why it is empty, plus one action.
-- **Error, 404, 500:**
-  - Plain words, Retry, and a way home.
-  - Never a stack trace.
+- **Error, 404, 500:** plain words, Retry, and a way home; never a stack trace.
 - **Offline:** a banner; queue actions and sync later.
 - **Success:** what happened and what is next.
 
 **Page level**
 - **Core Web Vitals:** LCP <2.5 s, INP <200 ms, CLS <0.1.
-- **Structure and focus:**
-  - A skip link and one `h1`.
-  - Focus order follows the visual order.
-  - Focus moves to the new heading after navigation.
+- **Structure and focus:** a skip link and one `h1`; focus order follows the visual order and moves to the new heading after navigation.
 - **State:** back restores state; filters, tabs and sort live in the URL.
 - **Unsaved work:** warn before leaving a page with unsaved changes.
 - **Check:** 320, 768 and 1280 px, dark mode, 200% zoom.
